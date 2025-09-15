@@ -7,7 +7,14 @@ if (!process.contextIsolated) {
 const electron = {
   closeFocusedWindow: () => ipcRenderer.invoke('closeFocusedWindow'),
   minimizeFocusedWindow: () => ipcRenderer.invoke('minimizeFocusedWindow'),
-  maximizeFocusedWindow: () => ipcRenderer.invoke('maximizeFocusedWindow')
+  maximizeFocusedWindow: () => ipcRenderer.invoke('maximizeFocusedWindow'),
+  toggleMaximizeFocusedWindow: () => ipcRenderer.invoke('toggleMaximizeFocusedWindow'),
+  isWindowMaximized: () => ipcRenderer.invoke('isWindowMaximized'),
+  onWindowMaximizeChanged: (callback: (isMaximized: boolean) => void) => {
+    const subscription = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => callback(isMaximized)
+    ipcRenderer.on('window-maximize-changed', subscription)
+    return () => ipcRenderer.removeListener('window-maximize-changed', subscription)
+  }
 }
 
 const context = {

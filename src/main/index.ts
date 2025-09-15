@@ -1,4 +1,4 @@
-import { closeFocusedWindow, maximizeFocusedWindow, minimizeFocusedWindow } from '@/lib'
+import { closeFocusedWindow, isWindowMaximized, maximizeFocusedWindow, minimizeFocusedWindow, toggleMaximizeFocusedWindow } from '@/lib'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
@@ -24,6 +24,15 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  // 监听窗口最大化状态变化
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('window-maximize-changed', true)
+  })
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('window-maximize-changed', false)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -58,6 +67,8 @@ app.whenReady().then(() => {
   ipcMain.handle('closeFocusedWindow', () => closeFocusedWindow())
   ipcMain.handle('minimizeFocusedWindow', () => minimizeFocusedWindow())
   ipcMain.handle('maximizeFocusedWindow', () => maximizeFocusedWindow())
+  ipcMain.handle('toggleMaximizeFocusedWindow', () => toggleMaximizeFocusedWindow())
+  ipcMain.handle('isWindowMaximized', () => isWindowMaximized())
 
   createWindow()
 

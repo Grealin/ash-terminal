@@ -2,6 +2,9 @@ interface Electron {
   closeFocusedWindow: () => void
   minimizeFocusedWindow: () => void
   maximizeFocusedWindow: () => void
+  toggleMaximizeFocusedWindow: () => void
+  isWindowMaximized: () => Promise<boolean>
+  onWindowMaximizeChanged: (callback: (isMaximized: boolean) => void) => () => void
 }
 
 interface Context {
@@ -15,4 +18,5 @@ declare global {
   }
 }
 
-export {}
+export { }
+
