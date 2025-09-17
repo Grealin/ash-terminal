@@ -1,8 +1,8 @@
 import icon from '@/assets/images/icon.png'
 import { useDarkTheme } from '@renderer/hooks'
-import { useEffect, useState } from 'react'
+import { ComponentProps, useEffect, useState } from 'react'
 
-export const DraggableTopBar: React.FC = () => {
+export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
   const [isMaximized, setIsMaximized] = useState(false)
 
@@ -49,7 +49,7 @@ export const DraggableTopBar: React.FC = () => {
         <div className="flex items-center space-x-2">
           {/* 主题切换按钮 */}
           <button
-            className="w-8 h-8 rounded-full text-slate-600 hover:text-slate-700 hover:bg-slate-100/50 transition-all duration-200 flex items-center justify-center group dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-slate-800/50"
+            className="w-8 h-8 rounded-md text-slate-600 hover:text-slate-700 hover:bg-gray-200  transition-all duration-200 flex items-center justify-center group dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-gray-700"
             onClick={toggleTheme}
             title={isDark ? '切换到亮色模式' : '切换到暗色模式'}
           >
@@ -79,7 +79,7 @@ export const DraggableTopBar: React.FC = () => {
           </button>
 
           <button
-            className="w-8 h-8 rounded-full text-yellow-600 hover:text-yellow-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 rounded-md text-yellow-600 hover:text-yellow-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => window.electron.minimizeFocusedWindow()}
             title="最小化窗口"
           >
@@ -97,7 +97,7 @@ export const DraggableTopBar: React.FC = () => {
           </button>
 
           <button
-            className="w-8 h-8 rounded-full text-green-600 hover:text-green-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 rounded-md text-green-600 hover:text-green-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => window.electron.toggleMaximizeFocusedWindow()}
             title={isMaximized ? '恢复窗口' : '最大化窗口'}
           >
@@ -131,7 +131,7 @@ export const DraggableTopBar: React.FC = () => {
           </button>
 
           <button
-            className="w-8 h-8 rounded-full text-red-600 hover:text-red-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 mr-3 rounded-md text-red-600 hover:text-red-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => window.electron.closeFocusedWindow()}
             title="关闭窗口"
           >

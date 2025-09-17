@@ -1,5 +1,6 @@
 import { closeFocusedWindow, isWindowMaximized, maximizeFocusedWindow, minimizeFocusedWindow, toggleMaximizeFocusedWindow } from '@/lib'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
+import { WINDOW_INITIAL_HEIGHT, WINDOW_INITIAL_WIDTH, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH } from '@shared/constants'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
@@ -7,8 +8,10 @@ import icon from '../../resources/icon.png?asset'
 function createWindow(): void {
   // 创建浏览器窗口
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 830,
+    width: WINDOW_INITIAL_WIDTH,
+    height: WINDOW_INITIAL_HEIGHT,
+    minWidth: WINDOW_MIN_WIDTH,
+    minHeight: WINDOW_MIN_HEIGHT,
     show: false,
     autoHideMenuBar: true,
     icon: icon,

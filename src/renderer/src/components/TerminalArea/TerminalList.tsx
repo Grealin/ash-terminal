@@ -1,0 +1,14 @@
+import type { ComponentProps } from 'react'
+import { twMerge } from 'tailwind-merge'
+
+export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
+  children,
+  className,
+  ...props
+}) => {
+  return (
+    <div className={twMerge('flex-2', className)} {...props}>
+      {children}
+    </div>
+  )
+}
