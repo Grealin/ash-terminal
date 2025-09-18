@@ -1,9 +1,11 @@
 export * from './AiArea'
 export * from './AppLayout'
 export * from './BatchCommand'
+export * from './Button'
+export * from './Dropdown'
 export * from './FileManager'
+export * from './Modal'
 export * from './SessionManager'
 export * from './SystemMonitor'
 export * from './TerminalArea'
 export * from './TopBar'
-

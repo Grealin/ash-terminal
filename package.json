@@ -1,7 +1,8 @@
 {
   "name": "ash-terminal",
+  "productName": "AshTerminal",
   "version": "1.0.0",
-  "description": "Ash-Terminal",
+  "description": "AshTerminal",
   "main": "./out/main/index.js",
   "license": "MIT",
   "author": {
@@ -26,6 +27,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@tailwindcss/vite": "^4.1.13",
+    "electron-store": "^10.1.0",
     "jotai": "^2.14.0",
     "tailwindcss": "^4.1.13"
   },

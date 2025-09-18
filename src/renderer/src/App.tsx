@@ -10,7 +10,8 @@ import {
   RightSideBar,
   RootLayout,
   SessionListMain,
-  TerminalListMain
+  TerminalListMain,
+  ThemeModal
 } from '@/components'
 
 const App: React.FC = () => {
@@ -32,6 +33,7 @@ const App: React.FC = () => {
             <MonitorListMain />
           </RightSideBar>
         </MainContent>
+        <ThemeModal />
       </RootLayout>
     </>
   )

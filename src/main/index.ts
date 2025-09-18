@@ -1,6 +1,21 @@
-import { closeFocusedWindow, isWindowMaximized, maximizeFocusedWindow, minimizeFocusedWindow, toggleMaximizeFocusedWindow } from '@/lib'
+import {
+  closeFocusedWindow,
+  getConfig,
+  initConfigStore,
+  isWindowMaximized,
+  maximizeFocusedWindow,
+  minimizeFocusedWindow,
+  saveConfig,
+  toggleMaximizeFocusedWindow
+} from '@/lib'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { WINDOW_INITIAL_HEIGHT, WINDOW_INITIAL_WIDTH, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH } from '@shared/constants'
+import {
+  WINDOW_INITIAL_HEIGHT,
+  WINDOW_INITIAL_WIDTH,
+  WINDOW_MIN_HEIGHT,
+  WINDOW_MIN_WIDTH
+} from '@shared/constants'
+import { AppConfig } from '@shared/models'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
@@ -55,9 +70,12 @@ function createWindow(): void {
 // 当Electron完成时，将调用此方法
 // 初始化并准备创建浏览器窗口。
 // 某些API只能在此事件发生后使用。
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // 为windows设置应用程序用户模型id
   electronApp.setAppUserModelId('com.qingfen')
+
+  // 初始化配置存储
+  await initConfigStore()
 
   // 开发中默认按F12打开或关闭DevTools
   // 在生产中忽略CommandOrControl+R。
@@ -66,12 +84,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Electron
+  // Electron 窗口管理
   ipcMain.handle('closeFocusedWindow', () => closeFocusedWindow())
   ipcMain.handle('minimizeFocusedWindow', () => minimizeFocusedWindow())
   ipcMain.handle('maximizeFocusedWindow', () => maximizeFocusedWindow())
   ipcMain.handle('toggleMaximizeFocusedWindow', () => toggleMaximizeFocusedWindow())
   ipcMain.handle('isWindowMaximized', () => isWindowMaximized())
+
+  // 配置管理
+  ipcMain.handle('getConfig', (): AppConfig => getConfig())
+  ipcMain.handle('saveConfig', (_, config: AppConfig): void => saveConfig(config))
 
   createWindow()
 

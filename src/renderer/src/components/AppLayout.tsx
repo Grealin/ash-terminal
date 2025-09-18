@@ -1,10 +1,43 @@
+import { useInitializeTheme } from '@/hooks'
 import { darkStateAtom } from '@/store'
 import { useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, className, ...props }) => {
+  const { loading } = useInitializeTheme()
   const isDark = useAtomValue(darkStateAtom)
+
+  // 如果正在加载，显示加载状态防止闪烁
+  if (loading) {
+    return (
+      <main
+        className={twMerge(
+          'flex h-screen flex-col m-0 p-0 bg-slate-400 min-h-screen overflow-hidden',
+          className
+        )}
+        {...props}
+      >
+        <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center">
+            <svg
+              className="w-12 h-12 animate-spin text-slate-300"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2a10 10 0 0 1 10 10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main

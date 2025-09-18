@@ -1,3 +1,5 @@
+import { AppConfig } from '@shared/models'
+
 interface Electron {
   closeFocusedWindow: () => void
   minimizeFocusedWindow: () => void
@@ -8,7 +10,8 @@ interface Electron {
 }
 
 interface Context {
-  // TODO
+  getConfig: () => Promise<AppConfig>
+  saveConfig: (config: AppConfig) => Promise<void>
 }
 
 declare global {
@@ -18,5 +21,4 @@ declare global {
   }
 }
 
-export { }
-
+export {}

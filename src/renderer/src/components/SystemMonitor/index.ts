@@ -1,1 +1,1 @@
-export * from './MonitorList';
+export * from './MonitorList'

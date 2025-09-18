@@ -1,10 +1,12 @@
 import icon from '@/assets/images/icon.png'
-import { useDarkTheme } from '@renderer/hooks'
+import { MenuButton, TopButton, TopDropdown } from '@/components'
+import { useDarkTheme, useModalTheme } from '@/hooks'
 import { ComponentProps, useEffect, useState } from 'react'
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
   const [isMaximized, setIsMaximized] = useState(false)
+  const { openModal: openThemeModal } = useModalTheme()
 
   useEffect(() => {
     // 获取初始窗口状态
@@ -30,21 +32,22 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           </div>
 
           {/* 选项按钮 */}
-          <button className="px-3 py-2 text-sm text-slate-700 hover:bg-slate-200 rounded transition-all duration-150 dark:text-slate-300 dark:hover:bg-slate-800/50">
-            会话
-          </button>
-          <button className="px-3 py-2 text-sm text-slate-700 hover:bg-slate-200 rounded transition-all duration-150 dark:text-slate-300 dark:hover:bg-slate-800/50">
-            编辑
-          </button>
-          <button className="px-3 py-2 text-sm text-slate-700 hover:bg-slate-200 rounded transition-all duration-150 dark:text-slate-300 dark:hover:bg-slate-800/50">
-            搜索
-          </button>
-          <button className="px-3 py-2 text-sm text-slate-700 hover:bg-slate-200 rounded transition-all duration-150 dark:text-slate-300 dark:hover:bg-slate-800/50">
-            查看
-          </button>
-          <button className="px-3 py-2 text-sm text-slate-700 hover:bg-slate-200 rounded transition-all duration-150 dark:text-slate-300 dark:hover:bg-slate-800/50">
-            布局
-          </button>
+          <TopButton>会话</TopButton>
+          <TopButton>编辑</TopButton>
+          <TopButton>搜索</TopButton>
+          <TopButton>布局</TopButton>
+          <TopButton
+            popoverTarget="popover-settings"
+            style={{ anchorName: '--anchor-settings' } as React.CSSProperties}
+          >
+            设置
+          </TopButton>
+          <TopDropdown
+            id="popover-settings"
+            style={{ positionAnchor: '--anchor-settings' } as React.CSSProperties}
+          >
+            <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
+          </TopDropdown>
         </div>
         <div className="flex items-center space-x-2">
           {/* 主题切换按钮 */}

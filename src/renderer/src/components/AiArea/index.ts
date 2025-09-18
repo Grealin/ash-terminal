@@ -1,1 +1,1 @@
-export * from './AiInterface';
+export * from './AiInterface'

@@ -1,1 +1,1 @@
-export * from './TerminalList';
+export * from './TerminalList'

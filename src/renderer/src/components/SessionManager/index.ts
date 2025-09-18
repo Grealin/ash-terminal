@@ -1,1 +1,1 @@
-export * from './SessionList';
+export * from './SessionList'

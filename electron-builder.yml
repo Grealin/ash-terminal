@@ -1,5 +1,5 @@
 appId: com.qingfen.ash
-productName: Ash Terminal
+productName: AshTerminal
 directories:
   buildResources: build
 icon: resources/icon.png
