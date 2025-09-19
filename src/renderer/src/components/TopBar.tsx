@@ -1,12 +1,14 @@
 import icon from '@/assets/images/icon.png'
 import { MenuButton, TopButton, TopDropdown } from '@/components'
-import { useDarkTheme, useModalTheme } from '@/hooks'
+import { useDarkTheme, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
 import { ComponentProps, useEffect, useState } from 'react'
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
   const [isMaximized, setIsMaximized] = useState(false)
   const { openModal: openThemeModal } = useModalTheme()
+  const { openModal: openLayoutModal } = useModalLayout()
+  const { openModal: openToolModal } = useModalTool()
 
   useEffect(() => {
     // 获取初始窗口状态
@@ -35,7 +37,19 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           <TopButton>会话</TopButton>
           <TopButton>编辑</TopButton>
           <TopButton>搜索</TopButton>
-          <TopButton>布局</TopButton>
+          <TopButton
+            popoverTarget="popover-layout"
+            style={{ anchorName: '--anchor-layout' } as React.CSSProperties}
+          >
+            布局
+          </TopButton>
+          <TopDropdown
+            id="popover-layout"
+            style={{ positionAnchor: '--anchor-layout' } as React.CSSProperties}
+          >
+            <MenuButton onClick={() => openLayoutModal()}>布局设置</MenuButton>
+            <MenuButton onClick={() => openToolModal()}>功能区设置</MenuButton>
+          </TopDropdown>
           <TopButton
             popoverTarget="popover-settings"
             style={{ anchorName: '--anchor-settings' } as React.CSSProperties}

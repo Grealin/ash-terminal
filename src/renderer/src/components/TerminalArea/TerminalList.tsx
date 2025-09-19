@@ -7,7 +7,7 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
   ...props
 }) => {
   return (
-    <div className={twMerge('flex-2', className)} {...props}>
+    <div className={twMerge('flex-2 border-2 border-amber-400', className)} {...props}>
       {children}
     </div>
   )

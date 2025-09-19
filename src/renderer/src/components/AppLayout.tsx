@@ -1,4 +1,12 @@
-import { useInitializeTheme } from '@/hooks'
+import {
+  useAiInterface,
+  useFileList,
+  useInitializeTheme,
+  useLeftSideBar,
+  useMonitorList,
+  useRightSideBar,
+  useSessionList
+} from '@/hooks'
 import { darkStateAtom } from '@/store'
 import { useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
@@ -67,6 +75,12 @@ export const LeftSideBar: React.FC<ComponentProps<'aside'>> = ({
   className,
   ...props
 }) => {
+  const { visible } = useLeftSideBar()
+  const { visible: aiInterfaceVisible } = useAiInterface()
+
+  // 如果不可见，返回null
+  if (!visible || !aiInterfaceVisible) return null
+
   return (
     <aside
       className={twMerge(
@@ -103,6 +117,14 @@ export const RightSideBar: React.FC<ComponentProps<'aside'>> = ({
   className,
   ...props
 }) => {
+  const { visible } = useRightSideBar()
+  const { visible: sessionListVisible } = useSessionList()
+  const { visible: fileListVisible } = useFileList()
+  const { visible: monitorListVisible } = useMonitorList()
+
+  // 如果不可见，返回null
+  if (!visible || (!sessionListVisible && !fileListVisible && !monitorListVisible)) return null
+
   return (
     <aside
       className={twMerge(

@@ -4,14 +4,17 @@ import {
   CommandListMain,
   DraggableTopBar,
   FileListMain,
+  LayoutModal,
   LeftSideBar,
   MainContent,
   MonitorListMain,
   RightSideBar,
   RootLayout,
+  SessionListContent,
   SessionListMain,
   TerminalListMain,
-  ThemeModal
+  ThemeModal,
+  ToolModal
 } from '@/components'
 
 const App: React.FC = () => {
@@ -20,20 +23,28 @@ const App: React.FC = () => {
       <RootLayout>
         <DraggableTopBar />
         <MainContent>
+          {/* 左侧区域 */}
           <LeftSideBar>
             <AiInterfaceMain />
           </LeftSideBar>
+          {/* 中央区域 */}
           <CentralBar>
             <TerminalListMain />
             <CommandListMain />
           </CentralBar>
+          {/* 右侧区域 */}
           <RightSideBar>
-            <SessionListMain />
+            <SessionListMain>
+              <SessionListContent />
+            </SessionListMain>
             <FileListMain />
             <MonitorListMain />
           </RightSideBar>
         </MainContent>
+        {/* 模态框 */}
         <ThemeModal />
+        <LayoutModal />
+        <ToolModal />
       </RootLayout>
     </>
   )

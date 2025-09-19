@@ -1,3 +1,4 @@
+export * from './AreaClosed'
 export * from './Config'
 export * from './Initialize'
 export * from './ModalOpen'

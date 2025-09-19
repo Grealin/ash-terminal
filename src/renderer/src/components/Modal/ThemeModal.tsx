@@ -1,10 +1,11 @@
-import { useConfig, useModalTheme } from '@/hooks'
+import { useConfig, useModalTheme, useThemeConfig } from '@/hooks'
 import { useEffect, useState } from 'react'
 import { GeneralModal } from './GeneralModal'
 
 export const ThemeModal: React.FC = () => {
   const { isModalOpen, closeModal } = useModalTheme()
-  const { config, loading, updateThemeConfig } = useConfig()
+  const { config, loading } = useConfig()
+  const { updateThemeConfig } = useThemeConfig()
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark'>('light')
   const [saving, setSaving] = useState(false)
 

@@ -12,6 +12,7 @@ interface Electron {
 interface Context {
   getConfig: () => Promise<AppConfig>
   saveConfig: (config: AppConfig) => Promise<void>
+  updateConfigField: (path: string, value: any) => Promise<void>
 }
 
 declare global {

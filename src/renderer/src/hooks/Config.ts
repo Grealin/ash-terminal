@@ -17,6 +17,20 @@ export const useConfig = () => {
       const defaultConfig: AppConfig = {
         theme: {
           defaultDarkMode: false
+        },
+        layout: {
+          leftSideBarVisible: true,
+          rightSideBarVisible: true,
+          components: {
+            // 左侧栏功能组件
+            aiInterfaceVisible: true,
+            // 右侧栏功能组件
+            sessionListVisible: true,
+            fileListVisible: true,
+            monitorListVisible: true,
+            // 中央区域功能组件
+            commandListVisible: true
+          }
         }
       }
       setConfig(defaultConfig)
@@ -36,23 +50,18 @@ export const useConfig = () => {
     }
   }, [])
 
-  // 更新主题配置
-  const updateThemeConfig = useCallback(
-    async (defaultDarkMode: boolean) => {
-      if (!config) return
-
-      const newConfig: AppConfig = {
-        ...config,
-        theme: {
-          ...config.theme,
-          defaultDarkMode
-        }
-      }
-
-      await saveConfig(newConfig)
-    },
-    [config, saveConfig]
-  )
+  // 更新配置字段（部分更新）
+  const updateConfigField = useCallback(async (path: string, value: any) => {
+    try {
+      await window.context.updateConfigField(path, value)
+      // 重新加载配置以确保状态同步
+      const updatedConfig = await window.context.getConfig()
+      setConfig(updatedConfig)
+    } catch (error) {
+      console.error('Failed to update config field:', error)
+      throw error
+    }
+  }, [])
 
   // 初始化时加载配置
   useEffect(() => {
@@ -64,6 +73,6 @@ export const useConfig = () => {
     loading,
     loadConfig,
     saveConfig,
-    updateThemeConfig
+    updateConfigField
   }
 }

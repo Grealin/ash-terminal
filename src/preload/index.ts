@@ -21,7 +21,9 @@ const electron = {
 
 const context = {
   getConfig: (): Promise<AppConfig> => ipcRenderer.invoke('getConfig'),
-  saveConfig: (config: AppConfig): Promise<void> => ipcRenderer.invoke('saveConfig', config)
+  saveConfig: (config: AppConfig): Promise<void> => ipcRenderer.invoke('saveConfig', config),
+  updateConfigField: (path: string, value: any): Promise<void> =>
+    ipcRenderer.invoke('updateConfigField', path, value)
 }
 
 try {

@@ -6,7 +6,8 @@ import {
   maximizeFocusedWindow,
   minimizeFocusedWindow,
   saveConfig,
-  toggleMaximizeFocusedWindow
+  toggleMaximizeFocusedWindow,
+  updateConfigField
 } from '@/lib'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import {
@@ -94,6 +95,9 @@ app.whenReady().then(async () => {
   // 配置管理
   ipcMain.handle('getConfig', (): AppConfig => getConfig())
   ipcMain.handle('saveConfig', (_, config: AppConfig): void => saveConfig(config))
+  ipcMain.handle('updateConfigField', (_, path: string, value: any): void =>
+    updateConfigField(path, value)
+  )
 
   createWindow()
 
