@@ -1,11 +1,19 @@
 import {
   closeFocusedWindow,
+  connectSSH,
+  deleteSession,
+  disconnectSSH,
+  executeSSHCommand,
   getConfig,
+  getDirectoryFiles,
+  getSessions,
   initConfigStore,
+  initSessionStore,
   isWindowMaximized,
   maximizeFocusedWindow,
   minimizeFocusedWindow,
   saveConfig,
+  saveSession,
   toggleMaximizeFocusedWindow,
   updateConfigField
 } from '@/lib'
@@ -16,7 +24,7 @@ import {
   WINDOW_MIN_HEIGHT,
   WINDOW_MIN_WIDTH
 } from '@shared/constants'
-import { AppConfig } from '@shared/models'
+import { AppConfig, SSHConfig } from '@shared/models'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
@@ -78,6 +86,9 @@ app.whenReady().then(async () => {
   // 初始化配置存储
   await initConfigStore()
 
+  // 初始化会话存储
+  await initSessionStore()
+
   // 开发中默认按F12打开或关闭DevTools
   // 在生产中忽略CommandOrControl+R。
   // 看https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -97,6 +108,19 @@ app.whenReady().then(async () => {
   ipcMain.handle('saveConfig', (_, config: AppConfig): void => saveConfig(config))
   ipcMain.handle('updateConfigField', (_, path: string, value: any): void =>
     updateConfigField(path, value)
+  )
+
+  // SSH会话管理
+  ipcMain.handle('getSessions', () => getSessions())
+  ipcMain.handle('saveSession', (_, session: SSHConfig) => saveSession(session))
+  ipcMain.handle('deleteSession', (_, sessionId: string) => deleteSession(sessionId))
+  ipcMain.handle('connectSSH', (_, config: SSHConfig) => connectSSH(config))
+  ipcMain.handle('disconnectSSH', (_, sessionId: string) => disconnectSSH(sessionId))
+  ipcMain.handle('executeSSHCommand', (_, sessionId: string, command: string) =>
+    executeSSHCommand(sessionId, command)
+  )
+  ipcMain.handle('getDirectoryFiles', (_, sessionId: string, path: string) =>
+    getDirectoryFiles(sessionId, path)
   )
 
   createWindow()

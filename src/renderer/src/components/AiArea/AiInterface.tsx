@@ -14,7 +14,7 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
   }
 
   return (
-    <div className={twMerge('flex-1 border-2 border-amber-400', className)} {...props}>
+    <div className={twMerge('flex-1', className)} {...props}>
       {children}
     </div>
   )

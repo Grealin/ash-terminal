@@ -1,5 +1,9 @@
 import { useFileList } from '@/hooks/AreaClosed'
+import { SSHService, currentSessionIdAtom } from '@/services'
+import { FileInfo } from '@shared/models'
+import { useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
+import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const FileListMain: React.FC<ComponentProps<'div'>> = ({
@@ -14,12 +18,480 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
   }
 
   return (
-    <div className={twMerge('flex-1 border-2 border-amber-400', className)} {...props}>
+    <div
+      className={twMerge('flex-1 border-b-1 border-gray-300 dark:border-gray-700', className)}
+      {...props}
+    >
       {children}
     </div>
   )
 }
 
 export const FileListContent: React.FC = () => {
-  return <div className="flex flex-col gap-2 p-4">This is the FileList content</div>
+  const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const [files, setFiles] = useState<FileInfo[]>([])
+  const [currentPath, setCurrentPath] = useState('~')
+  const [realPath, setRealPath] = useState('~') // 存储真实路径
+  const [isEditingPath, setIsEditingPath] = useState(false)
+  const [editPath, setEditPath] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // 加载文件列表
+  const loadFiles = async (path: string = currentPath) => {
+    if (!currentSessionId) {
+      setFiles([])
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      // 首先获取真实路径
+      let actualPath = path
+      if (path.includes('~')) {
+        const homeResult = await SSHService.executeCommand(currentSessionId, 'echo ~')
+        if (homeResult.stdout && !homeResult.stderr) {
+          const homePath = homeResult.stdout.trim()
+          actualPath = path.replace(/^~/, homePath)
+        }
+      }
+
+      // 使用 realpath 获取规范化的绝对路径
+      const realpathResult = await SSHService.executeCommand(
+        currentSessionId,
+        `realpath "${actualPath}" 2>/dev/null || echo "${actualPath}"`
+      )
+      const canonicalPath = realpathResult.stdout ? realpathResult.stdout.trim() : actualPath
+
+      const fileList = await SSHService.getDirectoryFiles(currentSessionId, canonicalPath)
+      setFiles(fileList)
+      setCurrentPath(path)
+      setRealPath(canonicalPath)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load files')
+      setFiles([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 当会话变化时重新加载文件
+  useEffect(() => {
+    if (currentSessionId) {
+      loadFiles('~')
+    } else {
+      setFiles([])
+      setCurrentPath('~')
+      setRealPath('~')
+    }
+  }, [currentSessionId])
+
+  // 进入目录
+  const handleDirectoryEnter = (dirName: string) => {
+    const newPath = realPath === '/' ? `/${dirName}` : `${realPath}/${dirName}`
+    loadFiles(newPath)
+  }
+
+  // 返回上级目录
+  const handleGoBack = () => {
+    const parentPath =
+      realPath === '/' ? '/' : realPath.substring(0, realPath.lastIndexOf('/')) || '/'
+    loadFiles(parentPath)
+  }
+
+  // 开始编辑路径
+  const handleStartEditPath = () => {
+    setIsEditingPath(true)
+    setEditPath(realPath)
+  }
+
+  // 取消编辑路径（延迟执行以避免与按钮点击冲突）
+  const handleCancelEditPath = () => {
+    setTimeout(() => {
+      setIsEditingPath(false)
+      setEditPath('')
+    }, 100)
+  }
+
+  // 处理输入框失去焦点
+  const handlePathBlur = () => {
+    // 延迟取消以允许按钮点击事件先执行
+    setTimeout(() => {
+      if (isEditingPath) {
+        handleCancelEditPath()
+      }
+    }, 150)
+  }
+
+  // 确认路径编辑
+  const handleConfirmEditPath = () => {
+    if (editPath.trim() && editPath.trim() !== realPath) {
+      loadFiles(editPath.trim())
+    }
+    setIsEditingPath(false)
+    setEditPath('')
+  }
+
+  // 处理路径输入键盘事件
+  const handlePathKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleConfirmEditPath()
+    } else if (e.key === 'Escape') {
+      handleCancelEditPath()
+    }
+  }
+
+  // 获取文件图标
+  const getFileIcon = (file: FileInfo) => {
+    if (file.type === 'directory') {
+      return (
+        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+        </svg>
+      )
+    } else {
+      const extension = file.name.split('.').pop()?.toLowerCase()
+
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
+        return (
+          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )
+      } else if (['txt', 'md', 'log'].includes(extension || '')) {
+        return (
+          <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )
+      } else {
+        return (
+          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )
+      }
+    }
+  }
+
+  // 格式化文件大小
+  const formatFileSize = (size: number) => {
+    if (size === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(size) / Math.log(k))
+    return `${parseFloat((size / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+  }
+
+  // 格式化时间
+  const formatDate = (date: Date) => {
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    )
+  }
+
+  if (!currentSessionId) {
+    return (
+      <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
+        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+          <div className="text-center">
+            <svg
+              className="w-12 h-12 mx-auto mb-4 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-sm">连接到 SSH 会话以浏览文件</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+      {/* 头部工具栏 */}
+      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleGoBack}
+            disabled={realPath === '/'}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title="返回上级"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => loadFiles(realPath)}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="刷新"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500 dark:text-gray-400">{files.length} 个项目</span>
+        </div>
+      </div>
+
+      {/* 路径栏 */}
+      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        {isEditingPath ? (
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={editPath}
+              onChange={(e) => setEditPath(e.target.value)}
+              onKeyDown={handlePathKeyDown}
+              onBlur={handlePathBlur}
+              className="flex-1 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 font-mono focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+              autoFocus
+            />
+            <button
+              onMouseDown={handleConfirmEditPath}
+              className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded transition-colors"
+              title="确认"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </button>
+            <button
+              onMouseDown={handleCancelEditPath}
+              className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
+              title="取消"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div
+            className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+            onClick={handleStartEditPath}
+            title="点击编辑路径"
+          >
+            <div className="text-sm text-gray-600 dark:text-gray-400 font-mono truncate">
+              {realPath}
+            </div>
+            <svg
+              className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* 文件列表 */}
+      <div className="flex-1 overflow-y-auto max-h-64">
+        {loading ? (
+          <div className="flex items-center justify-center h-24">
+            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+              <svg
+                className="w-3 h-3 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span className="text-xs">加载中...</span>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-24">
+            <div className="text-center text-red-500">
+              <svg
+                className="w-5 h-5 mx-auto mb-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-xs">{error}</p>
+            </div>
+          </div>
+        ) : files.length === 0 ? (
+          <div className="flex items-center justify-center h-24">
+            <div className="text-center text-gray-500 dark:text-gray-400">
+              <svg
+                className="w-5 h-5 mx-auto mb-1 opacity-50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <p className="text-xs">目录为空</p>
+            </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {files.map((file) => (
+              <div
+                key={file.name}
+                className="flex items-center w-full px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                onDoubleClick={() => {
+                  if (file.type === 'directory') {
+                    handleDirectoryEnter(file.name)
+                  }
+                }}
+              >
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="flex-shrink-0 mr-2">{getFileIcon(file)}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs text-gray-900 dark:text-gray-100 truncate">
+                      {file.name}
+                    </div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-0.5">
+                      <span className="truncate max-w-16">{file.permissions}</span>
+                      {file.type === 'file' && (
+                        <>
+                          <span>•</span>
+                          <span className="whitespace-nowrap">{formatFileSize(file.size)}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-0.5 ml-1">
+                  {file.type === 'file' && (
+                    <>
+                      <button
+                        className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        title="下载"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        title="编辑"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        className="p-0.5 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                        title="删除"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }

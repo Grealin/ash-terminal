@@ -1,4 +1,4 @@
-import { AppConfig } from '@shared/models'
+import { AppConfig, SSHConfig } from '@shared/models'
 import { contextBridge, ipcRenderer } from 'electron'
 
 if (!process.contextIsolated) {
@@ -26,9 +26,22 @@ const context = {
     ipcRenderer.invoke('updateConfigField', path, value)
 }
 
+const ssh = {
+  getSessions: () => ipcRenderer.invoke('getSessions'),
+  saveSession: (session: SSHConfig) => ipcRenderer.invoke('saveSession', session),
+  deleteSession: (sessionId: string) => ipcRenderer.invoke('deleteSession', sessionId),
+  connectSSH: (config: SSHConfig) => ipcRenderer.invoke('connectSSH', config),
+  disconnectSSH: (sessionId: string) => ipcRenderer.invoke('disconnectSSH', sessionId),
+  executeSSHCommand: (sessionId: string, command: string) =>
+    ipcRenderer.invoke('executeSSHCommand', sessionId, command),
+  getDirectoryFiles: (sessionId: string, path: string) =>
+    ipcRenderer.invoke('getDirectoryFiles', sessionId, path)
+}
+
 try {
   contextBridge.exposeInMainWorld('electron', electron)
   contextBridge.exposeInMainWorld('context', context)
+  contextBridge.exposeInMainWorld('ssh', ssh)
 } catch (error) {
   console.error(error)
 }

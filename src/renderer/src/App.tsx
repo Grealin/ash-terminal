@@ -13,6 +13,7 @@ import {
   RootLayout,
   SessionListContent,
   SessionListMain,
+  SessionModal,
   TerminalListContent,
   TerminalListMain,
   ThemeModal,
@@ -48,6 +49,7 @@ const App: React.FC = () => {
           </RightSideBar>
         </MainContent>
         {/* 模态框 */}
+        <SessionModal />
         <ThemeModal />
         <LayoutModal />
         <ToolModal />
