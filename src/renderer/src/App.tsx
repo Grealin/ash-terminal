@@ -3,6 +3,7 @@ import {
   CentralBar,
   CommandListMain,
   DraggableTopBar,
+  FileListContent,
   FileListMain,
   LayoutModal,
   LeftSideBar,
@@ -12,6 +13,7 @@ import {
   RootLayout,
   SessionListContent,
   SessionListMain,
+  TerminalListContent,
   TerminalListMain,
   ThemeModal,
   ToolModal
@@ -29,7 +31,9 @@ const App: React.FC = () => {
           </LeftSideBar>
           {/* 中央区域 */}
           <CentralBar>
-            <TerminalListMain />
+            <TerminalListMain>
+              <TerminalListContent />
+            </TerminalListMain>
             <CommandListMain />
           </CentralBar>
           {/* 右侧区域 */}
@@ -37,7 +41,9 @@ const App: React.FC = () => {
             <SessionListMain>
               <SessionListContent />
             </SessionListMain>
-            <FileListMain />
+            <FileListMain>
+              <FileListContent />
+            </FileListMain>
             <MonitorListMain />
           </RightSideBar>
         </MainContent>

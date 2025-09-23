@@ -12,3 +12,7 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
     </div>
   )
 }
+
+export const TerminalListContent: React.FC = () => {
+  return <div className="flex flex-col gap-2 p-4">This is the TerminalList content</div>
+}
