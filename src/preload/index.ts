@@ -35,7 +35,46 @@ const ssh = {
   executeSSHCommand: (sessionId: string, command: string) =>
     ipcRenderer.invoke('executeSSHCommand', sessionId, command),
   getDirectoryFiles: (sessionId: string, path: string) =>
-    ipcRenderer.invoke('getDirectoryFiles', sessionId, path)
+    ipcRenderer.invoke('getDirectoryFiles', sessionId, path),
+
+  // 交互式Shell
+  createInteractiveShell: (sessionId: string) => ipcRenderer.invoke('createInteractiveShell', sessionId),
+  writeToShell: (sessionId: string, data: string) => ipcRenderer.invoke('writeToShell', sessionId, data),
+  resizeShell: (sessionId: string, cols: number, rows: number) => ipcRenderer.invoke('resizeShell', sessionId, cols, rows),
+
+  // Shell事件监听
+  onShellData: (sessionId: string, callback: (data: string) => void) => {
+    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string, data: string) => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('shell-data', subscription)
+    ipcRenderer.invoke('onShellData', sessionId)
+    return () => ipcRenderer.removeListener('shell-data', subscription)
+  },
+
+  onShellClose: (sessionId: string, callback: () => void) => {
+    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string) => {
+      if (receivedSessionId === sessionId) {
+        callback()
+      }
+    }
+    ipcRenderer.on('shell-close', subscription)
+    ipcRenderer.invoke('onShellClose', sessionId)
+    return () => ipcRenderer.removeListener('shell-close', subscription)
+  },
+
+  onShellError: (sessionId: string, callback: (error: string) => void) => {
+    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string, error: string) => {
+      if (receivedSessionId === sessionId) {
+        callback(error)
+      }
+    }
+    ipcRenderer.on('shell-error', subscription)
+    ipcRenderer.invoke('onShellError', sessionId)
+    return () => ipcRenderer.removeListener('shell-error', subscription)
+  }
 }
 
 try {

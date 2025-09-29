@@ -31,6 +31,12 @@ export const useConfig = () => {
             // 中央区域功能组件
             commandListVisible: true
           }
+        },
+        terminal: {
+          fontSize: 14,
+          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
+          showTimestamp: true,
+          showLineNumbers: false
         }
       }
       setConfig(defaultConfig)

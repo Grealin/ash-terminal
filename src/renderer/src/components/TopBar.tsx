@@ -1,6 +1,7 @@
 import icon from '@/assets/images/icon.png'
 import { MenuButton, TopButton, TopDropdown } from '@/components'
 import { useDarkTheme, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
+import { useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { ComponentProps, useEffect, useState } from 'react'
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
@@ -9,6 +10,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openThemeModal } = useModalTheme()
   const { openModal: openLayoutModal } = useModalLayout()
   const { openModal: openToolModal } = useModalTool()
+  const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
 
   useEffect(() => {
     // 获取初始窗口状态
@@ -61,6 +63,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
             style={{ positionAnchor: '--anchor-settings' } as React.CSSProperties}
           >
             <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
+            <MenuButton onClick={() => openTerminalSettingsModal()}>终端字体大小</MenuButton>
           </TopDropdown>
         </div>
         <div className="flex items-center space-x-2">

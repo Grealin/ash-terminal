@@ -1,15 +1,18 @@
 import { SSHConfig } from '@shared/models'
+import { EventEmitter } from 'events'
 import * as fs from 'fs'
-import { Client, ConnectConfig } from 'ssh2'
+import { Channel, Client, ConnectConfig } from 'ssh2'
 
 /**
  * SSH2 连接包装器，提供与 NodeSSH 类似的 API
  */
-export class SSH2Wrapper {
+export class SSH2Wrapper extends EventEmitter {
     private client: Client
     private connected: boolean = false
+    private shell: Channel | null = null
 
     constructor() {
+        super()
         this.client = new Client()
     }
 
@@ -171,6 +174,77 @@ export class SSH2Wrapper {
                 }
             })
         })
+    }
+
+    /**
+     * 创建交互式Shell
+     */
+    async createShell(): Promise<void> {
+        if (!this.connected) {
+            throw new Error('SSH connection not established')
+        }
+
+        return new Promise((resolve, reject) => {
+            this.client.shell({
+                term: 'xterm-256color',
+                cols: 80,
+                rows: 24,
+                width: 640,
+                height: 480
+            }, (err, stream) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+
+                this.shell = stream
+
+                // 转发shell数据
+                stream.on('data', (data: Buffer) => {
+                    this.emit('data', data.toString())
+                })
+
+                stream.on('close', () => {
+                    this.shell = null
+                    this.emit('close')
+                })
+
+                stream.on('error', (error: Error) => {
+                    this.emit('error', error)
+                })
+
+                resolve()
+            })
+        })
+    }
+
+    /**
+     * 向Shell写入数据
+     */
+    writeToShell(data: string): boolean {
+        if (!this.shell) {
+            throw new Error('Shell not created')
+        }
+        return this.shell.write(data)
+    }
+
+    /**
+     * 调整终端尺寸
+     */
+    resizeShell(cols: number, rows: number): void {
+        if (this.shell && this.shell.setWindow) {
+            this.shell.setWindow(rows, cols, 0, 0)
+        }
+    }
+
+    /**
+     * 关闭Shell
+     */
+    closeShell(): void {
+        if (this.shell) {
+            this.shell.end()
+            this.shell = null
+        }
     }
 
     /**

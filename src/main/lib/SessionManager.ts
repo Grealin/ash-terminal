@@ -190,6 +190,79 @@ export const executeSSHCommand = async (sessionId: string, command: string): Pro
   return await ssh.execCommand(resolvedCommand)
 }
 
+// 创建交互式Shell
+export const createInteractiveShell = async (sessionId: string): Promise<void> => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  await ssh.createShell()
+}
+
+// 向Shell写入数据
+export const writeToShell = (sessionId: string, data: string): void => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  ssh.writeToShell(data)
+}
+
+// 调整Shell终端尺寸
+export const resizeShell = (sessionId: string, cols: number, rows: number): void => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  ssh.resizeShell(cols, rows)
+}
+
+// 监听Shell数据
+export const onShellData = (sessionId: string, callback: (data: string) => void): (() => void) => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  ssh.on('data', callback)
+
+  // 返回取消监听函数
+  return () => {
+    ssh.off('data', callback)
+  }
+}
+
+// 监听Shell关闭
+export const onShellClose = (sessionId: string, callback: () => void): (() => void) => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  ssh.on('close', callback)
+
+  return () => {
+    ssh.off('close', callback)
+  }
+}
+
+// 监听Shell错误
+export const onShellError = (sessionId: string, callback: (error: Error) => void): (() => void) => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  ssh.on('error', callback)
+
+  return () => {
+    ssh.off('error', callback)
+  }
+}
+
 // 获取目录文件列表
 export const getDirectoryFiles = async (sessionId: string, path: string): Promise<FileInfo[]> => {
   const ssh = sshConnections.get(sessionId)

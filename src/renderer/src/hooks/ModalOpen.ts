@@ -1,4 +1,4 @@
-import { isModalLayoutOpenAtom, isModalSessionOpenAtom, isModalThemeOpenAtom, isModalToolOpenAtom } from '@/store'
+import { isModalLayoutOpenAtom, isModalSessionOpenAtom, isModalTerminalSettingsOpenAtom, isModalThemeOpenAtom, isModalToolOpenAtom } from '@/store'
 import { useAtom } from 'jotai'
 
 export const useModalTheme = () => {
@@ -36,6 +36,17 @@ export const useModalTool = () => {
 
 export const useModalSession = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalSessionOpenAtom)
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
+  return {
+    isModalOpen,
+    openModal,
+    closeModal
+  }
+}
+
+export const useModalTerminalSettings = () => {
+  const [isModalOpen, setIsModalOpen] = useAtom(isModalTerminalSettingsOpenAtom)
   const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
   return {

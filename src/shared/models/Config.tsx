@@ -3,6 +3,14 @@ export interface ThemeConfig {
   defaultDarkMode: boolean // 默认是否为暗色主题
 }
 
+// 终端配置
+export interface TerminalConfig {
+  fontSize: number // 终端字体大小
+  fontFamily: string // 终端字体族
+  showTimestamp: boolean // 显示时间戳
+  showLineNumbers: boolean // 显示行号
+}
+
 // 功能组件配置
 export interface ComponentConfig {
   // 左侧栏功能组件
@@ -26,4 +34,5 @@ export interface LayoutConfig {
 export interface AppConfig {
   theme: ThemeConfig
   layout: LayoutConfig
+  terminal: TerminalConfig
 }

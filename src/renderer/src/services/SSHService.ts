@@ -28,4 +28,29 @@ export class SSHService {
   static async getDirectoryFiles(sessionId: string, path: string): Promise<FileInfo[]> {
     return window.ssh.getDirectoryFiles(sessionId, path)
   }
+
+  // 交互式Shell方法
+  static async createInteractiveShell(sessionId: string): Promise<void> {
+    return window.ssh.createInteractiveShell(sessionId)
+  }
+
+  static async writeToShell(sessionId: string, data: string): Promise<void> {
+    return window.ssh.writeToShell(sessionId, data)
+  }
+
+  static async resizeShell(sessionId: string, cols: number, rows: number): Promise<void> {
+    return window.ssh.resizeShell(sessionId, cols, rows)
+  }
+
+  static onShellData(sessionId: string, callback: (data: string) => void): () => void {
+    return window.ssh.onShellData(sessionId, callback)
+  }
+
+  static onShellClose(sessionId: string, callback: () => void): () => void {
+    return window.ssh.onShellClose(sessionId, callback)
+  }
+
+  static onShellError(sessionId: string, callback: (error: string) => void): () => void {
+    return window.ssh.onShellError(sessionId, callback)
+  }
 }
