@@ -1,3 +1,4 @@
+import { useSSHConnection } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { SSHService, currentSessionIdAtom } from '@/services'
 import { FileInfo } from '@shared/models'
@@ -29,6 +30,7 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
 
 export const FileListContent: React.FC = () => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const { isConnected, isDisconnected } = useSSHConnection()
   const [files, setFiles] = useState<FileInfo[]>([])
   const [currentPath, setCurrentPath] = useState('~')
   const [realPath, setRealPath] = useState('~') // 存储真实路径
@@ -39,7 +41,7 @@ export const FileListContent: React.FC = () => {
 
   // 加载文件列表
   const loadFiles = async (path: string = currentPath) => {
-    if (!currentSessionId) {
+    if (!currentSessionId || !isConnected) {
       setFiles([])
       return
     }
@@ -77,16 +79,28 @@ export const FileListContent: React.FC = () => {
     }
   }
 
-  // 当会话变化时重新加载文件
+  // 当会话变化或连接状态变化时重新加载文件
   useEffect(() => {
-    if (currentSessionId) {
+    if (currentSessionId && isConnected) {
       loadFiles('~')
     } else {
       setFiles([])
       setCurrentPath('~')
       setRealPath('~')
+      setError(null)
     }
-  }, [currentSessionId])
+  }, [currentSessionId, isConnected])
+
+  // 当连接断开时重置状态
+  useEffect(() => {
+    if (isDisconnected) {
+      setFiles([])
+      setCurrentPath('~')
+      setRealPath('~')
+      setError(null)
+      setLoading(false)
+    }
+  }, [isDisconnected])
 
   // 进入目录
   const handleDirectoryEnter = (dirName: string) => {
@@ -206,7 +220,7 @@ export const FileListContent: React.FC = () => {
     )
   }
 
-  if (!currentSessionId) {
+  if (!currentSessionId || !isConnected) {
     return (
       <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
         <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
@@ -224,7 +238,9 @@ export const FileListContent: React.FC = () => {
                 d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
               />
             </svg>
-            <p className="text-sm">连接到 SSH 会话以浏览文件</p>
+            <p className="text-sm">
+              {!currentSessionId ? '选择 SSH 会话以浏览文件' : '等待 SSH 连接建立...'}
+            </p>
           </div>
         </div>
       </div>
@@ -239,7 +255,7 @@ export const FileListContent: React.FC = () => {
           <button
             onClick={handleGoBack}
             disabled={realPath === '/'}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="返回上级"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +269,7 @@ export const FileListContent: React.FC = () => {
           </button>
           <button
             onClick={() => loadFiles(realPath)}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="刷新"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

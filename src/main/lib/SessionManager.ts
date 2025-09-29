@@ -1,8 +1,8 @@
+import { SSH2Wrapper } from '@/lib/SSH2Wrapper'
 import { FileInfo, SSHConfig } from '@shared/models'
 import { config } from 'dotenv'
 import { app } from 'electron'
 import * as fs from 'fs'
-import { NodeSSH } from 'node-ssh'
 import * as path from 'path'
 
 // 加载环境变量
@@ -26,10 +26,10 @@ let Store: any = null
 let sessionStore: any = null
 
 // SSH连接池
-const sshConnections: Map<string, NodeSSH> = new Map()
+const sshConnections: Map<string, SSH2Wrapper> = new Map()
 
 // 解析路径中的 ~ 符号
-const resolveTildePath = async (ssh: NodeSSH, path: string): Promise<string> => {
+const resolveTildePath = async (ssh: SSH2Wrapper, path: string): Promise<string> => {
   if (!path.includes('~')) {
     return path
   }
@@ -140,18 +140,9 @@ export const deleteSession = (sessionId: string): void => {
 // 创建SSH连接
 export const connectSSH = async (config: SSHConfig): Promise<{ success: boolean; error?: string }> => {
   try {
-    const ssh = new NodeSSH()
+    const ssh = new SSH2Wrapper()
 
-    await ssh.connect({
-      host: config.host,
-      port: config.port,
-      username: config.username,
-      password: config.password,
-      privateKey: config.privateKey,
-      passphrase: config.passphrase,
-      readyTimeout: 30000,
-      keepaliveInterval: 30000
-    })
+    await ssh.connect(config)
 
     sshConnections.set(config.id, ssh)
     return { success: true }
