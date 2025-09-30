@@ -19,3 +19,7 @@ export const CommandListMain: React.FC<ComponentProps<'div'>> = ({
     </div>
   )
 }
+
+export const CommandListContent: React.FC = () => {
+  return <div className="flex flex-col gap-2 p-4">This is the CommandList content</div>
+}

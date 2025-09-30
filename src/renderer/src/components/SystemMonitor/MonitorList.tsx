@@ -19,3 +19,7 @@ export const MonitorListMain: React.FC<ComponentProps<'div'>> = ({
     </div>
   )
 }
+
+export const MonitorListContent: React.FC = () => {
+  return <div className="flex flex-col gap-2 p-4">This is the MonitorList content</div>
+}

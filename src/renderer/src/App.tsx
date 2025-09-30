@@ -1,6 +1,7 @@
 import {
   AiInterfaceMain,
   CentralBar,
+  CommandListContent,
   CommandListMain,
   DraggableTopBar,
   FileListContent,
@@ -8,6 +9,7 @@ import {
   LayoutModal,
   LeftSideBar,
   MainContent,
+  MonitorListContent,
   MonitorListMain,
   RightSideBar,
   RootLayout,
@@ -36,7 +38,9 @@ const App: React.FC = () => {
             <TerminalListMain>
               <TerminalListContent />
             </TerminalListMain>
-            <CommandListMain />
+            <CommandListMain>
+              <CommandListContent />
+            </CommandListMain>
           </CentralBar>
           {/* 右侧区域 */}
           <RightSideBar>
@@ -46,7 +50,9 @@ const App: React.FC = () => {
             <FileListMain>
               <FileListContent />
             </FileListMain>
-            <MonitorListMain />
+            <MonitorListMain>
+              <MonitorListContent />
+            </MonitorListMain>
           </RightSideBar>
         </MainContent>
         {/* 模态框 */}

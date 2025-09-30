@@ -64,9 +64,7 @@ export const TerminalSettingsModal: React.FC = () => {
       >
         {/* 标题 */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            终端字体大小设置
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">终端设置</h3>
           <button
             onClick={handleClose}
             className={twMerge(

@@ -63,7 +63,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
             style={{ positionAnchor: '--anchor-settings' } as React.CSSProperties}
           >
             <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
-            <MenuButton onClick={() => openTerminalSettingsModal()}>终端字体大小</MenuButton>
+            <MenuButton onClick={() => openTerminalSettingsModal()}>终端设置</MenuButton>
           </TopDropdown>
         </div>
         <div className="flex items-center space-x-2">
