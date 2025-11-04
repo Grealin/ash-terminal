@@ -14,7 +14,7 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
   ...props
 }) => {
   return (
-    <div className={twMerge('flex-2', className)} {...props}>
+    <div className={twMerge('flex-[2] min-h-0 overflow-hidden', className)} {...props}>
       {children}
     </div>
   )
@@ -33,6 +33,8 @@ export const TerminalListContent: React.FC = () => {
   } = useSSHConnection()
 
   const terminalRef = useRef<HTMLDivElement>(null)
+  // 终端外层容器（用于观察布局变化）
+  const containerRef = useRef<HTMLDivElement>(null)
   const terminalInstanceRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isTerminalReady, setIsTerminalReady] = useState(false)
@@ -49,6 +51,7 @@ export const TerminalListContent: React.FC = () => {
   // 用于优化尺寸调整的状态
   const resizeRequestRef = useRef<number | null>(null)
   const lastResizeTimeRef = useRef<number>(0)
+  const finalResizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // 获取当前会话名称
   const currentSessionName =
@@ -426,17 +429,13 @@ export const TerminalListContent: React.FC = () => {
 
   // 监听容器大小变化并调整终端大小
   useEffect(() => {
-    if (!terminalRef.current || !isTerminalReady) return
+    if (!containerRef.current || !isTerminalReady) return
 
     let resizeTimeoutId: NodeJS.Timeout | null = null
     let lastWidth = 0
     let lastHeight = 0
 
     const handleResize = (entries?: ResizeObserverEntry[]) => {
-      if (resizeTimeoutId) {
-        clearTimeout(resizeTimeoutId)
-      }
-
       // 获取当前尺寸
       let currentWidth = 0
       let currentHeight = 0
@@ -446,7 +445,7 @@ export const TerminalListContent: React.FC = () => {
         currentWidth = width
         currentHeight = height
       } else {
-        const rect = terminalRef.current?.getBoundingClientRect()
+        const rect = containerRef.current?.getBoundingClientRect()
         if (rect) {
           currentWidth = rect.width
           currentHeight = rect.height
@@ -460,25 +459,55 @@ export const TerminalListContent: React.FC = () => {
 
       lastWidth = currentWidth
       lastHeight = currentHeight
-
-      resizeTimeoutId = setTimeout(() => {
+      // 在变更过程中以 ~60fps 节流执行 fit
+      throttledFitTerminal()
+      // 变更结束后再做一次最终 fit，保证精确对齐
+      if (finalResizeTimeoutRef.current) clearTimeout(finalResizeTimeoutRef.current)
+      finalResizeTimeoutRef.current = setTimeout(() => {
         throttledFitTerminal()
-      }, 16)
+      }, 120)
     }
 
     const resizeObserver = new ResizeObserver((entries) => {
       handleResize(entries)
     })
-    resizeObserver.observe(terminalRef.current)
+    resizeObserver.observe(containerRef.current)
 
     const windowResizeHandler = () => handleResize()
     window.addEventListener('resize', windowResizeHandler, { passive: true })
 
+    // 某些浏览器/系统在拖拽窗口时用 visualViewport 提供更及时的回调
+    const vv = (window as any).visualViewport as VisualViewport | undefined
+    const viewportResizeHandler = () => handleResize()
+    vv?.addEventListener('resize', viewportResizeHandler, { passive: true } as any)
+
+    // 容器宽高过渡结束时再执行一次最终 fit，避免过渡中测量不准
+    const transitionEndHandler = (e: TransitionEvent) => {
+      if (!containerRef.current) return
+      // 仅在尺寸相关过渡结束时处理
+      if (
+        e.propertyName === 'width' ||
+        e.propertyName === 'height' ||
+        e.propertyName === 'flex' ||
+        e.propertyName === 'max-width' ||
+        e.propertyName === 'max-height'
+      ) {
+        throttledFitTerminal()
+      }
+    }
+    containerRef.current.addEventListener('transitionend', transitionEndHandler)
+
     return () => {
       resizeObserver.disconnect()
       window.removeEventListener('resize', windowResizeHandler)
+      vv?.removeEventListener('resize', viewportResizeHandler as any)
+      containerRef.current?.removeEventListener('transitionend', transitionEndHandler)
       if (resizeTimeoutId) {
         clearTimeout(resizeTimeoutId)
+      }
+      if (finalResizeTimeoutRef.current) {
+        clearTimeout(finalResizeTimeoutRef.current)
+        finalResizeTimeoutRef.current = null
       }
     }
   }, [isTerminalReady, throttledFitTerminal])
@@ -603,12 +632,13 @@ export const TerminalListContent: React.FC = () => {
       </div>
 
       {/* 终端区域 */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-0" ref={containerRef}>
         <div
           ref={terminalRef}
-          className="h-full w-full transition-all duration-75 ease-out"
+          className="h-full w-full"
           style={{
-            minHeight: '400px',
+            // 允许随容器收缩，避免在出现 CommandList 时撑高页面
+            minHeight: 0,
             // 添加硬件加速，提升渲染性能
             transform: 'translateZ(0)',
             willChange: isTerminalReady ? 'auto' : 'transform'

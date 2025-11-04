@@ -102,7 +102,7 @@ export const CentralBar: React.FC<ComponentProps<'section'>> = ({
   return (
     <section
       className={twMerge(
-        'flex flex-col flex-[3] h-full m-0 p-0 bg-gradient-to-br from-white via-slate-50 to-blue-50/30 shadow-inner dark:bg-gradient-to-br dark:from-slate-700 dark:via-slate-600 dark:to-slate-700',
+        'flex flex-col flex-[3] h-full min-h-0 m-0 p-0 overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/30 shadow-inner dark:bg-gradient-to-br dark:from-slate-700 dark:via-slate-600 dark:to-slate-700',
         className
       )}
       {...props}

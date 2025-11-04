@@ -14,12 +14,16 @@ export const CommandListMain: React.FC<ComponentProps<'div'>> = ({
   }
 
   return (
-    <div className={twMerge('flex-1', className)} {...props}>
+    <div className={twMerge('flex-1 min-h-0 overflow-hidden', className)} {...props}>
       {children}
     </div>
   )
 }
 
 export const CommandListContent: React.FC = () => {
-  return <div className="flex flex-col gap-2 p-4">This is the CommandList content</div>
+  return (
+    <div className="flex flex-col gap-2 p-4 h-full overflow-auto">
+      This is the CommandList content
+    </div>
+  )
 }
