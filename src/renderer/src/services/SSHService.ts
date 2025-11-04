@@ -29,6 +29,15 @@ export class SSHService {
     return window.ssh.getDirectoryFiles(sessionId, path)
   }
 
+  // 文件操作
+  static async downloadFile(sessionId: string, remotePath: string): Promise<string> {
+    return window.ssh.downloadFile(sessionId, remotePath)
+  }
+
+  static async deleteRemoteFile(sessionId: string, remotePath: string): Promise<void> {
+    return window.ssh.deleteRemoteFile(sessionId, remotePath)
+  }
+
   // 交互式Shell方法
   static async createInteractiveShell(sessionId: string): Promise<void> {
     return window.ssh.createInteractiveShell(sessionId)

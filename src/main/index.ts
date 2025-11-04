@@ -2,8 +2,10 @@ import {
   closeFocusedWindow,
   connectSSH,
   createInteractiveShell,
+  deleteRemoteFile,
   deleteSession,
   disconnectSSH,
+  downloadFile,
   executeSSHCommand,
   getConfig,
   getDirectoryFiles,
@@ -127,6 +129,14 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle('getDirectoryFiles', (_, sessionId: string, path: string) =>
     getDirectoryFiles(sessionId, path)
+  )
+
+  // 文件操作
+  ipcMain.handle('downloadFile', async (_event, sessionId: string, remotePath: string) =>
+    downloadFile(sessionId, remotePath)
+  )
+  ipcMain.handle('deleteRemoteFile', async (_event, sessionId: string, remotePath: string) =>
+    deleteRemoteFile(sessionId, remotePath)
   )
 
   // 交互式Shell管理

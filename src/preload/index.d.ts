@@ -24,6 +24,10 @@ interface SSH {
   executeSSHCommand: (sessionId: string, command: string) => Promise<{ stdout: string; stderr: string }>
   getDirectoryFiles: (sessionId: string, path: string) => Promise<FileInfo[]>
 
+  // 文件操作
+  downloadFile: (sessionId: string, remotePath: string) => Promise<string>
+  deleteRemoteFile: (sessionId: string, remotePath: string) => Promise<void>
+
   // 交互式Shell方法
   createInteractiveShell: (sessionId: string) => Promise<void>
   writeToShell: (sessionId: string, data: string) => Promise<void>

@@ -14,7 +14,7 @@ export const MonitorListMain: React.FC<ComponentProps<'div'>> = ({
   }
 
   return (
-    <div className={twMerge('flex-1', className)} {...props}>
+    <div className={twMerge('flex flex-col flex-1 min-h-0', className)} {...props}>
       {children}
     </div>
   )

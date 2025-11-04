@@ -329,3 +329,56 @@ const parseFileList = (output: string, basePath?: string): FileInfo[] => {
 
   return files
 }
+
+// 从远程下载文件到本地下载目录
+export const downloadFile = async (sessionId: string, remotePath: string): Promise<string> => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  const sftp = await ssh.getSftp()
+
+  // 目标保存目录为系统下载目录
+  const downloadsDir = app.getPath('downloads')
+  const fileName = path.basename(remotePath)
+  let targetPath = path.join(downloadsDir, fileName)
+
+  // 如果文件已存在，则添加序号避免覆盖
+  if (fs.existsSync(targetPath)) {
+    const ext = path.extname(fileName)
+    const nameOnly = path.basename(fileName, ext)
+    let i = 1
+    while (fs.existsSync(targetPath)) {
+      const nextName = ext ? `${nameOnly} (${i})${ext}` : `${nameOnly} (${i})`
+      targetPath = path.join(downloadsDir, nextName)
+      i += 1
+    }
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    sftp.fastGet(remotePath, targetPath, (err: any) => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+
+  return targetPath
+}
+
+// 删除远程文件（仅文件）
+export const deleteRemoteFile = async (sessionId: string, remotePath: string): Promise<void> => {
+  const ssh = sshConnections.get(sessionId)
+  if (!ssh) {
+    throw new Error('SSH connection not found')
+  }
+
+  const sftp = await ssh.getSftp()
+
+  await new Promise<void>((resolve, reject) => {
+    sftp.unlink(remotePath, (err: any) => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}

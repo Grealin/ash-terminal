@@ -37,6 +37,12 @@ const ssh = {
   getDirectoryFiles: (sessionId: string, path: string) =>
     ipcRenderer.invoke('getDirectoryFiles', sessionId, path),
 
+  // 文件操作
+  downloadFile: (sessionId: string, remotePath: string) =>
+    ipcRenderer.invoke('downloadFile', sessionId, remotePath),
+  deleteRemoteFile: (sessionId: string, remotePath: string) =>
+    ipcRenderer.invoke('deleteRemoteFile', sessionId, remotePath),
+
   // 交互式Shell
   createInteractiveShell: (sessionId: string) => ipcRenderer.invoke('createInteractiveShell', sessionId),
   writeToShell: (sessionId: string, data: string) => ipcRenderer.invoke('writeToShell', sessionId, data),

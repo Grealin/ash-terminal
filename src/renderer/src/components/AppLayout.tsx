@@ -50,7 +50,7 @@ export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, classNa
   return (
     <main
       className={twMerge(
-        'flex h-screen flex-col m-0 p-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen overflow-auto',
+        'flex h-screen flex-col m-0 p-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen overflow-hidden',
         isDark && 'dark', // 主题切换关键
         'dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900', // 暗色背景渐变
         className
@@ -64,7 +64,10 @@ export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, classNa
 
 export const MainContent: React.FC<ComponentProps<'div'>> = ({ children, className, ...props }) => {
   return (
-    <div className={twMerge('flex flex-row flex-1 m-0 p-0 ', className)} {...props}>
+    <div
+      className={twMerge('flex flex-row flex-1 m-0 p-0 min-h-0 overflow-hidden', className)}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -128,7 +131,7 @@ export const RightSideBar: React.FC<ComponentProps<'aside'>> = ({
   return (
     <aside
       className={twMerge(
-        'flex flex-col flex-[1] h-full m-0 p-0 bg-gradient-to-b from-emerald-50 via-teal-50 to-cyan-50 border-l border-emerald-200/60 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
+        'flex flex-col flex-[1] h-full min-h-0 m-0 p-0 overflow-hidden bg-gradient-to-b from-emerald-50 via-teal-50 to-cyan-50 border-l border-emerald-200/60 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
         className
       )}
       {...props}

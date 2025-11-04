@@ -1,3 +1,4 @@
+import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { SSHService, currentSessionIdAtom } from '@/services'
@@ -20,7 +21,10 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
 
   return (
     <div
-      className={twMerge('flex-1 border-b-1 border-gray-300 dark:border-gray-700', className)}
+      className={twMerge(
+        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-gray-700',
+        className
+      )}
       {...props}
     >
       {children}
@@ -38,6 +42,9 @@ export const FileListContent: React.FC = () => {
   const [editPath, setEditPath] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingDeletePath, setPendingDeletePath] = useState<string | null>(null)
+  const [opMessage, setOpMessage] = useState<string | null>(null)
 
   // 加载文件列表
   const loadFiles = async (path: string = currentPath) => {
@@ -106,6 +113,44 @@ export const FileListContent: React.FC = () => {
   const handleDirectoryEnter = (dirName: string) => {
     const newPath = realPath === '/' ? `/${dirName}` : `${realPath}/${dirName}`
     loadFiles(newPath)
+  }
+
+  // 下载文件
+  const handleDownload = async (file: FileInfo) => {
+    if (!currentSessionId) return
+    const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
+    try {
+      setOpMessage(null)
+      await SSHService.downloadFile(currentSessionId, remotePath)
+      setOpMessage(`已下载到系统下载目录：${file.name}`)
+      // 短暂展示提示
+      setTimeout(() => setOpMessage(null), 2500)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '下载失败')
+      setTimeout(() => setError(null), 3000)
+    }
+  }
+
+  // 触发删除确认
+  const handleAskDelete = (file: FileInfo) => {
+    const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
+    setPendingDeletePath(remotePath)
+    setConfirmOpen(true)
+  }
+
+  // 确认删除
+  const handleConfirmDelete = async () => {
+    if (!currentSessionId || !pendingDeletePath) return
+    try {
+      await SSHService.deleteRemoteFile(currentSessionId, pendingDeletePath)
+      setPendingDeletePath(null)
+      setConfirmOpen(false)
+      // 刷新列表
+      loadFiles(realPath)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '删除失败')
+      setTimeout(() => setError(null), 3000)
+    }
   }
 
   // 返回上级目录
@@ -356,7 +401,7 @@ export const FileListContent: React.FC = () => {
       </div>
 
       {/* 文件列表 */}
-      <div className="flex-1 overflow-y-auto max-h-64">
+      <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-24">
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
@@ -449,6 +494,7 @@ export const FileListContent: React.FC = () => {
                       <button
                         className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="下载"
+                        onClick={() => handleDownload(file)}
                       >
                         <svg
                           className="w-4 h-4"
@@ -485,6 +531,7 @@ export const FileListContent: React.FC = () => {
                       <button
                         className="p-0.5 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                         title="删除"
+                        onClick={() => handleAskDelete(file)}
                       >
                         <svg
                           className="w-4 h-4"
@@ -508,6 +555,27 @@ export const FileListContent: React.FC = () => {
           </div>
         )}
       </div>
+      {/* 操作提示/错误信息 */}
+      {(opMessage || error) && (
+        <div className="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
+          {opMessage && <div>{opMessage}</div>}
+          {error && <div className="text-red-500">{error}</div>}
+        </div>
+      )}
+
+      {/* 确认删除对话框 */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false)
+          setPendingDeletePath(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="确认删除"
+        message={`确定要删除该文件吗？此操作不可撤销。`}
+        confirmText="删除"
+        cancelText="取消"
+      />
     </div>
   )
 }

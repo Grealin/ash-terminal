@@ -1,3 +1,4 @@
+import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useModalSession, useSSHConnection } from '@/hooks'
 import { useSessionList } from '@/hooks/AreaClosed'
 import { SSHService, currentSessionIdAtom, sessionsAtom } from '@/services'
@@ -5,7 +6,7 @@ import { editingSessionAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
 import { useAtom } from 'jotai'
 import type { ComponentProps } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const SessionListMain: React.FC<ComponentProps<'div'>> = ({
@@ -21,7 +22,10 @@ export const SessionListMain: React.FC<ComponentProps<'div'>> = ({
 
   return (
     <div
-      className={twMerge('flex-1 border-b-1 border-gray-300 dark:border-gray-700', className)}
+      className={twMerge(
+        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-gray-700',
+        className
+      )}
       {...props}
     >
       {children}
@@ -34,7 +38,10 @@ export const SessionListContent: React.FC = () => {
   const [currentSessionId, setCurrentSessionId] = useAtom(currentSessionIdAtom)
   const [, setEditingSession] = useAtom(editingSessionAtom)
   const { openModal } = useModalSession()
-  const { setConnecting, setConnected, setDisconnected, isConnecting } = useSSHConnection()
+  const { setConnecting, setConnected, setDisconnected, isConnecting, isConnected } =
+    useSSHConnection()
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingDeleteSession, setPendingDeleteSession] = useState<SSHConfig | null>(null)
 
   // 初始化加载会话列表
   useEffect(() => {
@@ -59,7 +66,28 @@ export const SessionListContent: React.FC = () => {
     openModal()
   }
 
-  const handleDeleteSession = async (sessionId: string) => {
+  // 触发删除确认
+  const handleAskDelete = (session: SSHConfig) => {
+    // 如果待删除会话为当前激活（连接中或已连接）的会话，则取消删除
+    if (session.id === currentSessionId && (isConnected || isConnecting)) {
+      console.info('当前激活会话不能删除')
+      return
+    }
+    setPendingDeleteSession(session)
+    setConfirmOpen(true)
+  }
+
+  // 确认删除
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteSession) return
+    const sessionId = pendingDeleteSession.id
+    // 二次防护：如果待删除会话为当前激活（连接中或已连接）的会话，则取消删除
+    if (sessionId === currentSessionId && (isConnected || isConnecting)) {
+      setConfirmOpen(false)
+      setPendingDeleteSession(null)
+      console.info('当前激活会话不能删除')
+      return
+    }
     try {
       await SSHService.deleteSession(sessionId)
       setSessions((prev) => prev.filter((s) => s.id !== sessionId))
@@ -68,6 +96,9 @@ export const SessionListContent: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to delete session:', error)
+    } finally {
+      setConfirmOpen(false)
+      setPendingDeleteSession(null)
     }
   }
 
@@ -180,7 +211,7 @@ export const SessionListContent: React.FC = () => {
                   </svg>
                 </button>
                 <button
-                  onClick={() => handleDeleteSession(session.id)}
+                  onClick={() => handleAskDelete(session)}
                   className="p-1 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                   title="删除"
                 >
@@ -203,6 +234,19 @@ export const SessionListContent: React.FC = () => {
           </div>
         )}
       </div>
+      {/* 确认删除对话框 */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false)
+          setPendingDeleteSession(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="确认删除"
+        message={`确定要删除会话${pendingDeleteSession ? `「${pendingDeleteSession.name}」` : ''}吗？此操作不可撤销。`}
+        confirmText="删除"
+        cancelText="取消"
+      />
     </div>
   )
 }
