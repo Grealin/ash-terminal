@@ -1,5 +1,5 @@
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
-import { useSSHConnection } from '@/hooks'
+import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { SSHService, currentSessionIdAtom } from '@/services'
 import { FileInfo } from '@shared/models'
@@ -45,6 +45,7 @@ export const FileListContent: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeletePath, setPendingDeletePath] = useState<string | null>(null)
   const [opMessage, setOpMessage] = useState<string | null>(null)
+  const toast = useToast()
 
   // 加载文件列表
   const loadFiles = async (path: string = currentPath) => {
@@ -75,7 +76,9 @@ export const FileListContent: React.FC = () => {
       const canonicalPath = realpathResult.stdout ? realpathResult.stdout.trim() : actualPath
 
       const fileList = await SSHService.getDirectoryFiles(currentSessionId, canonicalPath)
-      setFiles(fileList)
+      // 过滤以“.”开头的隐藏文件/目录
+      const visibleList = fileList.filter((f) => !f.name.startsWith('.'))
+      setFiles(visibleList)
       setCurrentPath(path)
       setRealPath(canonicalPath)
     } catch (err) {
@@ -120,14 +123,27 @@ export const FileListContent: React.FC = () => {
     if (!currentSessionId) return
     const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
     try {
-      setOpMessage(null)
       await SSHService.downloadFile(currentSessionId, remotePath)
-      setOpMessage(`已下载到系统下载目录：${file.name}`)
-      // 短暂展示提示
-      setTimeout(() => setOpMessage(null), 2500)
+      // 全局 Toast 提示下载成功
+      toast.show({
+        type: 'success',
+        title: '下载成功',
+        message: `已下载文件：${file.name}`,
+        position: 'bottom-right',
+        size: 'sm',
+        duration: 3000
+      })
     } catch (e) {
-      setError(e instanceof Error ? e.message : '下载失败')
-      setTimeout(() => setError(null), 3000)
+      // 全局 Toast 提示下载失败
+      const msg = e instanceof Error ? e.message : '下载失败'
+      toast.show({
+        type: 'error',
+        title: '下载失败',
+        message: msg,
+        position: 'bottom-right',
+        size: 'sm',
+        duration: 3000
+      })
     }
   }
 
@@ -555,11 +571,10 @@ export const FileListContent: React.FC = () => {
           </div>
         )}
       </div>
-      {/* 操作提示/错误信息 */}
-      {(opMessage || error) && (
+      {/* 操作提示/错误信息（保留其它操作使用 opMessage/error 的能力；下载提示改为 Toast） */}
+      {error && (
         <div className="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
-          {opMessage && <div>{opMessage}</div>}
-          {error && <div className="text-red-500">{error}</div>}
+          <div className="text-red-500">{error}</div>
         </div>
       )}
 
@@ -576,6 +591,8 @@ export const FileListContent: React.FC = () => {
         confirmText="删除"
         cancelText="取消"
       />
+
+      {/* 全局 Toast 已接管下载提示 */}
     </div>
   )
 }

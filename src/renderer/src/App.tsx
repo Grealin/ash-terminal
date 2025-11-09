@@ -22,6 +22,7 @@ import {
   ThemeModal,
   ToolModal
 } from '@/components'
+import { ToastHost } from '@/components/Toast'
 
 const App: React.FC = () => {
   return (
@@ -61,6 +62,8 @@ const App: React.FC = () => {
         <LayoutModal />
         <ToolModal />
         <TerminalSettingsModal />
+        {/* 全局 Toast Host */}
+        <ToastHost />
       </RootLayout>
     </>
   )

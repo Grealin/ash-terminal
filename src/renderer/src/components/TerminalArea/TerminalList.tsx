@@ -199,6 +199,7 @@ export const TerminalListContent: React.FC = () => {
     })
 
     // 初始化欢迎信息（仅此处一次）
+    terminalInstanceRef.current.clear()
     const now = new Date()
     const timestamp = terminalConfig.showTimestamp
       ? `[${now.getHours().toString().padStart(2, '0')}:${now
@@ -206,9 +207,8 @@ export const TerminalListContent: React.FC = () => {
           .toString()
           .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
       : ''
-    terminal.writeln(`${timestamp}ASH Terminal - 交互式SSH客户端`)
+    terminal.writeln(`${timestamp}ASH Terminal - SSH客户端`)
     terminal.writeln(`${timestamp}请选择一个会话进行连接...`)
-    terminal.writeln('')
 
     return () => {
       if (rafId) {
@@ -404,7 +404,7 @@ export const TerminalListContent: React.FC = () => {
           ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
           : ''
 
-        terminalInstanceRef.current.writeln(`${timestamp}ASH Terminal - 交互式SSH客户端`)
+        terminalInstanceRef.current.writeln(`${timestamp}ASH Terminal - SSH客户端`)
         terminalInstanceRef.current.writeln(`${timestamp}请选择一个会话进行连接...`)
         terminalInstanceRef.current.writeln('')
       }
@@ -538,6 +538,8 @@ export const TerminalListContent: React.FC = () => {
       const session = sessions.find((s) => s.id === currentSessionId)
       if (session && terminalInstanceRef.current) {
         try {
+          // 清空终端并尝试重连
+          terminalInstanceRef.current.clear()
           const now = new Date()
           const timestamp = config?.terminal?.showTimestamp
             ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `

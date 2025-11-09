@@ -1,12 +1,12 @@
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
-import { useModalSession, useSSHConnection } from '@/hooks'
+import { useModalSession, useSSHConnection, useToast } from '@/hooks'
 import { useSessionList } from '@/hooks/AreaClosed'
 import { SSHService, currentSessionIdAtom, sessionsAtom } from '@/services'
 import { editingSessionAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
 import { useAtom } from 'jotai'
 import type { ComponentProps } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const SessionListMain: React.FC<ComponentProps<'div'>> = ({
@@ -42,6 +42,9 @@ export const SessionListContent: React.FC = () => {
     useSSHConnection()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeleteSession, setPendingDeleteSession] = useState<SSHConfig | null>(null)
+  const toast = useToast()
+  // 用于检测 isConnected 上升沿（只在从 false -> true 时触发提示）
+  const prevConnectedRef = useRef<boolean>(false)
 
   // 初始化加载会话列表
   useEffect(() => {
@@ -119,6 +122,15 @@ export const SessionListContent: React.FC = () => {
       console.error('Failed to connect:', error)
     }
   }
+
+  // 监听连接状态，上升沿触发一次 Toast
+  useEffect(() => {
+    if (!prevConnectedRef.current && isConnected && currentSessionId) {
+      // 连接刚刚建立 -> 全局 Toast
+      toast.simple('会话已成功连接', { type: 'success' })
+    }
+    prevConnectedRef.current = isConnected
+  }, [isConnected, currentSessionId, toast])
 
   return (
     <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
@@ -247,6 +259,7 @@ export const SessionListContent: React.FC = () => {
         confirmText="删除"
         cancelText="取消"
       />
+      {/* 全局 Toast 已接管，无需本地 SimpleToast */}
     </div>
   )
 }
