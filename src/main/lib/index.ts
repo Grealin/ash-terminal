@@ -1,5 +1,11 @@
 export * from './BaseLib'
+export * from './command'
 export * from './ConfigManager'
-export * from './SessionManager'
+export * from './files'
+export * from './pathUtils'
+export * from './sessions'
+export * from './sessionStore'
+export * from './shell'
 export * from './SSH2Wrapper'
+export * from './sshPool'
 
