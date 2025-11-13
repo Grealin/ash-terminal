@@ -16,7 +16,8 @@ const electron = {
       callback(isMaximized)
     ipcRenderer.on('window-maximize-changed', subscription)
     return () => ipcRenderer.removeListener('window-maximize-changed', subscription)
-  }
+  },
+  openFileDialog: (): Promise<string[]> => ipcRenderer.invoke('openFileDialog')
 }
 
 const context = {
@@ -42,6 +43,8 @@ const ssh = {
     ipcRenderer.invoke('downloadFile', sessionId, remotePath),
   deleteRemoteFile: (sessionId: string, remotePath: string) =>
     ipcRenderer.invoke('deleteRemoteFile', sessionId, remotePath),
+  uploadFile: (sessionId: string, localPath: string, remoteDir: string) =>
+    ipcRenderer.invoke('uploadFile', sessionId, localPath, remoteDir),
 
   // 交互式Shell
   createInteractiveShell: (sessionId: string) => ipcRenderer.invoke('createInteractiveShell', sessionId),

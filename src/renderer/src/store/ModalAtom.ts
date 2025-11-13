@@ -7,3 +7,6 @@ export const isModalToolOpenAtom = atom<boolean>(false)
 export const isModalSessionOpenAtom = atom<boolean>(false)
 export const isModalTerminalSettingsOpenAtom = atom<boolean>(false)
 export const editingSessionAtom = atom<SSHConfig | null>(null)
+
+// 上传文件模态框
+export const isModalUploadOpenAtom = atom<boolean>(false)

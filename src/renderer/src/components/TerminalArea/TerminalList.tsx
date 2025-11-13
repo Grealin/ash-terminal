@@ -406,7 +406,6 @@ export const TerminalListContent: React.FC = () => {
 
         terminalInstanceRef.current.writeln(`${timestamp}ASH Terminal - SSH客户端`)
         terminalInstanceRef.current.writeln(`${timestamp}请选择一个会话进行连接...`)
-        terminalInstanceRef.current.writeln('')
       }
     }
 

@@ -23,6 +23,7 @@ import {
   saveSession,
   toggleMaximizeFocusedWindow,
   updateConfigField,
+  uploadFile,
   writeToShell
 } from '@/lib'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
@@ -33,7 +34,7 @@ import {
   WINDOW_MIN_WIDTH
 } from '@shared/constants'
 import { AppConfig, SSHConfig } from '@shared/models'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
@@ -83,6 +84,9 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+// 标记是否已打开过系统文件选择对话框（用于仅首次使用 home 目录）
+let hasOpenedFileDialog = false
 
 // 当Electron完成时，将调用此方法
 // 初始化并准备创建浏览器窗口。
@@ -138,6 +142,26 @@ app.whenReady().then(async () => {
   ipcMain.handle('deleteRemoteFile', async (_event, sessionId: string, remotePath: string) =>
     deleteRemoteFile(sessionId, remotePath)
   )
+  ipcMain.handle('uploadFile', async (_event, sessionId: string, localPath: string, remoteDir: string) =>
+    uploadFile(sessionId, localPath, remoteDir)
+  )
+
+  // 系统文件选择对话框
+  ipcMain.handle('openFileDialog', async () => {
+    const options: OpenDialogOptions = {
+      title: '选择上传文件',
+      properties: ['openFile', 'multiSelections']
+    }
+
+    if (!hasOpenedFileDialog) {
+      options.defaultPath = app.getPath('home')
+    }
+
+    const result = await dialog.showOpenDialog(options)
+    hasOpenedFileDialog = true
+    if (result.canceled) return []
+    return result.filePaths
+  })
 
   // 交互式Shell管理
   ipcMain.handle('createInteractiveShell', (_, sessionId: string) => createInteractiveShell(sessionId))

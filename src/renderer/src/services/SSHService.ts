@@ -38,6 +38,10 @@ export class SSHService {
     return window.ssh.deleteRemoteFile(sessionId, remotePath)
   }
 
+  static async uploadFile(sessionId: string, localPath: string, remoteDir: string): Promise<string> {
+    return window.ssh.uploadFile(sessionId, localPath, remoteDir)
+  }
+
   // 交互式Shell方法
   static async createInteractiveShell(sessionId: string): Promise<void> {
     return window.ssh.createInteractiveShell(sessionId)

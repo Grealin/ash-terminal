@@ -20,7 +20,8 @@ import {
   TerminalListMain,
   TerminalSettingsModal,
   ThemeModal,
-  ToolModal
+  ToolModal,
+  UploadModal
 } from '@/components'
 import { ToastHost } from '@/components/Toast'
 
@@ -62,6 +63,7 @@ const App: React.FC = () => {
         <LayoutModal />
         <ToolModal />
         <TerminalSettingsModal />
+        <UploadModal />
         {/* 全局 Toast Host */}
         <ToastHost />
       </RootLayout>

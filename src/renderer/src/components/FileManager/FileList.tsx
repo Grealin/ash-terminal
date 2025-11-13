@@ -1,9 +1,11 @@
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
+import { useModalUpload } from '@/hooks/ModalOpen'
 import { SSHService, currentSessionIdAtom } from '@/services'
+import { fileListRefreshPathAtom, fileListRefreshTokenAtom, uploadTargetDirAtom } from '@/store'
 import { FileInfo } from '@shared/models'
-import { useAtomValue } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
 import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
@@ -46,6 +48,10 @@ export const FileListContent: React.FC = () => {
   const [pendingDeletePath, setPendingDeletePath] = useState<string | null>(null)
   const [opMessage, setOpMessage] = useState<string | null>(null)
   const toast = useToast()
+  const { openModal: openUploadModal } = useModalUpload()
+  const [, setUploadTargetDir] = useAtom(uploadTargetDirAtom)
+  const [refreshToken] = useAtom(fileListRefreshTokenAtom)
+  const [refreshPath] = useAtom(fileListRefreshPathAtom)
 
   // 加载文件列表
   const loadFiles = async (path: string = currentPath) => {
@@ -111,6 +117,13 @@ export const FileListContent: React.FC = () => {
       setLoading(false)
     }
   }, [isDisconnected])
+
+  // 监听来自其它组件的刷新信号
+  useEffect(() => {
+    if (!refreshToken) return
+    const path = refreshPath || realPath
+    loadFiles(path)
+  }, [refreshToken])
 
   // 进入目录
   const handleDirectoryEnter = (dirName: string) => {
@@ -222,7 +235,7 @@ export const FileListContent: React.FC = () => {
   const getFileIcon = (file: FileInfo) => {
     if (file.type === 'directory') {
       return (
-        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
           <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
         </svg>
       )
@@ -231,7 +244,7 @@ export const FileListContent: React.FC = () => {
 
       if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
         return (
-          <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
@@ -241,7 +254,7 @@ export const FileListContent: React.FC = () => {
         )
       } else if (['txt', 'md', 'log'].includes(extension || '')) {
         return (
-          <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
@@ -251,7 +264,7 @@ export const FileListContent: React.FC = () => {
         )
       } else {
         return (
-          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
@@ -325,6 +338,23 @@ export const FileListContent: React.FC = () => {
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => {
+              setUploadTargetDir(realPath)
+              openUploadModal()
+            }}
+            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="上传"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 14V4m0 0l-4 4m4-4l4 4M20 20H4a2 2 0 01-2-2V7"
               />
             </svg>
           </button>

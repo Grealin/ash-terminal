@@ -103,3 +103,45 @@ export const deleteRemoteFile = async (sessionId: string, remotePath: string): P
         })
     })
 }
+
+export const uploadFile = async (
+    sessionId: string,
+    localPath: string,
+    remoteDir: string
+): Promise<string> => {
+    const ssh = getSSH(sessionId)
+    if (!ssh) {
+        throw new Error('SSH connection not found')
+    }
+
+    const sftp = await ssh.getSftp()
+
+    let actualRemoteDir = remoteDir
+    if (remoteDir && remoteDir.includes('~')) {
+        actualRemoteDir = await resolveTildePath(ssh, remoteDir)
+    } else if (!remoteDir || remoteDir === '') {
+        try {
+            const pwdResult = await ssh.execCommand('pwd')
+            if (pwdResult.stdout && !pwdResult.stderr) {
+                actualRemoteDir = pwdResult.stdout.trim()
+            } else {
+                throw new Error('Failed to get current directory')
+            }
+        } catch {
+            actualRemoteDir = '/tmp'
+        }
+    }
+
+    const fileName = path.basename(localPath)
+    const normalizedDir = actualRemoteDir.replace(/\/+$/, '')
+    const remoteTargetPath = `${normalizedDir}/${fileName}`
+
+    await new Promise<void>((resolve, reject) => {
+        sftp.fastPut(localPath, remoteTargetPath, (err: any) => {
+            if (err) return reject(err)
+            resolve()
+        })
+    })
+
+    return remoteTargetPath
+}

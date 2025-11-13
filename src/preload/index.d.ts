@@ -7,6 +7,7 @@ interface Electron {
   toggleMaximizeFocusedWindow: () => void
   isWindowMaximized: () => Promise<boolean>
   onWindowMaximizeChanged: (callback: (isMaximized: boolean) => void) => () => void
+  openFileDialog: () => Promise<string[]>
 }
 
 interface Context {
@@ -27,6 +28,7 @@ interface SSH {
   // 文件操作
   downloadFile: (sessionId: string, remotePath: string) => Promise<string>
   deleteRemoteFile: (sessionId: string, remotePath: string) => Promise<void>
+  uploadFile: (sessionId: string, localPath: string, remoteDir: string) => Promise<string>
 
   // 交互式Shell方法
   createInteractiveShell: (sessionId: string) => Promise<void>
