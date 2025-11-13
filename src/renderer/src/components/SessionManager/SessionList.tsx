@@ -42,6 +42,7 @@ export const SessionListContent: React.FC = () => {
     useSSHConnection()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeleteSession, setPendingDeleteSession] = useState<SSHConfig | null>(null)
+  const [connectingId, setConnectingId] = useState<SSHConfig['id'] | null>(null)
   const toast = useToast()
   // 用于检测 isConnected 上升沿（只在从 false -> true 时触发提示）
   const prevConnectedRef = useRef<boolean>(false)
@@ -107,6 +108,17 @@ export const SessionListContent: React.FC = () => {
 
   const handleConnectSession = async (session: SSHConfig) => {
     try {
+      // 如果已有连接，禁止再连接其他会话，给出提示
+      if (isConnected && currentSessionId) {
+        // 如果是当前已连接的会话，忽略；否则提示先断开
+        if (currentSessionId !== session.id) {
+          toast.simple('请先断开当前会话链接', { type: 'warning' })
+        } else {
+          toast.simple('当前会话已连接', { type: 'info' })
+        }
+        return
+      }
+      setConnectingId(session.id)
       setConnecting()
       const result = await SSHService.connectSSH(session)
       if (result.success) {
@@ -116,10 +128,15 @@ export const SessionListContent: React.FC = () => {
       } else {
         setDisconnected()
         console.error('Connection failed:', result.error)
+        // 通过全局 Toast 提示错误
+        toast.simple(`连接失败: ${result.error}`, { type: 'error' })
       }
     } catch (error) {
       setDisconnected()
       console.error('Failed to connect:', error)
+      toast.simple(`连接失败: ${(error as Error).message}`, { type: 'error' })
+    } finally {
+      setConnectingId(null)
     }
   }
 
@@ -172,16 +189,27 @@ export const SessionListContent: React.FC = () => {
               <div className="flex items-center space-x-1 ml-2">
                 <button
                   onClick={() => handleConnectSession(session)}
-                  disabled={isConnecting}
+                  disabled={
+                    // 连接过程中所有按钮都禁用（包括正在连接的那一个）
+                    isConnecting
+                  }
                   className={twMerge(
                     'p-1 rounded transition-colors',
                     isConnecting
-                      ? 'text-gray-400 cursor-not-allowed'
+                      ? connectingId === session.id
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-300 cursor-not-allowed'
                       : 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20'
                   )}
-                  title={isConnecting ? '连接中...' : '连接'}
+                  title={
+                    isConnecting
+                      ? connectingId === session.id
+                        ? '连接中...'
+                        : '等待当前连接完成...'
+                      : '连接'
+                  }
                 >
-                  {isConnecting ? (
+                  {isConnecting && connectingId === session.id ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle
                         className="opacity-25"
