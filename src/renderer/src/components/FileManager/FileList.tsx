@@ -141,10 +141,10 @@ export const FileListContent: React.FC = () => {
       toast.show({
         type: 'success',
         title: '下载成功',
-        message: `已下载文件：${file.name}`,
+        message: `位于系统下载目录文件：${file.name}`,
         position: 'bottom-right',
-        size: 'sm',
-        duration: 3000
+        size: 'md',
+        duration: 6000
       })
     } catch (e) {
       // 全局 Toast 提示下载失败
@@ -154,8 +154,8 @@ export const FileListContent: React.FC = () => {
         title: '下载失败',
         message: msg,
         position: 'bottom-right',
-        size: 'sm',
-        duration: 3000
+        size: 'md',
+        duration: 6000
       })
     }
   }
@@ -324,7 +324,7 @@ export const FileListContent: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* 头部工具栏 */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
           <button
             onClick={handleGoBack}
