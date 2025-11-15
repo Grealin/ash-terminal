@@ -87,7 +87,7 @@ export const LeftSideBar: React.FC<ComponentProps<'aside'>> = ({
   return (
     <aside
       className={twMerge(
-        'flex flex-col flex-[1] h-full m-0 p-0 bg-gradient-to-b from-sky-50 via-cyan-50 to-blue-50 border-r border-sky-200/60 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
+        'flex flex-col flex-[1] h-full m-0 p-0 bg-gradient-to-b from-sky-50 via-cyan-50 to-blue-50 border-r  border-emerald-200/60  dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
         className
       )}
       {...props}

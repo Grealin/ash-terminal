@@ -37,9 +37,6 @@ export const initConfigStore = async (): Promise<void> => {
         },
         terminal: {
           fontSize: 14,
-          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
-          showTimestamp: true,
-          showLineNumbers: false
         }
       }
     })

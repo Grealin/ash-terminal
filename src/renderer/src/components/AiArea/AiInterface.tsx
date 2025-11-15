@@ -14,8 +14,18 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
   }
 
   return (
-    <div className={twMerge('flex-1', className)} {...props}>
+    <div className={twMerge('flex flex-col flex-1 min-h-0', className)} {...props}>
       {children}
+    </div>
+  )
+}
+
+export const AiAgentContent: React.FC = () => {
+  return (
+    <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
+      <div className="can-select text-gray-900 dark:text-gray-100 ">
+        This is the AiAgent content
+      </div>
     </div>
   )
 }

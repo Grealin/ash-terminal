@@ -150,7 +150,7 @@ export const SessionListContent: React.FC = () => {
   }, [isConnected, currentSessionId, toast])
 
   return (
-    <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full p-3 pb-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
       {/* 头部 */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">SSH 会话</h3>
@@ -166,7 +166,7 @@ export const SessionListContent: React.FC = () => {
       </div>
 
       {/* 会话列表 */}
-      <div className="flex-1 overflow-y-auto space-y-2">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 -mr-3 pr-3">
         {sessions.map((session) => (
           <div
             key={session.id}

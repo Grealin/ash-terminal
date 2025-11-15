@@ -38,3 +38,22 @@
     @apply bg-transparent;
   }
 }
+
+@layer utilities {
+  .can-select,
+  .can-select * {
+    @apply select-text;
+  }
+}
+
+/* xterm: 移除水平滚动条预留空间，避免底部空白 */
+@layer base {
+  .xterm {
+    height: 100%;
+  }
+  .xterm .xterm-viewport {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding-bottom: 0 !important;
+  }
+}

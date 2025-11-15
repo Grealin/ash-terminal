@@ -14,7 +14,13 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
   ...props
 }) => {
   return (
-    <div className={twMerge('flex-[2] min-h-0 overflow-hidden', className)} {...props}>
+    <div
+      className={twMerge(
+        'flex-[2] min-h-0 overflow-hidden border-b border-gray-300 dark:border-gray-700',
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -112,10 +118,7 @@ export const TerminalListContent: React.FC = () => {
 
     // 获取终端初始配置
     const terminalConfig = config?.terminal || {
-      fontSize: 14,
-      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
-      showTimestamp: true,
-      showLineNumbers: false
+      fontSize: 14
     }
 
     // 初始主题
@@ -162,7 +165,7 @@ export const TerminalListContent: React.FC = () => {
 
     const terminal = new Terminal({
       theme: terminalTheme,
-      fontFamily: terminalConfig.fontFamily,
+      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
       fontSize: terminalConfig.fontSize,
       lineHeight: 1.2,
       rows: 30,
@@ -200,15 +203,8 @@ export const TerminalListContent: React.FC = () => {
 
     // 初始化欢迎信息（仅此处一次）
     terminalInstanceRef.current.clear()
-    const now = new Date()
-    const timestamp = terminalConfig.showTimestamp
-      ? `[${now.getHours().toString().padStart(2, '0')}:${now
-          .getMinutes()
-          .toString()
-          .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-      : ''
-    terminal.writeln(`${timestamp}ASH Terminal - SSH客户端`)
-    terminal.writeln(`${timestamp}请选择一个会话进行连接...`)
+    terminal.writeln(`ASH Terminal - SSH客户端`)
+    terminal.writeln(`请选择一个会话进行连接...`)
 
     return () => {
       if (rafId) {
@@ -247,8 +243,7 @@ export const TerminalListContent: React.FC = () => {
     if (!terminalInstanceRef.current) return
 
     const terminalConfig = config?.terminal || {
-      fontSize: 14,
-      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace'
+      fontSize: 14
     }
 
     const terminalTheme = isDark
@@ -297,14 +292,15 @@ export const TerminalListContent: React.FC = () => {
 
     try {
       terminalInstanceRef.current.options.theme = terminalTheme as any
-      terminalInstanceRef.current.options.fontFamily = terminalConfig.fontFamily
+      terminalInstanceRef.current.options.fontFamily =
+        'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace'
       terminalInstanceRef.current.options.fontSize = terminalConfig.fontSize as number
       // 字体或主题变化后适配尺寸
       throttledFitTerminal()
     } catch (e) {
       console.warn('Update terminal options error:', e)
     }
-  }, [isDark, config?.terminal?.fontFamily, config?.terminal?.fontSize, throttledFitTerminal])
+  }, [isDark, config?.terminal?.fontSize, throttledFitTerminal])
 
   // 创建交互式Shell
   const createShell = useCallback(async () => {
@@ -326,11 +322,7 @@ export const TerminalListContent: React.FC = () => {
       const closeCleanup = SSHService.onShellClose(currentSessionId, () => {
         setIsShellActive(false)
         if (terminalInstanceRef.current) {
-          const now = new Date()
-          const timestamp = config?.terminal?.showTimestamp
-            ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-            : ''
-          terminalInstanceRef.current.writeln(`\r\n${timestamp}Shell连接已关闭`)
+          terminalInstanceRef.current.writeln(`\r\nShell连接已关闭`)
         }
       })
       shellCloseCleanupRef.current = closeCleanup
@@ -338,24 +330,16 @@ export const TerminalListContent: React.FC = () => {
       // 设置Shell错误监听
       const errorCleanup = SSHService.onShellError(currentSessionId, (error) => {
         if (terminalInstanceRef.current) {
-          const now = new Date()
-          const timestamp = config?.terminal?.showTimestamp
-            ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-            : ''
-          terminalInstanceRef.current.writeln(`\r\n${timestamp}\x1b[31mShell错误: ${error}\x1b[0m`)
+          terminalInstanceRef.current.writeln(`\r\n\x1b[31mShell错误: ${error}\x1b[0m`)
         }
       })
       shellErrorCleanupRef.current = errorCleanup
     } catch (error) {
       if (terminalInstanceRef.current) {
-        const now = new Date()
-        const timestamp = config?.terminal?.showTimestamp
-          ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-          : ''
-        terminalInstanceRef.current.writeln(`${timestamp}\x1b[31m创建Shell失败: ${error}\x1b[0m`)
+        terminalInstanceRef.current.writeln(`\x1b[31m创建Shell失败: ${error}\x1b[0m`)
       }
     }
-  }, [currentSessionId, config?.terminal?.showTimestamp])
+  }, [currentSessionId])
 
   // 清理Shell监听器
   const cleanupShellListeners = useCallback(() => {
@@ -381,13 +365,8 @@ export const TerminalListContent: React.FC = () => {
 
       // 清空终端并显示连接信息
       terminalInstanceRef.current.clear()
-      const now = new Date()
-      const timestamp = config?.terminal?.showTimestamp
-        ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-        : ''
-
-      terminalInstanceRef.current.writeln(`${timestamp}已连接到会话：${currentSessionName}`)
-      terminalInstanceRef.current.writeln(`${timestamp}正在创建交互式Shell...`)
+      terminalInstanceRef.current.writeln(`已连接到会话：${currentSessionName}`)
+      terminalInstanceRef.current.writeln(`正在创建交互式Shell...`)
 
       // 创建交互式Shell
       createShell()
@@ -399,27 +378,15 @@ export const TerminalListContent: React.FC = () => {
       // 仅在曾经连接过后再显示欢迎信息，避免与初始化重复
       if (prevConnectedRef.current === true) {
         terminalInstanceRef.current.clear()
-        const now = new Date()
-        const timestamp = config?.terminal?.showTimestamp
-          ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-          : ''
-
-        terminalInstanceRef.current.writeln(`${timestamp}ASH Terminal - SSH客户端`)
-        terminalInstanceRef.current.writeln(`${timestamp}请选择一个会话进行连接...`)
+        terminalInstanceRef.current.writeln(`ASH Terminal - SSH客户端`)
+        terminalInstanceRef.current.writeln(`请选择一个会话进行连接...`)
       }
     }
 
     return () => {
       cleanupShellListeners()
     }
-  }, [
-    currentSessionId,
-    sshConnected,
-    currentSessionName,
-    createShell,
-    cleanupShellListeners,
-    config?.terminal?.showTimestamp
-  ])
+  }, [currentSessionId, sshConnected, currentSessionName, createShell, cleanupShellListeners])
 
   // 跟踪连接状态，用于控制断开时是否打印欢迎信息
   useEffect(() => {
@@ -518,12 +485,8 @@ export const TerminalListContent: React.FC = () => {
         setDisconnected()
         setCurrentSessionId(null)
         if (terminalInstanceRef.current) {
-          const now = new Date()
-          const timestamp = config?.terminal?.showTimestamp
-            ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-            : ''
           terminalInstanceRef.current.clear()
-          terminalInstanceRef.current.writeln(`${timestamp}已与 SSH 会话断开连接`)
+          terminalInstanceRef.current.writeln(`已与 SSH 会话断开连接`)
           terminalInstanceRef.current.writeln('')
         }
       } catch (error) {
@@ -539,11 +502,7 @@ export const TerminalListContent: React.FC = () => {
         try {
           // 清空终端并尝试重连
           terminalInstanceRef.current.clear()
-          const now = new Date()
-          const timestamp = config?.terminal?.showTimestamp
-            ? `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] `
-            : ''
-          terminalInstanceRef.current.writeln(`\n${timestamp}尝试重新连接到 ${session.name}...`)
+          terminalInstanceRef.current.writeln(`\n尝试重新连接到 ${session.name}...`)
 
           // 在重连前清理旧的 Shell 监听并标记为未激活，避免期间输入写入不存在的 Shell
           cleanupShellListeners()
@@ -551,14 +510,12 @@ export const TerminalListContent: React.FC = () => {
 
           const result = await SSHService.connectSSH(session)
           if (result.success) {
-            terminalInstanceRef.current.writeln(`${timestamp}重新连接成功`)
+            terminalInstanceRef.current.writeln(`重新连接成功`)
             // 重新创建交互式 Shell（由于连接状态可能未变化，这里主动创建）
-            terminalInstanceRef.current.writeln(`${timestamp}正在创建交互式Shell...`)
+            terminalInstanceRef.current.writeln(`正在创建交互式Shell...`)
             await createShell()
           } else {
-            terminalInstanceRef.current.writeln(
-              `${timestamp}\x1b[31m重新连接失败: ${result.error}\x1b[0m`
-            )
+            terminalInstanceRef.current.writeln(`\x1b[31m重新连接失败: ${result.error}\x1b[0m`)
           }
         } catch (error) {
           console.error('Failed to reconnect:', error)

@@ -9,6 +9,8 @@ export interface GeneralModalProps {
   className?: string
   width?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   showCloseButton?: boolean
+  // 是否允许点击遮罩关闭，默认不允许
+  closeOnBackdropClick?: boolean
 }
 
 export const GeneralModal: React.FC<GeneralModalProps> = ({
@@ -18,7 +20,8 @@ export const GeneralModal: React.FC<GeneralModalProps> = ({
   children,
   className,
   width = 'md',
-  showCloseButton = true
+  showCloseButton = true,
+  closeOnBackdropClick = false
 }) => {
   if (!isOpen) return null
 
@@ -31,7 +34,10 @@ export const GeneralModal: React.FC<GeneralModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={closeOnBackdropClick ? onClose : undefined}
+    >
       {/* 背景遮罩 */}
       {/* <div className="absolute inset-0 bg-black/30 backdrop-blur-sm dark:bg-black/30" /> */}
 
@@ -112,7 +118,7 @@ export const ConfirmModal: React.FC<{
   }
 
   return (
-    <GeneralModal isOpen={isOpen} onClose={onClose} title={title} width="sm">
+    <GeneralModal isOpen={isOpen} onClose={onClose} title={title} width="sm" closeOnBackdropClick>
       <div className="space-y-4">
         <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{message}</p>
 

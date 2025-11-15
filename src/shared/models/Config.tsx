@@ -6,9 +6,6 @@ export interface ThemeConfig {
 // 终端配置
 export interface TerminalConfig {
   fontSize: number // 终端字体大小
-  fontFamily: string // 终端字体族
-  showTimestamp: boolean // 显示时间戳
-  showLineNumbers: boolean // 显示行号
 }
 
 // 功能组件配置

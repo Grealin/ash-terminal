@@ -33,10 +33,7 @@ export const useConfig = () => {
           }
         },
         terminal: {
-          fontSize: 14,
-          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
-          showTimestamp: true,
-          showLineNumbers: false
+          fontSize: 14
         }
       }
       setConfig(defaultConfig)

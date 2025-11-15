@@ -1,4 +1,5 @@
 import {
+  AiAgentContent,
   AiInterfaceMain,
   CentralBar,
   CommandListContent,
@@ -33,7 +34,9 @@ const App: React.FC = () => {
         <MainContent>
           {/* 左侧区域 */}
           <LeftSideBar>
-            <AiInterfaceMain />
+            <AiInterfaceMain>
+              <AiAgentContent />
+            </AiInterfaceMain>
           </LeftSideBar>
           {/* 中央区域 */}
           <CentralBar>

@@ -2,20 +2,22 @@ import { useConfig } from '@/hooks'
 import { isModalTerminalSettingsOpenAtom } from '@/store'
 import { TerminalConfig } from '@shared/models'
 import { useAtom } from 'jotai'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const TerminalSettingsModal: React.FC = () => {
   const [isOpen, setIsOpen] = useAtom(isModalTerminalSettingsOpenAtom)
-  const { config, updateConfigField } = useConfig()
+  const { config, updateConfigField, loading } = useConfig()
   const [localSettings, setLocalSettings] = useState<TerminalConfig>(() => ({
-    fontSize: config?.terminal?.fontSize || 14,
-    fontFamily:
-      config?.terminal?.fontFamily ||
-      'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
-    showTimestamp: config?.terminal?.showTimestamp ?? true,
-    showLineNumbers: config?.terminal?.showLineNumbers ?? false
+    fontSize: config?.terminal?.fontSize || 14
   }))
+
+  // 在配置加载完成后，同步 fontSize 到本地状态
+  useEffect(() => {
+    if (!loading && config?.terminal?.fontSize) {
+      setLocalSettings((prev) => ({ ...prev, fontSize: config.terminal.fontSize }))
+    }
+  }, [config?.terminal?.fontSize, loading])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -24,9 +26,6 @@ export const TerminalSettingsModal: React.FC = () => {
   const handleSave = useCallback(async () => {
     try {
       await updateConfigField('terminal.fontSize', localSettings.fontSize)
-      await updateConfigField('terminal.fontFamily', localSettings.fontFamily)
-      await updateConfigField('terminal.showTimestamp', localSettings.showTimestamp)
-      await updateConfigField('terminal.showLineNumbers', localSettings.showLineNumbers)
       handleClose()
     } catch (error) {
       console.error('Failed to save terminal settings:', error)
@@ -40,17 +39,7 @@ export const TerminalSettingsModal: React.FC = () => {
     }
   }, [])
 
-  const handleFontFamilyChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLocalSettings((prev) => ({ ...prev, fontFamily: e.target.value }))
-  }, [])
-
-  const handleTimestampChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalSettings((prev) => ({ ...prev, showTimestamp: e.target.checked }))
-  }, [])
-
-  const handleLineNumbersChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalSettings((prev) => ({ ...prev, showLineNumbers: e.target.checked }))
-  }, [])
+  // 其它配置项已移除
 
   if (!isOpen) return null
 
@@ -116,57 +105,12 @@ export const TerminalSettingsModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 字体族 */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              字体族
-            </label>
-            <select
-              value={localSettings.fontFamily}
-              onChange={handleFontFamilyChange}
-              className={twMerge(
-                'w-full rounded border border-slate-300 px-3 py-2 text-sm',
-                'dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200'
-              )}
-            >
-              <option value="Monaco, Menlo, 'Ubuntu Mono', 'DejaVu Sans Mono', 'Courier New', monospace">
-                Monaco (默认)
-              </option>
-              <option value="'JetBrains Mono', Monaco, Menlo, monospace">JetBrains Mono</option>
-              <option value="'Fira Code', Monaco, Menlo, monospace">Fira Code</option>
-              <option value="'Source Code Pro', Monaco, Menlo, monospace">Source Code Pro</option>
-              <option value="'Consolas', 'Courier New', monospace">Consolas</option>
-            </select>
-          </div>
+          {/* 提示：需重启后生效 */}
+          <p className={twMerge('text-xs text-slate-500', 'dark:text-slate-400')}>
+            修改设置后重启后生效
+          </p>
 
-          {/* 显示选项 */}
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                checked={localSettings.showTimestamp}
-                onChange={handleTimestampChange}
-                className={twMerge(
-                  'h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500',
-                  'dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-blue-400'
-                )}
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">显示时间戳</span>
-            </label>
-
-            <label className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                checked={localSettings.showLineNumbers}
-                onChange={handleLineNumbersChange}
-                className={twMerge(
-                  'h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500',
-                  'dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-blue-400'
-                )}
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">显示行号</span>
-            </label>
-          </div>
+          {/* 其它配置项（字体族、时间戳、行号）已取消 */}
         </div>
 
         {/* 按钮 */}

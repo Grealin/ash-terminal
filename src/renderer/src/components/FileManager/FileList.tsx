@@ -322,7 +322,7 @@ export const FileListContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* 头部工具栏 */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
