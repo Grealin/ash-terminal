@@ -16,22 +16,25 @@ export const useSSHSession = () => {
     }
   }, [setSessions])
 
-  const connectToSession = useCallback(async (session: SSHConfig) => {
-    try {
-      const result = await SSHService.connectSSH(session)
-      if (result.success) {
-        setCurrentSessionId(session.id)
-        return { success: true }
-      } else {
-        return { success: false, error: result.error }
+  const connectToSession = useCallback(
+    async (session: SSHConfig) => {
+      try {
+        const result = await SSHService.connectSSH(session)
+        if (result.success) {
+          setCurrentSessionId(session.id)
+          return { success: true }
+        } else {
+          return { success: false, error: result.error }
+        }
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Connection failed'
+        }
       }
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Connection failed'
-      }
-    }
-  }, [setCurrentSessionId])
+    },
+    [setCurrentSessionId]
+  )
 
   const disconnectCurrentSession = useCallback(async () => {
     if (currentSessionId) {

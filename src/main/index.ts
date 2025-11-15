@@ -1,11 +1,14 @@
 import {
+  backupRemoteFile,
   closeFocusedWindow,
   connectSSH,
   createInteractiveShell,
+  deleteEditCacheFile,
   deleteRemoteFile,
   deleteSession,
   disconnectSSH,
   downloadFile,
+  downloadFileToEditCache,
   executeSSHCommand,
   getConfig,
   getDirectoryFiles,
@@ -18,6 +21,7 @@ import {
   onShellClose,
   onShellData,
   onShellError,
+  openWithChooser,
   resizeShell,
   saveConfig,
   saveSession,
@@ -142,8 +146,22 @@ app.whenReady().then(async () => {
   ipcMain.handle('deleteRemoteFile', async (_event, sessionId: string, remotePath: string) =>
     deleteRemoteFile(sessionId, remotePath)
   )
-  ipcMain.handle('uploadFile', async (_event, sessionId: string, localPath: string, remoteDir: string) =>
-    uploadFile(sessionId, localPath, remoteDir)
+  ipcMain.handle(
+    'uploadFile',
+    async (_event, sessionId: string, localPath: string, remoteDir: string) =>
+      uploadFile(sessionId, localPath, remoteDir)
+  )
+
+  // 编辑缓存与打开方式
+  ipcMain.handle('downloadFileToEditCache', async (_event, sessionId: string, remotePath: string) =>
+    downloadFileToEditCache(sessionId, remotePath)
+  )
+  ipcMain.handle('openWithChooser', async (_event, localPath: string) => openWithChooser(localPath))
+  ipcMain.handle('deleteEditCacheFile', async (_event, localPath: string) =>
+    deleteEditCacheFile(localPath)
+  )
+  ipcMain.handle('backupRemoteFile', async (_event, sessionId: string, remotePath: string) =>
+    backupRemoteFile(sessionId, remotePath)
   )
 
   // 系统文件选择对话框
@@ -164,9 +182,15 @@ app.whenReady().then(async () => {
   })
 
   // 交互式Shell管理
-  ipcMain.handle('createInteractiveShell', (_, sessionId: string) => createInteractiveShell(sessionId))
-  ipcMain.handle('writeToShell', (_, sessionId: string, data: string) => writeToShell(sessionId, data))
-  ipcMain.handle('resizeShell', (_, sessionId: string, cols: number, rows: number) => resizeShell(sessionId, cols, rows))
+  ipcMain.handle('createInteractiveShell', (_, sessionId: string) =>
+    createInteractiveShell(sessionId)
+  )
+  ipcMain.handle('writeToShell', (_, sessionId: string, data: string) =>
+    writeToShell(sessionId, data)
+  )
+  ipcMain.handle('resizeShell', (_, sessionId: string, cols: number, rows: number) =>
+    resizeShell(sessionId, cols, rows)
+  )
 
   // Shell事件监听
   ipcMain.handle('onShellData', (event, sessionId: string) => {

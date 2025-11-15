@@ -5,4 +5,3 @@ export * from './TerminalSettings'
 export * from './ThemeModal'
 export * from './ToolSettings'
 export * from './UploadModal'
-

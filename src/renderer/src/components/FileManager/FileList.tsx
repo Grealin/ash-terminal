@@ -1,4 +1,4 @@
-import { ConfirmModal } from '@/components/Modal/GeneralModal'
+import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
@@ -47,6 +47,10 @@ export const FileListContent: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeletePath, setPendingDeletePath] = useState<string | null>(null)
   const [opMessage, setOpMessage] = useState<string | null>(null)
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false)
+  const [editingLocalPath, setEditingLocalPath] = useState<string | null>(null)
+  const [editingRemotePath, setEditingRemotePath] = useState<string | null>(null)
+  const [isSyncingBack, setIsSyncingBack] = useState(false)
   const toast = useToast()
   const { openModal: openUploadModal } = useModalUpload()
   const [, setUploadTargetDir] = useAtom(uploadTargetDirAtom)
@@ -115,6 +119,11 @@ export const FileListContent: React.FC = () => {
       setRealPath('~')
       setError(null)
       setLoading(false)
+      // 添加编辑文件状态重置
+      setEditingLocalPath(null)
+      setEditingRemotePath(null)
+      setEditConfirmOpen(false)
+      setIsSyncingBack(false)
     }
   }, [isDisconnected])
 
@@ -157,6 +166,105 @@ export const FileListContent: React.FC = () => {
         size: 'md',
         duration: 6000
       })
+    }
+  }
+
+  // 编辑文件：下载到 EditCache -> 打开“用此打开” -> 3秒后询问是否完成
+  const handleEdit = async (file: FileInfo) => {
+    if (!currentSessionId) return
+    const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
+    try {
+      const localPath = await window.ssh.downloadFileToEditCache(currentSessionId, remotePath)
+      setEditingLocalPath(localPath)
+      setEditingRemotePath(remotePath)
+      // 打开系统“你要如何打开这个文件？”
+      await window.electron.openWithChooser(localPath)
+      // 3 秒后弹确认模态
+      setTimeout(() => {
+        // 若仍处于同一次编辑
+        if (editingLocalPath === null || editingLocalPath === localPath) {
+          setEditConfirmOpen(true)
+        }
+      }, 3000)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '编辑准备失败'
+      toast.show({
+        type: 'error',
+        title: '编辑失败',
+        message: msg,
+        position: 'bottom-right',
+        size: 'md',
+        duration: 6000
+      })
+      // 删除本地缓存（如果有）
+      if (editingLocalPath) {
+        await window.electron.deleteEditCacheFile(editingLocalPath)
+      }
+    }
+  }
+
+  const cleanupEditCache = async () => {
+    try {
+      if (editingLocalPath) {
+        await window.electron.deleteEditCacheFile(editingLocalPath)
+      }
+    } catch (e) {
+      // 仅记录，不打断流程
+      console.error('deleteEditCacheFile failed', e)
+    }
+    setEditingLocalPath(null)
+    setEditingRemotePath(null)
+  }
+
+  const reopenChooser = async () => {
+    if (editingLocalPath) {
+      try {
+        await window.electron.openWithChooser(editingLocalPath)
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : '无法打开编辑器'
+        toast.show({
+          type: 'error',
+          title: '打开失败',
+          message: msg,
+          position: 'bottom-right',
+          size: 'sm'
+        })
+      }
+    }
+  }
+
+  const confirmEditedAndSyncBack = async () => {
+    if (!currentSessionId || !editingLocalPath || !editingRemotePath) return
+    setIsSyncingBack(true)
+    try {
+      // 1) 远程备份
+      await window.ssh.backupRemoteFile(currentSessionId, editingRemotePath)
+      // 2) 上传覆盖
+      const remoteDir = editingRemotePath.substring(0, editingRemotePath.lastIndexOf('/')) || '/'
+      await SSHService.uploadFile(currentSessionId, editingLocalPath, remoteDir)
+      // 3) 清理本地缓存
+      await cleanupEditCache()
+      setEditConfirmOpen(false)
+      // 刷新文件列表
+      await loadFiles(realPath)
+      toast.show({
+        type: 'success',
+        title: '同步完成',
+        message: '修改已上传并完成备份(.old)',
+        position: 'bottom-right',
+        size: 'md'
+      })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '同步失败'
+      toast.show({
+        type: 'error',
+        title: '同步失败',
+        message: msg,
+        position: 'bottom-right',
+        size: 'md'
+      })
+    } finally {
+      setIsSyncingBack(false)
     }
   }
 
@@ -559,6 +667,7 @@ export const FileListContent: React.FC = () => {
                       <button
                         className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="编辑"
+                        onClick={() => handleEdit(file)}
                       >
                         <svg
                           className="w-4 h-4"
@@ -621,6 +730,52 @@ export const FileListContent: React.FC = () => {
         confirmText="删除"
         cancelText="取消"
       />
+
+      {/* 编辑完成确认模态 */}
+      <GeneralModal
+        isOpen={editConfirmOpen}
+        onClose={async () => {
+          // 取消则清理并关闭
+          await cleanupEditCache()
+          setEditConfirmOpen(false)
+        }}
+        title="确认文件是否已修改完成"
+        width="md"
+        closeOnBackdropClick
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+            请确认是否已在外部编辑器中完成修改并保存。选择“是”将备份远程原文件并上传修改后的文件；选择“否”将再次进行编辑，保持此对话框不关闭；取消则放弃本次编辑。
+          </p>
+          <div className="flex justify-end space-x-2">
+            <button
+              className="px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+              onClick={async () => {
+                // 取消：删除本地缓存并关闭
+                await cleanupEditCache()
+                setEditConfirmOpen(false)
+              }}
+            >
+              取消
+            </button>
+            <button
+              className="px-3 py-1.5 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+              onClick={reopenChooser}
+              disabled={!editingLocalPath}
+              title="再次选择用哪个程序打开此文件"
+            >
+              否，继续编辑
+            </button>
+            <button
+              className="px-3 py-1.5 rounded bg-blue-600 text-white disabled:opacity-60"
+              onClick={confirmEditedAndSyncBack}
+              disabled={isSyncingBack || !editingLocalPath || !editingRemotePath}
+            >
+              {isSyncingBack ? '上传中...' : '是，上传修改'}
+            </button>
+          </div>
+        </div>
+      </GeneralModal>
 
       {/* 全局 Toast 已接管下载提示 */}
     </div>

@@ -17,7 +17,11 @@ const electron = {
     ipcRenderer.on('window-maximize-changed', subscription)
     return () => ipcRenderer.removeListener('window-maximize-changed', subscription)
   },
-  openFileDialog: (): Promise<string[]> => ipcRenderer.invoke('openFileDialog')
+  openFileDialog: (): Promise<string[]> => ipcRenderer.invoke('openFileDialog'),
+  openWithChooser: (localPath: string): Promise<void> =>
+    ipcRenderer.invoke('openWithChooser', localPath),
+  deleteEditCacheFile: (localPath: string): Promise<void> =>
+    ipcRenderer.invoke('deleteEditCacheFile', localPath)
 }
 
 const context = {
@@ -45,15 +49,26 @@ const ssh = {
     ipcRenderer.invoke('deleteRemoteFile', sessionId, remotePath),
   uploadFile: (sessionId: string, localPath: string, remoteDir: string) =>
     ipcRenderer.invoke('uploadFile', sessionId, localPath, remoteDir),
+  downloadFileToEditCache: (sessionId: string, remotePath: string) =>
+    ipcRenderer.invoke('downloadFileToEditCache', sessionId, remotePath),
+  backupRemoteFile: (sessionId: string, remotePath: string) =>
+    ipcRenderer.invoke('backupRemoteFile', sessionId, remotePath),
 
   // 交互式Shell
-  createInteractiveShell: (sessionId: string) => ipcRenderer.invoke('createInteractiveShell', sessionId),
-  writeToShell: (sessionId: string, data: string) => ipcRenderer.invoke('writeToShell', sessionId, data),
-  resizeShell: (sessionId: string, cols: number, rows: number) => ipcRenderer.invoke('resizeShell', sessionId, cols, rows),
+  createInteractiveShell: (sessionId: string) =>
+    ipcRenderer.invoke('createInteractiveShell', sessionId),
+  writeToShell: (sessionId: string, data: string) =>
+    ipcRenderer.invoke('writeToShell', sessionId, data),
+  resizeShell: (sessionId: string, cols: number, rows: number) =>
+    ipcRenderer.invoke('resizeShell', sessionId, cols, rows),
 
   // Shell事件监听
   onShellData: (sessionId: string, callback: (data: string) => void) => {
-    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string, data: string) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: string
+    ) => {
       if (receivedSessionId === sessionId) {
         callback(data)
       }
@@ -75,7 +90,11 @@ const ssh = {
   },
 
   onShellError: (sessionId: string, callback: (error: string) => void) => {
-    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string, error: string) => {
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      error: string
+    ) => {
       if (receivedSessionId === sessionId) {
         callback(error)
       }

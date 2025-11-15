@@ -36,7 +36,7 @@ export const initConfigStore = async (): Promise<void> => {
           }
         },
         terminal: {
-          fontSize: 14,
+          fontSize: 14
         }
       }
     })

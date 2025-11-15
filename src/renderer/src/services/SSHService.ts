@@ -1,4 +1,4 @@
-import { FileInfo, SSHConfig } from '@shared/models';
+import { FileInfo, SSHConfig } from '@shared/models'
 
 export class SSHService {
   static async getSessions(): Promise<SSHConfig[]> {
@@ -21,7 +21,10 @@ export class SSHService {
     return window.ssh.disconnectSSH(sessionId)
   }
 
-  static async executeCommand(sessionId: string, command: string): Promise<{ stdout: string; stderr: string }> {
+  static async executeCommand(
+    sessionId: string,
+    command: string
+  ): Promise<{ stdout: string; stderr: string }> {
     return window.ssh.executeSSHCommand(sessionId, command)
   }
 
@@ -38,7 +41,11 @@ export class SSHService {
     return window.ssh.deleteRemoteFile(sessionId, remotePath)
   }
 
-  static async uploadFile(sessionId: string, localPath: string, remoteDir: string): Promise<string> {
+  static async uploadFile(
+    sessionId: string,
+    localPath: string,
+    remoteDir: string
+  ): Promise<string> {
     return window.ssh.uploadFile(sessionId, localPath, remoteDir)
   }
 

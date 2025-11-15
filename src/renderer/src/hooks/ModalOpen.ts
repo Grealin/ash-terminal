@@ -1,4 +1,11 @@
-import { isModalLayoutOpenAtom, isModalSessionOpenAtom, isModalTerminalSettingsOpenAtom, isModalThemeOpenAtom, isModalToolOpenAtom, isModalUploadOpenAtom } from '@/store'
+import {
+  isModalLayoutOpenAtom,
+  isModalSessionOpenAtom,
+  isModalTerminalSettingsOpenAtom,
+  isModalThemeOpenAtom,
+  isModalToolOpenAtom,
+  isModalUploadOpenAtom
+} from '@/store'
 import { useAtom } from 'jotai'
 
 export const useModalTheme = () => {
