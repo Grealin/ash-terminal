@@ -6,3 +6,5 @@ out
 *.log*
 yarn.lock
 .env.local
+docs
+.idea
