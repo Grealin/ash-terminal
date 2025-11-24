@@ -1,6 +1,6 @@
 import { useModalSession } from '@/hooks'
-import { SSHService, sessionsAtom } from '@/services'
-import { editingSessionAtom } from '@/store'
+import { SSHService } from '@/services'
+import { editingSessionAtom, sessionsAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
 import { useAtom } from 'jotai'
 import { useEffect, useState } from 'react'

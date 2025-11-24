@@ -1,4 +1,5 @@
-import { SSHService, currentSessionIdAtom, sessionsAtom } from '@/services'
+import { SSHService } from '@/services'
+import { currentSessionIdAtom, sessionsAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
 import { useAtom } from 'jotai'
 import { useCallback } from 'react'

@@ -1,4 +1,4 @@
-import { sshConnectionStatusAtom } from '@/services'
+import { sshConnectionStatusAtom } from '@/store'
 import { useAtom } from 'jotai'
 import { useCallback } from 'react'
 

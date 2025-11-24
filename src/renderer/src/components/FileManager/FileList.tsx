@@ -2,8 +2,13 @@ import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
-import { SSHService, currentSessionIdAtom } from '@/services'
-import { fileListRefreshPathAtom, fileListRefreshTokenAtom, uploadTargetDirAtom } from '@/store'
+import { SSHService } from '@/services'
+import {
+  currentSessionIdAtom,
+  fileListRefreshPathAtom,
+  fileListRefreshTokenAtom,
+  uploadTargetDirAtom
+} from '@/store'
 import { FileInfo } from '@shared/models'
 import { useAtom, useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'

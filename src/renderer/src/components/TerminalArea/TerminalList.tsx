@@ -1,6 +1,6 @@
 import { useConfig, useSSHConnection } from '@/hooks'
-import { SSHService, currentSessionIdAtom, sessionsAtom } from '@/services'
-import { darkStateAtom } from '@/store'
+import { SSHService } from '@/services'
+import { currentSessionIdAtom, darkStateAtom, sessionsAtom } from '@/store'
 import { useAtom, useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
