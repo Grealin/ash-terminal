@@ -1,10 +1,13 @@
 import { FileInfo } from '@shared/models'
 import { execFile } from 'child_process'
-import { app, shell } from 'electron'
+import { app, dialog, shell, type OpenDialogOptions } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 import { resolveTildePath } from './pathUtils'
 import { getSSH } from './sshPool'
+
+// 标记是否已打开过系统文件选择对话框（用于仅首次使用 home 目录）
+let hasOpenedFileDialog = false
 
 export const getDirectoryFiles = async (sessionId: string, p: string): Promise<FileInfo[]> => {
   const ssh = getSSH(sessionId)
@@ -230,4 +233,20 @@ export const backupRemoteFile = async (sessionId: string, remotePath: string): P
   if (result.stderr) {
     throw new Error(result.stderr)
   }
+}
+
+export const openFileDialog = async (): Promise<string[]> => {
+  const options: OpenDialogOptions = {
+    title: '选择上传文件',
+    properties: ['openFile', 'multiSelections']
+  }
+
+  if (!hasOpenedFileDialog) {
+    options.defaultPath = app.getPath('home')
+  }
+
+  const result = await dialog.showOpenDialog(options)
+  hasOpenedFileDialog = true
+  if (result.canceled) return []
+  return result.filePaths
 }

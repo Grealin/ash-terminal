@@ -1,69 +1,109 @@
-import { AppConfig, SSHConfig } from '@shared/models'
 import { contextBridge, ipcRenderer } from 'electron'
+
+import {
+  CloseFocusedWindow,
+  DeleteEditCacheFile,
+  IsWindowMaximized,
+  MaximizeFocusedWindow,
+  MinimizeFocusedWindow,
+  OnWindowMaximizeChanged,
+  OpenFileDialog,
+  OpenWithChooser,
+  ToggleMaximizeFocusedWindow
+} from '@shared/types/Electron'
+
+import { GetConfig, SaveConfig, UpdateConfigField } from '@shared/types/Context'
+
+import {
+  BackupRemoteFile,
+  ConnectSSH,
+  CreateInteractiveShell,
+  DeleteRemoteFile,
+  DeleteSession,
+  DisconnectSSH,
+  DownloadFile,
+  DownloadFileToEditCache,
+  ExecuteSSHCommand,
+  GetDirectoryFiles,
+  GetSessions,
+  OnShellClose,
+  OnShellData,
+  OnShellError,
+  ResizeShell,
+  SaveSession,
+  UploadFile,
+  WriteToShell
+} from '@shared/types/SSH'
 
 if (!process.contextIsolated) {
   throw new Error('contextIsolation must be enabled in the BrowserWindow')
 }
 
 const electron = {
-  closeFocusedWindow: () => ipcRenderer.invoke('closeFocusedWindow'),
-  minimizeFocusedWindow: () => ipcRenderer.invoke('minimizeFocusedWindow'),
-  maximizeFocusedWindow: () => ipcRenderer.invoke('maximizeFocusedWindow'),
-  toggleMaximizeFocusedWindow: () => ipcRenderer.invoke('toggleMaximizeFocusedWindow'),
-  isWindowMaximized: () => ipcRenderer.invoke('isWindowMaximized'),
-  onWindowMaximizeChanged: (callback: (isMaximized: boolean) => void) => {
+  closeFocusedWindow: (...args: Parameters<CloseFocusedWindow>) =>
+    ipcRenderer.invoke('closeFocusedWindow', ...args),
+  minimizeFocusedWindow: (...args: Parameters<MinimizeFocusedWindow>) =>
+    ipcRenderer.invoke('minimizeFocusedWindow', ...args),
+  maximizeFocusedWindow: (...args: Parameters<MaximizeFocusedWindow>) =>
+    ipcRenderer.invoke('maximizeFocusedWindow', ...args),
+  toggleMaximizeFocusedWindow: (...args: Parameters<ToggleMaximizeFocusedWindow>) =>
+    ipcRenderer.invoke('toggleMaximizeFocusedWindow', ...args),
+  isWindowMaximized: (...args: Parameters<IsWindowMaximized>) =>
+    ipcRenderer.invoke('isWindowMaximized', ...args),
+  onWindowMaximizeChanged: (...args: Parameters<OnWindowMaximizeChanged>) => {
+    const [callback] = args
     const subscription = (_event: Electron.IpcRendererEvent, isMaximized: boolean) =>
       callback(isMaximized)
     ipcRenderer.on('window-maximize-changed', subscription)
     return () => ipcRenderer.removeListener('window-maximize-changed', subscription)
   },
-  openFileDialog: (): Promise<string[]> => ipcRenderer.invoke('openFileDialog'),
-  openWithChooser: (localPath: string): Promise<void> =>
-    ipcRenderer.invoke('openWithChooser', localPath),
-  deleteEditCacheFile: (localPath: string): Promise<void> =>
-    ipcRenderer.invoke('deleteEditCacheFile', localPath)
+  openFileDialog: (...args: Parameters<OpenFileDialog>) =>
+    ipcRenderer.invoke('openFileDialog', ...args),
+  openWithChooser: (...args: Parameters<OpenWithChooser>) =>
+    ipcRenderer.invoke('openWithChooser', ...args),
+  deleteEditCacheFile: (...args: Parameters<DeleteEditCacheFile>) =>
+    ipcRenderer.invoke('deleteEditCacheFile', ...args)
 }
 
 const context = {
-  getConfig: (): Promise<AppConfig> => ipcRenderer.invoke('getConfig'),
-  saveConfig: (config: AppConfig): Promise<void> => ipcRenderer.invoke('saveConfig', config),
-  updateConfigField: (path: string, value: any): Promise<void> =>
-    ipcRenderer.invoke('updateConfigField', path, value)
+  getConfig: (...args: Parameters<GetConfig>) => ipcRenderer.invoke('getConfig', ...args),
+  saveConfig: (...args: Parameters<SaveConfig>) => ipcRenderer.invoke('saveConfig', ...args),
+  updateConfigField: (...args: Parameters<UpdateConfigField>) =>
+    ipcRenderer.invoke('updateConfigField', ...args)
 }
 
 const ssh = {
-  getSessions: () => ipcRenderer.invoke('getSessions'),
-  saveSession: (session: SSHConfig) => ipcRenderer.invoke('saveSession', session),
-  deleteSession: (sessionId: string) => ipcRenderer.invoke('deleteSession', sessionId),
-  connectSSH: (config: SSHConfig) => ipcRenderer.invoke('connectSSH', config),
-  disconnectSSH: (sessionId: string) => ipcRenderer.invoke('disconnectSSH', sessionId),
-  executeSSHCommand: (sessionId: string, command: string) =>
-    ipcRenderer.invoke('executeSSHCommand', sessionId, command),
-  getDirectoryFiles: (sessionId: string, path: string) =>
-    ipcRenderer.invoke('getDirectoryFiles', sessionId, path),
+  getSessions: (...args: Parameters<GetSessions>) => ipcRenderer.invoke('getSessions', ...args),
+  saveSession: (...args: Parameters<SaveSession>) => ipcRenderer.invoke('saveSession', ...args),
+  deleteSession: (...args: Parameters<DeleteSession>) =>
+    ipcRenderer.invoke('deleteSession', ...args),
+  connectSSH: (...args: Parameters<ConnectSSH>) => ipcRenderer.invoke('connectSSH', ...args),
+  disconnectSSH: (...args: Parameters<DisconnectSSH>) =>
+    ipcRenderer.invoke('disconnectSSH', ...args),
+  executeSSHCommand: (...args: Parameters<ExecuteSSHCommand>) =>
+    ipcRenderer.invoke('executeSSHCommand', ...args),
+  getDirectoryFiles: (...args: Parameters<GetDirectoryFiles>) =>
+    ipcRenderer.invoke('getDirectoryFiles', ...args),
 
   // 文件操作
-  downloadFile: (sessionId: string, remotePath: string) =>
-    ipcRenderer.invoke('downloadFile', sessionId, remotePath),
-  deleteRemoteFile: (sessionId: string, remotePath: string) =>
-    ipcRenderer.invoke('deleteRemoteFile', sessionId, remotePath),
-  uploadFile: (sessionId: string, localPath: string, remoteDir: string) =>
-    ipcRenderer.invoke('uploadFile', sessionId, localPath, remoteDir),
-  downloadFileToEditCache: (sessionId: string, remotePath: string) =>
-    ipcRenderer.invoke('downloadFileToEditCache', sessionId, remotePath),
-  backupRemoteFile: (sessionId: string, remotePath: string) =>
-    ipcRenderer.invoke('backupRemoteFile', sessionId, remotePath),
+  downloadFile: (...args: Parameters<DownloadFile>) => ipcRenderer.invoke('downloadFile', ...args),
+  deleteRemoteFile: (...args: Parameters<DeleteRemoteFile>) =>
+    ipcRenderer.invoke('deleteRemoteFile', ...args),
+  uploadFile: (...args: Parameters<UploadFile>) => ipcRenderer.invoke('uploadFile', ...args),
+  downloadFileToEditCache: (...args: Parameters<DownloadFileToEditCache>) =>
+    ipcRenderer.invoke('downloadFileToEditCache', ...args),
+  backupRemoteFile: (...args: Parameters<BackupRemoteFile>) =>
+    ipcRenderer.invoke('backupRemoteFile', ...args),
 
   // 交互式Shell
-  createInteractiveShell: (sessionId: string) =>
-    ipcRenderer.invoke('createInteractiveShell', sessionId),
-  writeToShell: (sessionId: string, data: string) =>
-    ipcRenderer.invoke('writeToShell', sessionId, data),
-  resizeShell: (sessionId: string, cols: number, rows: number) =>
-    ipcRenderer.invoke('resizeShell', sessionId, cols, rows),
+  createInteractiveShell: (...args: Parameters<CreateInteractiveShell>) =>
+    ipcRenderer.invoke('createInteractiveShell', ...args),
+  writeToShell: (...args: Parameters<WriteToShell>) => ipcRenderer.invoke('writeToShell', ...args),
+  resizeShell: (...args: Parameters<ResizeShell>) => ipcRenderer.invoke('resizeShell', ...args),
 
   // Shell事件监听
-  onShellData: (sessionId: string, callback: (data: string) => void) => {
+  onShellData: (...args: Parameters<OnShellData>) => {
+    const [sessionId, callback] = args
     const subscription = (
       _event: Electron.IpcRendererEvent,
       receivedSessionId: string,
@@ -78,7 +118,8 @@ const ssh = {
     return () => ipcRenderer.removeListener('shell-data', subscription)
   },
 
-  onShellClose: (sessionId: string, callback: () => void) => {
+  onShellClose: (...args: Parameters<OnShellClose>) => {
+    const [sessionId, callback] = args
     const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string) => {
       if (receivedSessionId === sessionId) {
         callback()
@@ -89,7 +130,8 @@ const ssh = {
     return () => ipcRenderer.removeListener('shell-close', subscription)
   },
 
-  onShellError: (sessionId: string, callback: (error: string) => void) => {
+  onShellError: (...args: Parameters<OnShellError>) => {
+    const [sessionId, callback] = args
     const subscription = (
       _event: Electron.IpcRendererEvent,
       receivedSessionId: string,

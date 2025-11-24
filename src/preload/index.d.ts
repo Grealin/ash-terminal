@@ -1,49 +1,79 @@
-import { AppConfig, FileInfo, SSHConfig } from '@shared/models'
+import {
+  CloseFocusedWindow,
+  DeleteEditCacheFile,
+  IsWindowMaximized,
+  MaximizeFocusedWindow,
+  MinimizeFocusedWindow,
+  OnWindowMaximizeChanged,
+  OpenFileDialog,
+  OpenWithChooser,
+  ToggleMaximizeFocusedWindow
+} from '@shared/types/Electron'
+
+import { GetConfig, SaveConfig, UpdateConfigField } from '@shared/types/Context'
+
+import {
+  BackupRemoteFile,
+  ConnectSSH,
+  CreateInteractiveShell,
+  DeleteRemoteFile,
+  DeleteSession,
+  DisconnectSSH,
+  DownloadFile,
+  DownloadFileToEditCache,
+  ExecuteSSHCommand,
+  GetDirectoryFiles,
+  GetSessions,
+  OnShellClose,
+  OnShellData,
+  OnShellError,
+  ResizeShell,
+  SaveSession,
+  UploadFile,
+  WriteToShell
+} from '@shared/types/SSH'
 
 interface Electron {
-  closeFocusedWindow: () => void
-  minimizeFocusedWindow: () => void
-  maximizeFocusedWindow: () => void
-  toggleMaximizeFocusedWindow: () => void
-  isWindowMaximized: () => Promise<boolean>
-  onWindowMaximizeChanged: (callback: (isMaximized: boolean) => void) => () => void
-  openFileDialog: () => Promise<string[]>
-  openWithChooser: (localPath: string) => Promise<void>
-  deleteEditCacheFile: (localPath: string) => Promise<void>
+  closeFocusedWindow: CloseFocusedWindow
+  minimizeFocusedWindow: MinimizeFocusedWindow
+  maximizeFocusedWindow: MaximizeFocusedWindow
+  toggleMaximizeFocusedWindow: ToggleMaximizeFocusedWindow
+  isWindowMaximized: IsWindowMaximized
+  onWindowMaximizeChanged: OnWindowMaximizeChanged
+  openFileDialog: OpenFileDialog
+  openWithChooser: OpenWithChooser
+  deleteEditCacheFile: DeleteEditCacheFile
 }
 
 interface Context {
-  getConfig: () => Promise<AppConfig>
-  saveConfig: (config: AppConfig) => Promise<void>
-  updateConfigField: (path: string, value: any) => Promise<void>
+  getConfig: GetConfig
+  saveConfig: SaveConfig
+  updateConfigField: UpdateConfigField
 }
 
 interface SSH {
-  getSessions: () => Promise<SSHConfig[]>
-  saveSession: (session: SSHConfig) => Promise<void>
-  deleteSession: (sessionId: string) => Promise<void>
-  connectSSH: (config: SSHConfig) => Promise<{ success: boolean; error?: string }>
-  disconnectSSH: (sessionId: string) => Promise<void>
-  executeSSHCommand: (
-    sessionId: string,
-    command: string
-  ) => Promise<{ stdout: string; stderr: string }>
-  getDirectoryFiles: (sessionId: string, path: string) => Promise<FileInfo[]>
+  getSessions: GetSessions
+  saveSession: SaveSession
+  deleteSession: DeleteSession
+  connectSSH: ConnectSSH
+  disconnectSSH: DisconnectSSH
+  executeSSHCommand: ExecuteSSHCommand
+  getDirectoryFiles: GetDirectoryFiles
 
   // 文件操作
-  downloadFile: (sessionId: string, remotePath: string) => Promise<string>
-  deleteRemoteFile: (sessionId: string, remotePath: string) => Promise<void>
-  uploadFile: (sessionId: string, localPath: string, remoteDir: string) => Promise<string>
-  downloadFileToEditCache: (sessionId: string, remotePath: string) => Promise<string>
-  backupRemoteFile: (sessionId: string, remotePath: string) => Promise<void>
+  downloadFile: DownloadFile
+  deleteRemoteFile: DeleteRemoteFile
+  uploadFile: UploadFile
+  downloadFileToEditCache: DownloadFileToEditCache
+  backupRemoteFile: BackupRemoteFile
 
   // 交互式Shell方法
-  createInteractiveShell: (sessionId: string) => Promise<void>
-  writeToShell: (sessionId: string, data: string) => Promise<void>
-  resizeShell: (sessionId: string, cols: number, rows: number) => Promise<void>
-  onShellData: (sessionId: string, callback: (data: string) => void) => () => void
-  onShellClose: (sessionId: string, callback: () => void) => () => void
-  onShellError: (sessionId: string, callback: (error: string) => void) => () => void
+  createInteractiveShell: CreateInteractiveShell
+  writeToShell: WriteToShell
+  resizeShell: ResizeShell
+  onShellData: OnShellData
+  onShellClose: OnShellClose
+  onShellError: OnShellError
 }
 
 declare global {
