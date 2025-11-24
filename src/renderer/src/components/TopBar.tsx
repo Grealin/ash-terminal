@@ -5,7 +5,6 @@ import { useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { ComponentProps, useEffect, useState } from 'react'
 import { ElectronService } from '@/services'
 
-
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
   const [isMaximized, setIsMaximized] = useState(false)

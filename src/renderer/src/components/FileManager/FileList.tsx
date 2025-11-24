@@ -2,7 +2,7 @@ import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
-import { SSHService,ElectronService } from '@/services'
+import { SSHService, ElectronService } from '@/services'
 import {
   currentSessionIdAtom,
   fileListRefreshPathAtom,

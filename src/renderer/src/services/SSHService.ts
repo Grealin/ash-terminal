@@ -1,4 +1,4 @@
-import { FileInfo, SSHConfig } from '@shared/models';
+import { FileInfo, SSHConfig } from '@shared/models'
 
 export class SSHService {
   static async getSessions(): Promise<SSHConfig[]> {
