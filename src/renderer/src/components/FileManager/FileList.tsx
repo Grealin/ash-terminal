@@ -2,7 +2,7 @@ import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
-import { SSHService, ElectronService } from '@/services'
+import { ElectronService, SSHService } from '@/services'
 import {
   currentSessionIdAtom,
   fileListRefreshPathAtom,
@@ -29,7 +29,7 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
   return (
     <div
       className={twMerge(
-        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-gray-700',
+        'flex flex-col flex-1 min-h-0 border-b border-r border-gray-300 dark:border-gray-700',
         className
       )}
       {...props}

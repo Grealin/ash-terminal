@@ -23,7 +23,7 @@ export const SessionListMain: React.FC<ComponentProps<'div'>> = ({
   return (
     <div
       className={twMerge(
-        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-gray-700',
+        'flex flex-col flex-1 min-h-0 border-b border-r border-gray-300 dark:border-gray-700',
         className
       )}
       {...props}
@@ -150,7 +150,7 @@ export const SessionListContent: React.FC = () => {
   }, [isConnected, currentSessionId, toast])
 
   return (
-    <div className="flex flex-col h-full p-3 pb-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full p-3 pb-0 bg-white dark:bg-gray-900 ">
       {/* 头部 */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">SSH 会话</h3>
