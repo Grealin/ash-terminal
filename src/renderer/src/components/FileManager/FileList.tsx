@@ -2,7 +2,7 @@ import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
-import { SSHService } from '@/services'
+import { SSHService,ElectronService } from '@/services'
 import {
   currentSessionIdAtom,
   fileListRefreshPathAtom,
@@ -179,11 +179,11 @@ export const FileListContent: React.FC = () => {
     if (!currentSessionId) return
     const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
     try {
-      const localPath = await window.ssh.downloadFileToEditCache(currentSessionId, remotePath)
+      const localPath = await SSHService.downloadFileToEditCache(currentSessionId, remotePath)
       setEditingLocalPath(localPath)
       setEditingRemotePath(remotePath)
       // 打开系统“你要如何打开这个文件？”
-      await window.electron.openWithChooser(localPath)
+      await ElectronService.openWithChooser(localPath)
       // 3 秒后弹确认模态
       setTimeout(() => {
         // 若仍处于同一次编辑
@@ -203,7 +203,7 @@ export const FileListContent: React.FC = () => {
       })
       // 删除本地缓存（如果有）
       if (editingLocalPath) {
-        await window.electron.deleteEditCacheFile(editingLocalPath)
+        await ElectronService.deleteEditCacheFile(editingLocalPath)
       }
     }
   }
@@ -211,7 +211,7 @@ export const FileListContent: React.FC = () => {
   const cleanupEditCache = async () => {
     try {
       if (editingLocalPath) {
-        await window.electron.deleteEditCacheFile(editingLocalPath)
+        await ElectronService.deleteEditCacheFile(editingLocalPath)
       }
     } catch (e) {
       // 仅记录，不打断流程
@@ -224,7 +224,7 @@ export const FileListContent: React.FC = () => {
   const reopenChooser = async () => {
     if (editingLocalPath) {
       try {
-        await window.electron.openWithChooser(editingLocalPath)
+        await ElectronService.openWithChooser(editingLocalPath)
       } catch (e) {
         const msg = e instanceof Error ? e.message : '无法打开编辑器'
         toast.show({
@@ -243,7 +243,7 @@ export const FileListContent: React.FC = () => {
     setIsSyncingBack(true)
     try {
       // 1) 远程备份
-      await window.ssh.backupRemoteFile(currentSessionId, editingRemotePath)
+      await SSHService.backupRemoteFile(currentSessionId, editingRemotePath)
       // 2) 上传覆盖
       const remoteDir = editingRemotePath.substring(0, editingRemotePath.lastIndexOf('/')) || '/'
       await SSHService.uploadFile(currentSessionId, editingLocalPath, remoteDir)

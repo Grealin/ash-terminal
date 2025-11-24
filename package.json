@@ -43,6 +43,7 @@
     "@types/react-dom": "^19.1.6",
     "@types/ssh2": "^1.15.5",
     "@vitejs/plugin-react": "^4.7.0",
+    "baseline-browser-mapping": "^2.8.31",
     "daisyui": "^5.4.7",
     "dotenv": "^17.2.2",
     "electron": "^37.2.3",

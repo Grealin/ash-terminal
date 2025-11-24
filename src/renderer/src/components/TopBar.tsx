@@ -3,6 +3,8 @@ import { MenuButton, TopButton, TopDropdown } from '@/components'
 import { useDarkTheme, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
 import { useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { ComponentProps, useEffect, useState } from 'react'
+import { ElectronService } from '@/services'
+
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
@@ -15,14 +17,13 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   useEffect(() => {
     // 获取初始窗口状态
     const getInitialState = async () => {
-      const maximized = await window.electron.isWindowMaximized()
+      const maximized = await ElectronService.isWindowMaximized()
       setIsMaximized(maximized)
     }
     getInitialState()
 
     // 监听窗口状态变化
-    const unsubscribe = window.electron.onWindowMaximizeChanged(setIsMaximized)
-
+    const unsubscribe = ElectronService.onWindowMaximizeChanged(setIsMaximized)
     return unsubscribe
   }, [])
 
@@ -100,7 +101,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
 
           <button
             className="w-8 h-8 rounded-md text-yellow-600 hover:text-yellow-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
-            onClick={() => window.electron.minimizeFocusedWindow()}
+            onClick={() => ElectronService.minimizeFocusedWindow()}
             title="最小化窗口"
           >
             <svg
@@ -118,7 +119,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
 
           <button
             className="w-8 h-8 rounded-md text-green-600 hover:text-green-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
-            onClick={() => window.electron.toggleMaximizeFocusedWindow()}
+            onClick={() => ElectronService.toggleMaximizeFocusedWindow()}
             title={isMaximized ? '恢复窗口' : '最大化窗口'}
           >
             {isMaximized ? (
@@ -152,7 +153,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
 
           <button
             className="w-8 h-8 mr-3 rounded-md text-red-600 hover:text-red-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
-            onClick={() => window.electron.closeFocusedWindow()}
+            onClick={() => ElectronService.closeFocusedWindow()}
             title="关闭窗口"
           >
             <svg

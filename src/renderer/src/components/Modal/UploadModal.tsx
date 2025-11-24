@@ -1,6 +1,6 @@
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { useToast } from '@/hooks/Toast'
-import { SSHService } from '@/services'
+import { SSHService,ElectronService } from '@/services'
 import {
   currentSessionIdAtom,
   fileListRefreshPathAtom,
@@ -92,7 +92,7 @@ export const UploadModal: React.FC = () => {
 
   const handleSystemDialogSelect = async () => {
     try {
-      const paths = await window.electron.openFileDialog()
+      const paths = await ElectronService.openFileDialog()
       if (paths && paths.length) {
         const items = paths.map((p) => ({
           name: p.split(/[/\\]/).pop() || p,

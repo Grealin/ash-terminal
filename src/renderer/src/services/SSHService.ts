@@ -1,4 +1,4 @@
-import { FileInfo, SSHConfig } from '@shared/models'
+import { FileInfo, SSHConfig } from '@shared/models';
 
 export class SSHService {
   static async getSessions(): Promise<SSHConfig[]> {
@@ -47,6 +47,14 @@ export class SSHService {
     remoteDir: string
   ): Promise<string> {
     return window.ssh.uploadFile(sessionId, localPath, remoteDir)
+  }
+
+  static async downloadFileToEditCache(sessionId: string, remotePath: string): Promise<string> {
+    return window.ssh.downloadFileToEditCache(sessionId, remotePath)
+  }
+
+  static async backupRemoteFile(sessionId: string, remotePath: string): Promise<void> {
+    return window.ssh.backupRemoteFile(sessionId, remotePath)
   }
 
   // 交互式Shell方法

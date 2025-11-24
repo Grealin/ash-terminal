@@ -1,5 +1,6 @@
 import { AppConfig } from '@shared/models'
 import { useCallback, useEffect, useState } from 'react'
+import { ContextService } from '@/services'
 
 export const useConfig = () => {
   const [config, setConfig] = useState<AppConfig | null>(null)
@@ -9,7 +10,7 @@ export const useConfig = () => {
   const loadConfig = useCallback(async () => {
     try {
       setLoading(true)
-      const loadedConfig = await window.context.getConfig()
+      const loadedConfig = await ContextService.getConfig()
       setConfig(loadedConfig)
     } catch (error) {
       console.error('Failed to load config:', error)
@@ -45,7 +46,7 @@ export const useConfig = () => {
   // 保存配置
   const saveConfig = useCallback(async (newConfig: AppConfig) => {
     try {
-      await window.context.saveConfig(newConfig)
+      await ContextService.saveConfig(newConfig)
       setConfig(newConfig)
     } catch (error) {
       console.error('Failed to save config:', error)
@@ -56,9 +57,9 @@ export const useConfig = () => {
   // 更新配置字段（部分更新）
   const updateConfigField = useCallback(async (path: string, value: any) => {
     try {
-      await window.context.updateConfigField(path, value)
+      await ContextService.updateConfigField(path, value)
       // 重新加载配置以确保状态同步
-      const updatedConfig = await window.context.getConfig()
+      const updatedConfig = await ContextService.getConfig()
       setConfig(updatedConfig)
     } catch (error) {
       console.error('Failed to update config field:', error)
