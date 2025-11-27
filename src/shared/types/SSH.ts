@@ -1,4 +1,4 @@
-import { FileInfo, SSHConfig } from '../models'
+import { FileInfo, SSHConfig, SystemMonitorData } from '../models'
 
 export type GetSessions = () => Promise<SSHConfig[]>
 export type SaveSession = (session: SSHConfig) => Promise<void>
@@ -27,3 +27,5 @@ export type ResizeShell = (sessionId: string, cols: number, rows: number) => Pro
 export type OnShellData = (sessionId: string, callback: (data: string) => void) => () => void
 export type OnShellClose = (sessionId: string, callback: () => void) => () => void
 export type OnShellError = (sessionId: string, callback: (error: string) => void) => () => void
+// 系统监控
+export type GetSystemMonitorData = (sessionId: string) => Promise<SystemMonitorData>

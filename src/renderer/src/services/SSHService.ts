@@ -1,4 +1,4 @@
-import { FileInfo, SSHConfig } from '@shared/models'
+import { FileInfo, SSHConfig, SystemMonitorData } from '@shared/models'
 
 export class SSHService {
   static async getSessions(): Promise<SSHConfig[]> {
@@ -80,5 +80,10 @@ export class SSHService {
 
   static onShellError(sessionId: string, callback: (error: string) => void): () => void {
     return window.ssh.onShellError(sessionId, callback)
+  }
+
+  // 系统监控
+  static async getSystemMonitorData(sessionId: string): Promise<SystemMonitorData> {
+    return window.ssh.getSystemMonitorData(sessionId)
   }
 }

@@ -24,6 +24,7 @@ import {
   ExecuteSSHCommand,
   GetDirectoryFiles,
   GetSessions,
+  GetSystemMonitorData,
   OnShellClose,
   OnShellData,
   OnShellError,
@@ -74,6 +75,9 @@ interface SSH {
   onShellData: OnShellData
   onShellClose: OnShellClose
   onShellError: OnShellError
+
+  // 系统监控
+  getSystemMonitorData: GetSystemMonitorData
 }
 
 declare global {

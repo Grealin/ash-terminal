@@ -26,6 +26,7 @@ import {
   ExecuteSSHCommand,
   GetDirectoryFiles,
   GetSessions,
+  GetSystemMonitorData,
   OnShellClose,
   OnShellData,
   OnShellError,
@@ -144,7 +145,11 @@ const ssh = {
     ipcRenderer.on('shell-error', subscription)
     ipcRenderer.invoke('onShellError', sessionId)
     return () => ipcRenderer.removeListener('shell-error', subscription)
-  }
+  },
+
+  // 系统监控
+  getSystemMonitorData: (...args: Parameters<GetSystemMonitorData>) =>
+    ipcRenderer.invoke('getSystemMonitorData', ...args)
 }
 
 try {
