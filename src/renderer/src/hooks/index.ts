@@ -1,4 +1,5 @@
 export * from './AreaClosed'
+export * from './BatchCommand'
 export * from './Config'
 export * from './Initialize'
 export * from './ModalOpen'
@@ -6,3 +7,4 @@ export * from './SSH'
 export * from './SSHConnection'
 export * from './Theme'
 export * from './Toast'
+
