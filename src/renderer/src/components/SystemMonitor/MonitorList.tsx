@@ -42,6 +42,64 @@ export const MonitorListContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('system')
 
+  // 饼图组件
+  const PieChart: React.FC<{ title: string; percent: number; color: string }> = ({
+    title,
+    percent,
+    color
+  }) => {
+    const radius = 35
+    const circumference = 2 * Math.PI * radius
+    const offset = circumference - (percent / 100) * circumference
+
+    return (
+      <div className="flex items-center">
+        <div className="w-full aspect-square flex flex-col items-center justify-center">
+          <svg
+            viewBox="0 0 100 100"
+            className="transform -rotate-90 w-full h-full max-w-[120px] max-h-[120px]"
+          >
+            <title>{title}</title>
+            {/* 背景圆环 */}
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="6"
+              className="text-gray-200 dark:text-gray-700"
+            />
+            {/* 进度圆环 */}
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={color}
+              strokeWidth="6"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              className="transition-all duration-500"
+            />
+            {/* 中心文字 */}
+            <text
+              x="50"
+              y="50"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="transform rotate-90 text-xs font-bold fill-gray-900 dark:fill-gray-100"
+              style={{ transformOrigin: 'center' }}
+            >
+              {percent.toFixed(1)}%
+            </text>
+          </svg>
+        </div>
+      </div>
+    )
+  }
+
   // 加载监控数据
   const loadMonitorData = async () => {
     if (!currentSessionId || !isConnected) {
@@ -158,29 +216,69 @@ export const MonitorListContent: React.FC = () => {
         <div className="flex items-center space-x-1">
           <button
             onClick={() => setViewMode('system')}
-            className={`px-2 py-0.5 text-xs rounded transition-colors ${
-              viewMode === 'system'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+            className="w-6 h-6 rounded-md text-slate-600 hover:text-slate-700 hover:bg-gray-200 transition-all duration-200 flex items-center justify-center group dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-gray-700"
+            title="性能监控"
           >
-            性能
+            {viewMode === 'system' ? (
+              // 性能图标（已选中）
+              <svg
+                className="w-4 h-4 group-hover:scale-110 transition-transform text-blue-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+              </svg>
+            ) : (
+              // 性能图标（未选中）
+              <svg
+                className="w-4 h-4 group-hover:scale-110 transition-transform"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+              </svg>
+            )}
           </button>
           <button
             onClick={() => setViewMode('process')}
-            className={`px-2 py-0.5 text-xs rounded transition-colors ${
-              viewMode === 'process'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+            className="w-6 h-6 rounded-md text-slate-600 hover:text-slate-700 hover:bg-gray-200 transition-all duration-200 flex items-center justify-center group dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-gray-700"
+            title="进程列表"
           >
-            进程
+            {viewMode === 'process' ? (
+              // 进程图标（已选中）
+              <svg
+                className="w-4 h-4 group-hover:scale-110 transition-transform text-blue-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              // 进程图标（未选中）
+              <svg
+                className="w-4 h-4 group-hover:scale-110 transition-transform"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
           </button>
         </div>
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div
+        className={`flex-1 p-3 ${viewMode === 'process' ? 'overflow-y-auto' : 'overflow-hidden'}`}
+      >
         {loading && !monitorData ? (
           <div className="flex items-center justify-center h-24">
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
@@ -220,7 +318,7 @@ export const MonitorListContent: React.FC = () => {
             </div>
           </div>
         ) : monitorData ? (
-          <div className="space-y-3">
+          <div className="space-y-3  h-full w-full">
             {viewMode === 'system' ? (
               // 性能占用情况
               <>
@@ -238,50 +336,36 @@ export const MonitorListContent: React.FC = () => {
                       {monitorData.systemInfo.uptime}
                     </span>
                   </div>
-                </div>
-
-                {/* CPU使用率 */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded p-2">
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600 dark:text-gray-400">CPU 占用</span>
-                    <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-mono text-gray-900 dark:text-gray-100">
                       {formatPercent(monitorData.systemInfo.cpuUsage)}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${monitorData.systemInfo.cpuUsage}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* 内存使用 */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded p-2 space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">内存总量</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">内存占用</span>
                     <span className="text-xs font-mono text-gray-900 dark:text-gray-100">
+                      {formatMemory(monitorData.systemInfo.usedMemory)}/
                       {formatMemory(monitorData.systemInfo.totalMemory)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">已使用</span>
-                    <span className="text-xs font-mono text-orange-600 dark:text-orange-400">
-                      {formatMemory(monitorData.systemInfo.usedMemory)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">空闲内存</span>
-                    <span className="text-xs font-mono text-green-600 dark:text-green-400">
-                      {formatMemory(monitorData.systemInfo.freeMemory)}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
-                    <div
-                      className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${((monitorData.systemInfo.usedMemory / monitorData.systemInfo.totalMemory) * 100).toFixed(1)}%`
-                      }}
+                </div>
+
+                {/* CPU 和内存使用率饼图 */}
+                <div>
+                  <div className="grid grid-cols-2 gap-3 h-full w-full">
+                    <PieChart
+                      title="CPU"
+                      percent={monitorData.systemInfo.cpuUsage}
+                      color="#3b82f6"
+                    />
+                    <PieChart
+                      title="内存"
+                      percent={
+                        (monitorData.systemInfo.usedMemory / monitorData.systemInfo.totalMemory) *
+                        100
+                      }
+                      color="#f97316"
                     />
                   </div>
                 </div>
@@ -290,7 +374,7 @@ export const MonitorListContent: React.FC = () => {
               // 进程展示情况
               <>
                 {/* 进程状态 */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded p-2 space-y-1">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded  p-2 space-y-1">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600 dark:text-gray-400">总进程数</span>
                     <span className="text-xs font-mono text-gray-900 dark:text-gray-100">
