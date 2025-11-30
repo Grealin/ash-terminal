@@ -54,7 +54,7 @@ export const CommandListContent: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* 工具栏 */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between h-[41px] px-2 border-b border-gray-200 dark:border-gray-700">
         {/* 左侧按钮组 */}
         <div className="flex items-center space-x-2">
           <button
