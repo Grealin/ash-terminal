@@ -44,7 +44,7 @@ export const CommandListContent: React.FC = () => {
     canClear
   } = useBatchCommand()
 
-  const handleIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIntervalChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseFloat(e.target.value)
     if (!isNaN(value) && value > 0) {
       setInterval(value)

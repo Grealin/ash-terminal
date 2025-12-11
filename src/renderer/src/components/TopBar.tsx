@@ -2,8 +2,8 @@ import icon from '@/assets/images/icon.png'
 import { MenuButton, TopButton, TopDropdown } from '@/components'
 import { useDarkTheme, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
 import { useModalTerminalSettings } from '@/hooks/ModalOpen'
-import { ComponentProps, useEffect, useState } from 'react'
 import { ElectronService } from '@/services'
+import { ComponentProps, useEffect, useState } from 'react'
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { isDark, toggleTheme } = useDarkTheme()
@@ -15,7 +15,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
 
   useEffect(() => {
     // 获取初始窗口状态
-    const getInitialState = async () => {
+    const getInitialState = async (): Promise<void> => {
       const maximized = await ElectronService.isWindowMaximized()
       setIsMaximized(maximized)
     }

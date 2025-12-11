@@ -51,7 +51,7 @@ const positions: ToastPosition[] = [
   'bottom-right'
 ]
 
-function genId() {
+function genId(): string {
   return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
 }
 
@@ -119,7 +119,7 @@ export const dismissToastAtom = atom(
     const visible = { ...get(toastVisibleAtom) }
     const queue = { ...get(toastQueueAtom) }
 
-    const doCloseAt = (pos: ToastPosition, id?: ToastId) => {
+    const doCloseAt = (pos: ToastPosition, id?: ToastId): void => {
       const list = ensure(visible[pos])
       if (id) {
         const idx = list.findIndex((t) => t.id === id)
@@ -158,10 +158,10 @@ export const dismissToastAtom = atom(
   }
 )
 
-export const clearToastAtom = atom(null, (get, set, position?: ToastPosition) => {
+export const clearToastAtom = atom(null, (get, set, position?: ToastPosition): void => {
   const visible = { ...get(toastVisibleAtom) }
   const queue = { ...get(toastQueueAtom) }
-  const clearAt = (p: ToastPosition) => {
+  const clearAt = (p: ToastPosition): void => {
     visible[p] = []
     queue[p] = []
   }
@@ -178,7 +178,11 @@ export const clearToastAtom = atom(null, (get, set, position?: ToastPosition) =>
 
 export const updateToastAtom = atom(
   null,
-  (get, set, payload: { id: ToastId; patch: Partial<Omit<ToastItem, 'id' | 'position'>> }) => {
+  (
+    get,
+    set,
+    payload: { id: ToastId; patch: Partial<Omit<ToastItem, 'id' | 'position'>> }
+  ): void => {
     const { id, patch } = payload
     const visible = { ...get(toastVisibleAtom) }
     let changed = false
@@ -195,7 +199,7 @@ export const updateToastAtom = atom(
   }
 )
 
-export const setToastMaxPerPositionAtom = atom(null, (get, set, n: number) => {
+export const setToastMaxPerPositionAtom = atom(null, (get, set, n: number): void => {
   const cfg = get(toastConfigAtom)
   set(toastConfigAtom, { ...cfg, maxPerPosition: Math.max(1, Math.floor(n || 1)) })
 })

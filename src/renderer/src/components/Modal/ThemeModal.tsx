@@ -17,7 +17,7 @@ export const ThemeModal: React.FC = () => {
   }, [config, loading])
 
   // 处理保存
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!config || saving) return
 
     try {
@@ -34,7 +34,7 @@ export const ThemeModal: React.FC = () => {
   }
 
   // 处理取消
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     // 重置为原始值
     if (config) {
       setSelectedTheme(config.theme.defaultDarkMode ? 'dark' : 'light')

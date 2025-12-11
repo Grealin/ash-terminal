@@ -29,23 +29,23 @@ export const ToolModal: React.FC = () => {
     )
   }
 
-  const handleAiInterfaceToggle = async (checked: boolean) => {
+  const handleAiInterfaceToggle = async (checked: boolean): Promise<void> => {
     await setAiInterfaceVisible(checked)
   }
 
-  const handleSessionListToggle = async (checked: boolean) => {
+  const handleSessionListToggle = async (checked: boolean): Promise<void> => {
     await setSessionListVisible(checked)
   }
 
-  const handleFileListToggle = async (checked: boolean) => {
+  const handleFileListToggle = async (checked: boolean): Promise<void> => {
     await setFileListVisible(checked)
   }
 
-  const handleMonitorListToggle = async (checked: boolean) => {
+  const handleMonitorListToggle = async (checked: boolean): Promise<void> => {
     await setMonitorListVisible(checked)
   }
 
-  const handleCommandListToggle = async (checked: boolean) => {
+  const handleCommandListToggle = async (checked: boolean): Promise<void> => {
     await setCommandListVisible(checked)
   }
 

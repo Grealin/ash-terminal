@@ -6,11 +6,11 @@ import { useConfig } from './Config'
 export const useDarkTheme = () => {
   const [isDark, setDark] = useAtom(darkStateAtom)
 
-  const toggleTheme = () => {
+  const toggleTheme = (): void => {
     setDark(!isDark)
   }
 
-  const setTheme = (dark: boolean) => {
+  const setTheme = (dark: boolean): void => {
     setDark(dark)
   }
 

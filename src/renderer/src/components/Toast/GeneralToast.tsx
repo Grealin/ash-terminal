@@ -86,7 +86,7 @@ const typeToAlert: Record<ToastType, string> = {
   error: 'alert alert-error'
 }
 
-function DefaultIcon({ type }: { type: ToastType }) {
+function DefaultIcon({ type }: { type: ToastType }): React.ReactElement {
   // 轻量内置图标，避免额外依赖
   switch (type) {
     case 'success':

@@ -63,7 +63,7 @@ export const FileListContent: React.FC = () => {
   const [refreshPath] = useAtom(fileListRefreshPathAtom)
 
   // 加载文件列表
-  const loadFiles = async (path: string = currentPath) => {
+  const loadFiles = async (path: string = currentPath): Promise<void> => {
     if (!currentSessionId || !isConnected) {
       setFiles([])
       return
@@ -140,13 +140,13 @@ export const FileListContent: React.FC = () => {
   }, [refreshToken])
 
   // 进入目录
-  const handleDirectoryEnter = (dirName: string) => {
+  const handleDirectoryEnter = (dirName: string): void => {
     const newPath = realPath === '/' ? `/${dirName}` : `${realPath}/${dirName}`
     loadFiles(newPath)
   }
 
   // 下载文件
-  const handleDownload = async (file: FileInfo) => {
+  const handleDownload = async (file: FileInfo): Promise<void> => {
     if (!currentSessionId) return
     const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
     try {
@@ -175,7 +175,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 编辑文件：下载到 EditCache -> 打开“用此打开” -> 3秒后询问是否完成
-  const handleEdit = async (file: FileInfo) => {
+  const handleEdit = async (file: FileInfo): Promise<void> => {
     if (!currentSessionId) return
     const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
     try {
@@ -208,7 +208,7 @@ export const FileListContent: React.FC = () => {
     }
   }
 
-  const cleanupEditCache = async () => {
+  const cleanupEditCache = async (): Promise<void> => {
     try {
       if (editingLocalPath) {
         await ElectronService.deleteEditCacheFile(editingLocalPath)
@@ -221,7 +221,7 @@ export const FileListContent: React.FC = () => {
     setEditingRemotePath(null)
   }
 
-  const reopenChooser = async () => {
+  const reopenChooser = async (): Promise<void> => {
     if (editingLocalPath) {
       try {
         await ElectronService.openWithChooser(editingLocalPath)
@@ -238,7 +238,7 @@ export const FileListContent: React.FC = () => {
     }
   }
 
-  const confirmEditedAndSyncBack = async () => {
+  const confirmEditedAndSyncBack = async (): Promise<void> => {
     if (!currentSessionId || !editingLocalPath || !editingRemotePath) return
     setIsSyncingBack(true)
     try {
@@ -274,14 +274,14 @@ export const FileListContent: React.FC = () => {
   }
 
   // 触发删除确认
-  const handleAskDelete = (file: FileInfo) => {
+  const handleAskDelete = (file: FileInfo): void => {
     const remotePath = `${realPath === '/' ? '' : realPath}/${file.name}`
     setPendingDeletePath(remotePath)
     setConfirmOpen(true)
   }
 
   // 确认删除
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!currentSessionId || !pendingDeletePath) return
     try {
       await SSHService.deleteRemoteFile(currentSessionId, pendingDeletePath)
@@ -296,20 +296,20 @@ export const FileListContent: React.FC = () => {
   }
 
   // 返回上级目录
-  const handleGoBack = () => {
+  const handleGoBack = (): void => {
     const parentPath =
       realPath === '/' ? '/' : realPath.substring(0, realPath.lastIndexOf('/')) || '/'
     loadFiles(parentPath)
   }
 
   // 开始编辑路径
-  const handleStartEditPath = () => {
+  const handleStartEditPath = (): void => {
     setIsEditingPath(true)
     setEditPath(realPath)
   }
 
   // 取消编辑路径（延迟执行以避免与按钮点击冲突）
-  const handleCancelEditPath = () => {
+  const handleCancelEditPath = (): void => {
     setTimeout(() => {
       setIsEditingPath(false)
       setEditPath('')
@@ -317,7 +317,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 处理输入框失去焦点
-  const handlePathBlur = () => {
+  const handlePathBlur = (): void => {
     // 延迟取消以允许按钮点击事件先执行
     setTimeout(() => {
       if (isEditingPath) {
@@ -327,7 +327,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 确认路径编辑
-  const handleConfirmEditPath = () => {
+  const handleConfirmEditPath = (): void => {
     if (editPath.trim() && editPath.trim() !== realPath) {
       loadFiles(editPath.trim())
     }
@@ -336,7 +336,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 处理路径输入键盘事件
-  const handlePathKeyDown = (e: React.KeyboardEvent) => {
+  const handlePathKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       handleConfirmEditPath()
     } else if (e.key === 'Escape') {
@@ -345,7 +345,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 获取文件图标
-  const getFileIcon = (file: FileInfo) => {
+  const getFileIcon = (file: FileInfo): React.ReactNode => {
     if (file.type === 'directory') {
       return (
         <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -390,7 +390,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 格式化文件大小
-  const formatFileSize = (size: number) => {
+  const formatFileSize = (size: number): string => {
     if (size === 0) return '0 B'
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
@@ -399,7 +399,7 @@ export const FileListContent: React.FC = () => {
   }
 
   // 格式化时间
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date): string => {
     return (
       date.toLocaleDateString() +
       ' ' +

@@ -10,8 +10,8 @@ import { useAtom } from 'jotai'
 
 export const useModalTheme = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalThemeOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,
@@ -21,8 +21,8 @@ export const useModalTheme = () => {
 
 export const useModalUpload = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalUploadOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,
@@ -32,8 +32,8 @@ export const useModalUpload = () => {
 
 export const useModalLayout = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalLayoutOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,
@@ -43,8 +43,8 @@ export const useModalLayout = () => {
 
 export const useModalTool = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalToolOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,
@@ -54,8 +54,8 @@ export const useModalTool = () => {
 
 export const useModalSession = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalSessionOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,
@@ -65,8 +65,8 @@ export const useModalSession = () => {
 
 export const useModalTerminalSettings = () => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalTerminalSettingsOpenAtom)
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
   return {
     isModalOpen,
     openModal,

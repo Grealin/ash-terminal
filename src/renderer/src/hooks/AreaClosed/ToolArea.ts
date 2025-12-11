@@ -22,7 +22,7 @@ export const useAiInterface = () => {
   }, [config, setVisible])
 
   // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -36,7 +36,7 @@ export const useAiInterface = () => {
 
   // 设置显示状态并保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {
@@ -68,8 +68,8 @@ export const useSessionList = () => {
     }
   }, [config, setVisible])
 
-  // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  // 切换显示状态带保存到配置
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -81,9 +81,9 @@ export const useSessionList = () => {
     }
   }, [visible, setVisible, updateConfigField])
 
-  // 设置显示状态并保存到配置
+  // 设置显示状态带保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {
@@ -115,8 +115,8 @@ export const useFileList = () => {
     }
   }, [config, setVisible])
 
-  // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  // 切换显示状态带保存到配置
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -128,9 +128,9 @@ export const useFileList = () => {
     }
   }, [visible, setVisible, updateConfigField])
 
-  // 设置显示状态并保存到配置
+  // 设置显示状态带保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {
@@ -162,8 +162,8 @@ export const useMonitorList = () => {
     }
   }, [config, setVisible])
 
-  // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  // 切换显示状态带保存到配置
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -175,9 +175,9 @@ export const useMonitorList = () => {
     }
   }, [visible, setVisible, updateConfigField])
 
-  // 设置显示状态并保存到配置
+  // 设置显示状态带保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {
@@ -209,8 +209,8 @@ export const useCommandList = () => {
     }
   }, [config, setVisible])
 
-  // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  // 切换显示状态带保存到配置
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -224,7 +224,7 @@ export const useCommandList = () => {
 
   // 设置显示状态并保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {

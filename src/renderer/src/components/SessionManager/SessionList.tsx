@@ -60,18 +60,18 @@ export const SessionListContent: React.FC = () => {
     loadSessions()
   }, [setSessions])
 
-  const handleCreateSession = () => {
+  const handleCreateSession = (): void => {
     setEditingSession(null)
     openModal()
   }
 
-  const handleEditSession = (session: SSHConfig) => {
+  const handleEditSession = (session: SSHConfig): void => {
     setEditingSession(session)
     openModal()
   }
 
   // 触发删除确认
-  const handleAskDelete = (session: SSHConfig) => {
+  const handleAskDelete = (session: SSHConfig): void => {
     // 如果待删除会话为当前激活（连接中或已连接）的会话，则取消删除
     if (session.id === currentSessionId && (isConnected || isConnecting)) {
       console.info('当前激活会话不能删除')
@@ -82,7 +82,7 @@ export const SessionListContent: React.FC = () => {
   }
 
   // 确认删除
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!pendingDeleteSession) return
     const sessionId = pendingDeleteSession.id
     // 二次防护：如果待删除会话为当前激活（连接中或已连接）的会话，则取消删除
@@ -106,7 +106,7 @@ export const SessionListContent: React.FC = () => {
     }
   }
 
-  const handleConnectSession = async (session: SSHConfig) => {
+  const handleConnectSession = async (session: SSHConfig): Promise<void> => {
     try {
       // 如果已有连接，禁止再连接其他会话，给出提示
       if (isConnected && currentSessionId) {
@@ -188,7 +188,7 @@ export const SessionListContent: React.FC = () => {
               </div>
               <div className="flex items-center space-x-1 ml-2">
                 <button
-                  onClick={() => handleConnectSession(session)}
+                  onClick={(): Promise<void> => handleConnectSession(session)}
                   disabled={
                     // 连接过程中所有按钮都禁用（包括正在连接的那一个）
                     isConnecting

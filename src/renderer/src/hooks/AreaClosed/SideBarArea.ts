@@ -16,7 +16,7 @@ export const useLeftSideBar = () => {
   }, [config, setVisible])
 
   // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -31,7 +31,7 @@ export const useLeftSideBar = () => {
 
   // 设置显示状态并保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {
@@ -65,7 +65,7 @@ export const useRightSideBar = () => {
   }, [config, setVisible])
 
   // 切换显示状态并保存到配置
-  const toggleVisible = useCallback(async () => {
+  const toggleVisible = useCallback(async (): Promise<void> => {
     const newVisible = !visible
     setVisible(newVisible)
 
@@ -80,7 +80,7 @@ export const useRightSideBar = () => {
 
   // 设置显示状态并保存到配置
   const setVisibleAndSave = useCallback(
-    async (newVisible: boolean) => {
+    async (newVisible: boolean): Promise<void> => {
       setVisible(newVisible)
 
       try {

@@ -51,7 +51,7 @@ const electron = {
     ipcRenderer.invoke('toggleMaximizeFocusedWindow', ...args),
   isWindowMaximized: (...args: Parameters<IsWindowMaximized>) =>
     ipcRenderer.invoke('isWindowMaximized', ...args),
-  onWindowMaximizeChanged: (...args: Parameters<OnWindowMaximizeChanged>) => {
+  onWindowMaximizeChanged: (...args: Parameters<OnWindowMaximizeChanged>): (() => void) => {
     const [callback] = args
     const subscription = (_event: Electron.IpcRendererEvent, isMaximized: boolean) =>
       callback(isMaximized)
@@ -103,7 +103,7 @@ const ssh = {
   resizeShell: (...args: Parameters<ResizeShell>) => ipcRenderer.invoke('resizeShell', ...args),
 
   // Shell事件监听
-  onShellData: (...args: Parameters<OnShellData>) => {
+  onShellData: (...args: Parameters<OnShellData>): (() => void) => {
     const [sessionId, callback] = args
     const subscription = (
       _event: Electron.IpcRendererEvent,
@@ -119,7 +119,7 @@ const ssh = {
     return () => ipcRenderer.removeListener('shell-data', subscription)
   },
 
-  onShellClose: (...args: Parameters<OnShellClose>) => {
+  onShellClose: (...args: Parameters<OnShellClose>): (() => void) => {
     const [sessionId, callback] = args
     const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string) => {
       if (receivedSessionId === sessionId) {
@@ -131,7 +131,7 @@ const ssh = {
     return () => ipcRenderer.removeListener('shell-close', subscription)
   },
 
-  onShellError: (...args: Parameters<OnShellError>) => {
+  onShellError: (...args: Parameters<OnShellError>): (() => void) => {
     const [sessionId, callback] = args
     const subscription = (
       _event: Electron.IpcRendererEvent,

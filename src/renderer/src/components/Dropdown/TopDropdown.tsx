@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 export const TopDropdown: React.FC<ComponentProps<'ul'>> = ({ children, className, ...props }) => {
   const dropdownRef = useRef<HTMLUListElement>(null)
 
-  const handleClick = (event: React.MouseEvent) => {
+  const handleClick = (event: React.MouseEvent): void => {
     // 检查点击的是否是子元素（不是 ul 本身）
     if (event.target !== event.currentTarget) {
       // 关闭 popover

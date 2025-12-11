@@ -1,6 +1,6 @@
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { useToast } from '@/hooks/Toast'
-import { SSHService, ElectronService } from '@/services'
+import { ElectronService, SSHService } from '@/services'
 import {
   currentSessionIdAtom,
   fileListRefreshPathAtom,
@@ -88,9 +88,9 @@ export const UploadModal: React.FC = () => {
     setDragOver(false)
   }
 
-  const handleBrowse = () => inputRef.current?.click()
+  const handleBrowse = (): void => inputRef.current?.click()
 
-  const handleSystemDialogSelect = async () => {
+  const handleSystemDialogSelect = async (): Promise<void> => {
     try {
       const paths = await ElectronService.openFileDialog()
       if (paths && paths.length) {
@@ -110,13 +110,13 @@ export const UploadModal: React.FC = () => {
     }
   }
 
-  const onFilesSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+  const onFilesSelected: React.ChangeEventHandler<HTMLInputElement> = (e): void => {
     if (e.target.files) addFiles(e.target.files)
     // 允许重复选择同一文件
     if (inputRef.current) inputRef.current.value = ''
   }
 
-  const handleUpload = async () => {
+  const handleUpload = async (): Promise<void> => {
     if (!currentSessionId || !targetDir || items.length === 0) return
     setIsUploading(true)
 

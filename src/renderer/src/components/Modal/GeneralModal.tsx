@@ -112,7 +112,7 @@ export const ConfirmModal: React.FC<{
   confirmText = '确认',
   cancelText = '取消'
 }) => {
-  const handleConfirm = () => {
+  const handleConfirm = (): void => {
     onConfirm()
     onClose()
   }

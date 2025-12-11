@@ -101,7 +101,7 @@ export const MonitorListContent: React.FC = () => {
   }
 
   // 加载监控数据
-  const loadMonitorData = async () => {
+  const loadMonitorData = async (): Promise<void> => {
     if (!currentSessionId || !isConnected) {
       setMonitorData(null)
       return

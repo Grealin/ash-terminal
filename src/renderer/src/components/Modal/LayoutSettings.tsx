@@ -17,11 +17,11 @@ export const LayoutModal: React.FC = () => {
     )
   }
 
-  const handleLeftSideBarToggle = async (checked: boolean) => {
+  const handleLeftSideBarToggle = async (checked: boolean): Promise<void> => {
     await setLeftSideBarVisible(checked)
   }
 
-  const handleRightSideBarToggle = async (checked: boolean) => {
+  const handleRightSideBarToggle = async (checked: boolean): Promise<void> => {
     await setRightSideBarVisible(checked)
   }
 

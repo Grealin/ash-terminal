@@ -64,7 +64,7 @@ export const TerminalListContent: React.FC = () => {
     sessions.find((session) => session.id === currentSessionId)?.name || '未知会话'
 
   // 高性能的节流 fit 方法
-  const throttledFitTerminal = useCallback(() => {
+  const throttledFitTerminal = useCallback((): boolean => {
     if (!fitAddonRef.current || !terminalInstanceRef.current) return false
 
     const now = performance.now()
@@ -303,7 +303,7 @@ export const TerminalListContent: React.FC = () => {
   }, [isDark, config?.terminal?.fontSize, throttledFitTerminal])
 
   // 创建交互式Shell
-  const createShell = useCallback(async () => {
+  const createShell = useCallback(async (): Promise<void> => {
     if (!currentSessionId || !terminalInstanceRef.current) return
 
     try {
@@ -342,7 +342,7 @@ export const TerminalListContent: React.FC = () => {
   }, [currentSessionId])
 
   // 清理Shell监听器
-  const cleanupShellListeners = useCallback(() => {
+  const cleanupShellListeners = useCallback((): void => {
     if (shellDataCleanupRef.current) {
       shellDataCleanupRef.current()
       shellDataCleanupRef.current = null
@@ -401,7 +401,7 @@ export const TerminalListContent: React.FC = () => {
     let lastWidth = 0
     let lastHeight = 0
 
-    const handleResize = (entries?: ResizeObserverEntry[]) => {
+    const handleResize = (entries?: ResizeObserverEntry[]): void => {
       // 获取当前尺寸
       let currentWidth = 0
       let currentHeight = 0
@@ -439,16 +439,16 @@ export const TerminalListContent: React.FC = () => {
     })
     resizeObserver.observe(containerRef.current)
 
-    const windowResizeHandler = () => handleResize()
+    const windowResizeHandler = (): void => handleResize()
     window.addEventListener('resize', windowResizeHandler, { passive: true })
 
     // 某些浏览器/系统在拖拽窗口时用 visualViewport 提供更及时的回调
     const vv = (window as any).visualViewport as VisualViewport | undefined
-    const viewportResizeHandler = () => handleResize()
+    const viewportResizeHandler = (): void => handleResize()
     vv?.addEventListener('resize', viewportResizeHandler, { passive: true } as any)
 
     // 容器宽高过渡结束时再执行一次最终 fit，避免过渡中测量不准
-    const transitionEndHandler = (e: TransitionEvent) => {
+    const transitionEndHandler = (e: TransitionEvent): void => {
       if (!containerRef.current) return
       // 仅在尺寸相关过渡结束时处理
       if (
@@ -478,7 +478,7 @@ export const TerminalListContent: React.FC = () => {
     }
   }, [isTerminalReady, throttledFitTerminal])
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = async (): Promise<void> => {
     if (currentSessionId) {
       try {
         await SSHService.disconnectSSH(currentSessionId)
@@ -495,7 +495,7 @@ export const TerminalListContent: React.FC = () => {
     }
   }
 
-  const handleReconnect = async () => {
+  const handleReconnect = async (): Promise<void> => {
     if (currentSessionId) {
       const session = sessions.find((s) => s.id === currentSessionId)
       if (session && terminalInstanceRef.current) {

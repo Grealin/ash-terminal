@@ -47,7 +47,7 @@ export const SessionModal: React.FC = () => {
   }, [editingSession])
 
   // 处理保存
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!formData.name || !formData.host || !formData.username || saving) return
 
     try {
@@ -80,7 +80,7 @@ export const SessionModal: React.FC = () => {
   }
 
   // 处理取消
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setEditingSession(null)
     setFormData({ name: '', host: '', port: 22, username: '', password: '' })
     closeModal()
