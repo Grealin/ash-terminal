@@ -113,7 +113,7 @@ export const FileListContent: React.FC = () => {
       setRealPath('~')
       setError(null)
     }
-  }, [currentSessionId, isConnected])
+  }, [currentSessionId, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 当连接断开时重置状态
   useEffect(() => {
@@ -136,7 +136,7 @@ export const FileListContent: React.FC = () => {
     if (!refreshToken) return
     const path = refreshPath || realPath
     loadFiles(path)
-  }, [refreshToken])
+  }, [refreshToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 进入目录
   const handleDirectoryEnter = (dirName: string): void => {

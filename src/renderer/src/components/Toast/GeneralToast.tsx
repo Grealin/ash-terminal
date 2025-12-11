@@ -228,7 +228,7 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
       }
     }
     return cleanup
-  }, [isOpen, duration])
+  }, [isOpen, duration]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isTop = useMemo(
     () => position.startsWith('top') || position.startsWith('middle'),

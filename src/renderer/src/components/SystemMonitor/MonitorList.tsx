@@ -133,7 +133,7 @@ export const MonitorListContent: React.FC = () => {
       setError(null)
     }
     return undefined
-  }, [currentSessionId, isConnected])
+  }, [currentSessionId, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 当连接断开时重置状态
   useEffect(() => {
