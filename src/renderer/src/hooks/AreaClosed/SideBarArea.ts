@@ -4,7 +4,11 @@ import { useAtom } from 'jotai'
 import { useCallback, useEffect } from 'react'
 
 // 左侧边栏控制Hook
-export const useLeftSideBar = () => {
+export const useLeftSideBar = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(leftSideBarVisibleAtom)
   const { config, updateConfigField } = useConfig()
 
@@ -53,7 +57,11 @@ export const useLeftSideBar = () => {
 }
 
 // 右侧边栏控制Hook
-export const useRightSideBar = () => {
+export const useRightSideBar = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(rightSideBarVisibleAtom)
   const { config, updateConfigField } = useConfig()
 

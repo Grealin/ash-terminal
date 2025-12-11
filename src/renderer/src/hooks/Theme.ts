@@ -3,7 +3,11 @@ import { useAtom } from 'jotai'
 import { useCallback } from 'react'
 import { useConfig } from './Config'
 
-export const useDarkTheme = () => {
+export const useDarkTheme = (): {
+  isDark: boolean | undefined
+  toggleTheme: () => void
+  setTheme: (dark: boolean) => void
+} => {
   const [isDark, setDark] = useAtom(darkStateAtom)
 
   const toggleTheme = (): void => {
@@ -21,7 +25,9 @@ export const useDarkTheme = () => {
   }
 }
 
-export const useThemeConfig = () => {
+export const useThemeConfig = (): {
+  updateThemeConfig: (defaultDarkMode: boolean) => Promise<void>
+} => {
   const { updateConfigField } = useConfig()
 
   // 更新主题配置到配置文件

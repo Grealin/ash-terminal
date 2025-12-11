@@ -2,7 +2,15 @@ import { sshConnectionStatusAtom } from '@/store'
 import { useAtom } from 'jotai'
 import { useCallback } from 'react'
 
-export const useSSHConnection = () => {
+export const useSSHConnection = (): {
+  connectionStatus: 'connected' | 'connecting' | 'disconnected'
+  setConnecting: () => void
+  setConnected: () => void
+  setDisconnected: () => void
+  isConnected: boolean
+  isConnecting: boolean
+  isDisconnected: boolean
+} => {
   const [connectionStatus, setConnectionStatus] = useAtom(sshConnectionStatusAtom)
 
   const setConnecting = useCallback(() => {

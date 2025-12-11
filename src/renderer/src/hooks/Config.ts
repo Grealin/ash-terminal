@@ -1,8 +1,14 @@
+import { ContextService } from '@/services'
 import { AppConfig } from '@shared/models'
 import { useCallback, useEffect, useState } from 'react'
-import { ContextService } from '@/services'
 
-export const useConfig = () => {
+export const useConfig = (): {
+  config: AppConfig | null
+  loading: boolean
+  loadConfig: () => Promise<void>
+  saveConfig: (newConfig: AppConfig) => Promise<void>
+  updateConfigField: (path: string, value: any) => Promise<void>
+} => {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [loading, setLoading] = useState(true)
 

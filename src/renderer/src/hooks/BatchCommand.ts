@@ -10,7 +10,21 @@ import {
 import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useEffect, useRef } from 'react'
 
-export const useBatchCommand = () => {
+export const useBatchCommand = (): {
+  commandText: string
+  setCommandText: (text: string) => void
+  interval: number
+  setInterval: (interval: number) => void
+  status: BatchCommandStatus
+  currentIndex: number
+  totalCommands: number
+  start: () => void
+  pause: () => void
+  clear: () => void
+  canStart: boolean
+  canPause: boolean
+  canClear: boolean
+} => {
   const [commandText, setCommandText] = useAtom(batchCommandTextAtom)
   const [interval, setInterval] = useAtom(batchCommandIntervalAtom)
   const [status, setStatus] = useAtom(batchCommandStatusAtom)

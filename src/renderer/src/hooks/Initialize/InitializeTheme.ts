@@ -1,7 +1,7 @@
 import { useConfig, useDarkTheme } from '@/hooks'
 import { useEffect, useRef } from 'react'
 
-export const useInitializeTheme = () => {
+export const useInitializeTheme = (): { loading: boolean } => {
   const { config, loading } = useConfig()
   const { setTheme } = useDarkTheme()
   const initializedRef = useRef(false)

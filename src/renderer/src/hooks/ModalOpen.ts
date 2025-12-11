@@ -8,7 +8,11 @@ import {
 } from '@/store'
 import { useAtom } from 'jotai'
 
-export const useModalTheme = () => {
+export const useModalTheme = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalThemeOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
@@ -19,7 +23,11 @@ export const useModalTheme = () => {
   }
 }
 
-export const useModalUpload = () => {
+export const useModalUpload = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalUploadOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
@@ -30,7 +38,11 @@ export const useModalUpload = () => {
   }
 }
 
-export const useModalLayout = () => {
+export const useModalLayout = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalLayoutOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
@@ -41,7 +53,11 @@ export const useModalLayout = () => {
   }
 }
 
-export const useModalTool = () => {
+export const useModalTool = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalToolOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
@@ -52,7 +68,11 @@ export const useModalTool = () => {
   }
 }
 
-export const useModalSession = () => {
+export const useModalSession = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalSessionOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
@@ -63,7 +83,11 @@ export const useModalSession = () => {
   }
 }
 
-export const useModalTerminalSettings = () => {
+export const useModalTerminalSettings = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalTerminalSettingsOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)

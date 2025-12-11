@@ -4,7 +4,13 @@ import { SSHConfig } from '@shared/models'
 import { useAtom } from 'jotai'
 import { useCallback } from 'react'
 
-export const useSSHSession = () => {
+export const useSSHSession = (): {
+  sessions: SSHConfig[]
+  currentSessionId: string | null
+  loadSessions: () => Promise<void>
+  connectToSession: (session: SSHConfig) => Promise<{ success: boolean; error?: string }>
+  disconnectCurrentSession: () => Promise<{ success: boolean; error?: string }>
+} => {
   const [sessions, setSessions] = useAtom(sessionsAtom)
   const [currentSessionId, setCurrentSessionId] = useAtom(currentSessionIdAtom)
 

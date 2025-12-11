@@ -47,13 +47,13 @@ const electron = {
     ipcRenderer.invoke('minimizeFocusedWindow', ...args),
   maximizeFocusedWindow: (...args: Parameters<MaximizeFocusedWindow>) =>
     ipcRenderer.invoke('maximizeFocusedWindow', ...args),
-  toggleMaximizeFocusedWindow: (...args: Parameters<ToggleMaximizeFocusedWindow>) =>
+  toggleMaximizeFocusedWindow: (...args: Parameters<ToggleMaximizeFocusedWindow>): Promise<void> =>
     ipcRenderer.invoke('toggleMaximizeFocusedWindow', ...args),
-  isWindowMaximized: (...args: Parameters<IsWindowMaximized>) =>
+  isWindowMaximized: (...args: Parameters<IsWindowMaximized>): ReturnType<IsWindowMaximized> =>
     ipcRenderer.invoke('isWindowMaximized', ...args),
   onWindowMaximizeChanged: (...args: Parameters<OnWindowMaximizeChanged>): (() => void) => {
     const [callback] = args
-    const subscription = (_event: Electron.IpcRendererEvent, isMaximized: boolean) =>
+    const subscription = (_event: Electron.IpcRendererEvent, isMaximized: boolean): void =>
       callback(isMaximized)
     ipcRenderer.on('window-maximize-changed', subscription)
     return () => ipcRenderer.removeListener('window-maximize-changed', subscription)
@@ -109,7 +109,7 @@ const ssh = {
       _event: Electron.IpcRendererEvent,
       receivedSessionId: string,
       data: string
-    ) => {
+    ): void => {
       if (receivedSessionId === sessionId) {
         callback(data)
       }
@@ -121,7 +121,7 @@ const ssh = {
 
   onShellClose: (...args: Parameters<OnShellClose>): (() => void) => {
     const [sessionId, callback] = args
-    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string) => {
+    const subscription = (_event: Electron.IpcRendererEvent, receivedSessionId: string): void => {
       if (receivedSessionId === sessionId) {
         callback()
       }
@@ -137,7 +137,7 @@ const ssh = {
       _event: Electron.IpcRendererEvent,
       receivedSessionId: string,
       error: string
-    ) => {
+    ): void => {
       if (receivedSessionId === sessionId) {
         callback(error)
       }

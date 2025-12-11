@@ -10,7 +10,11 @@ import { useAtom } from 'jotai'
 import { useCallback, useEffect } from 'react'
 
 // AI界面控制Hook
-export const useAiInterface = () => {
+export const useAiInterface = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(aiInterfaceVisibleAtom)
   const { config, updateConfigField } = useConfig()
 
@@ -57,7 +61,11 @@ export const useAiInterface = () => {
 }
 
 // 会话列表控制Hook
-export const useSessionList = () => {
+export const useSessionList = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(sessionListVisibleAtom)
   const { config, updateConfigField } = useConfig()
 
@@ -104,7 +112,11 @@ export const useSessionList = () => {
 }
 
 // 文件列表控制Hook
-export const useFileList = () => {
+export const useFileList = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(fileListVisibleAtom)
   const { config, updateConfigField } = useConfig()
 
@@ -151,7 +163,11 @@ export const useFileList = () => {
 }
 
 // 监控列表控制Hook
-export const useMonitorList = () => {
+export const useMonitorList = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(monitorListVisibleAtom)
   const { config, updateConfigField } = useConfig()
 
@@ -198,7 +214,11 @@ export const useMonitorList = () => {
 }
 
 // 命令列表控制Hook
-export const useCommandList = () => {
+export const useCommandList = (): {
+  visible: boolean
+  toggleVisible: () => Promise<void>
+  setVisible: (newVisible: boolean) => Promise<void>
+} => {
   const [visible, setVisible] = useAtom(commandListVisibleAtom)
   const { config, updateConfigField } = useConfig()
 

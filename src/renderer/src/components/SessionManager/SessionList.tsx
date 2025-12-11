@@ -49,7 +49,7 @@ export const SessionListContent: React.FC = () => {
 
   // 初始化加载会话列表
   useEffect(() => {
-    const loadSessions = async () => {
+    const loadSessions = async (): Promise<void> => {
       try {
         const sessionList = await SSHService.getSessions()
         setSessions(sessionList)

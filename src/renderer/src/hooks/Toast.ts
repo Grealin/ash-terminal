@@ -28,7 +28,7 @@ function kindFactory(
   type: ToastType,
   message: React.ReactNode,
   opts?: Omit<ToastShowOptions, 'type' | 'message'>
-) {
+): string {
   return showImpl({ ...(opts || {}), type, message })
 }
 
