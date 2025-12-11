@@ -1,9 +1,9 @@
-import { useConfig, useSSHConnection } from '@/hooks'
+import { useConfig, useSSHConnection, useToast } from '@/hooks'
 import { SSHService } from '@/services'
 import { currentSessionIdAtom, darkStateAtom, sessionsAtom } from '@/store'
 import { useAtom, useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
@@ -27,13 +27,19 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
 }
 
 export const TerminalListContent: React.FC = () => {
+  const toast = useToast()
   const [currentSessionId, setCurrentSessionId] = useAtom(currentSessionIdAtom)
   const sessions = useAtomValue(sessionsAtom)
   const isDark = useAtomValue(darkStateAtom)
   const { config } = useConfig()
-  const { setDisconnected, isConnecting, isConnected: sshConnected } = useSSHConnection()
+  const {
+    setConnected,
+    setConnecting,
+    setDisconnected,
+    isConnecting,
+    isConnected: sshConnected
+  } = useSSHConnection()
 
-  const terminalRef = useRef<HTMLDivElement>(null)
   // 终端外层容器（用于观察布局变化）
   const containerRef = useRef<HTMLDivElement>(null)
   const terminalInstanceRef = useRef<Terminal | null>(null)
@@ -44,7 +50,6 @@ export const TerminalListContent: React.FC = () => {
   const currentSessionIdRef = useRef<string | null>(null)
   const isShellActiveRef = useRef(false)
   const onDataDisposableRef = useRef<ReturnType<Terminal['onData']> | null>(null)
-  const prevConnectedRef = useRef<boolean | null>(null)
   const shellDataCleanupRef = useRef<(() => void) | null>(null)
   const shellCloseCleanupRef = useRef<(() => void) | null>(null)
   const shellErrorCleanupRef = useRef<(() => void) | null>(null)
@@ -54,9 +59,67 @@ export const TerminalListContent: React.FC = () => {
   const lastResizeTimeRef = useRef<number>(0)
   const finalResizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // 用于存储清理函数的 ref
+  const cleanupRef = useRef<(() => void) | null>(null)
+
   // 获取当前会话名称
   const currentSessionName =
     sessions.find((session) => session.id === currentSessionId)?.name || '未知会话'
+
+  // 终端主题配置 - 使用 useMemo 缓存避免重复创建
+  const terminalTheme = useMemo(
+    () =>
+      isDark
+        ? {
+            background: '#0f172a', // slate-900
+            foreground: '#e2e8f0', // slate-200
+            cursor: '#f1f5f9', // slate-100
+            black: '#1e293b', // slate-800
+            red: '#ef4444', // red-500
+            green: '#22c55e', // green-500
+            yellow: '#eab308', // yellow-500
+            blue: '#3b82f6', // blue-500
+            magenta: '#a855f7', // purple-500
+            cyan: '#06b6d4', // cyan-500
+            white: '#cbd5e1', // slate-300
+            brightBlack: '#64748b', // slate-500
+            brightRed: '#f87171', // red-400
+            brightGreen: '#4ade80', // green-400
+            brightYellow: '#facc15', // yellow-400
+            brightBlue: '#60a5fa', // blue-400
+            brightMagenta: '#c084fc', // purple-400
+            brightCyan: '#22d3ee', // cyan-400
+            brightWhite: '#f1f5f9' // slate-100
+          }
+        : {
+            background: '#ffffff',
+            foreground: '#1e293b', // slate-800
+            cursor: '#475569', // slate-600
+            black: '#1e293b',
+            red: '#dc2626', // red-600
+            green: '#16a34a', // green-600
+            yellow: '#ca8a04', // yellow-600
+            blue: '#2563eb', // blue-600
+            magenta: '#9333ea', // purple-600
+            cyan: '#0891b2', // cyan-600
+            white: '#475569', // slate-600
+            brightBlack: '#64748b', // slate-500
+            brightRed: '#ef4444', // red-500
+            brightGreen: '#22c55e', // green-500
+            brightYellow: '#eab308', // yellow-500
+            brightBlue: '#3b82f6', // blue-500
+            brightMagenta: '#a855f7', // purple-500
+            brightCyan: '#06b6d4', // cyan-500
+            brightWhite: '#1e293b' // slate-800
+          },
+    [isDark]
+  )
+
+  // 终端字体大小配置
+  const terminalFontSize = useMemo(
+    () => config?.terminal?.fontSize ?? 14,
+    [config?.terminal?.fontSize]
+  )
 
   // 高性能的节流 fit 方法
   const throttledFitTerminal = useCallback((): boolean => {
@@ -85,7 +148,7 @@ export const TerminalListContent: React.FC = () => {
       // 检查终端元素是否存在且有有效尺寸
       if (!element || !element.offsetParent) return false
 
-      const containerRect = terminalRef.current?.getBoundingClientRect()
+      const containerRect = element.getBoundingClientRect()
       if (!containerRect || containerRect.width === 0 || containerRect.height === 0) {
         return false
       }
@@ -107,124 +170,106 @@ export const TerminalListContent: React.FC = () => {
     }
   }, [currentSessionId, isShellActive])
 
-  // 初始化终端（仅挂载时执行，不输出欢迎信息，避免重复）
-  useEffect(() => {
-    if (!terminalRef.current) return
-
-    // 获取终端初始配置
-    const terminalConfig = config?.terminal || {
-      fontSize: 14
-    }
-
-    // 初始主题
-    const terminalTheme = isDark
-      ? {
-          background: '#0f172a', // slate-900
-          foreground: '#e2e8f0', // slate-200
-          cursor: '#f1f5f9', // slate-100
-          black: '#1e293b', // slate-800
-          red: '#ef4444', // red-500
-          green: '#22c55e', // green-500
-          yellow: '#eab308', // yellow-500
-          blue: '#3b82f6', // blue-500
-          magenta: '#a855f7', // purple-500
-          cyan: '#06b6d4', // cyan-500
-          white: '#cbd5e1', // slate-300
-          brightBlack: '#64748b', // slate-500
-          brightRed: '#f87171', // red-400
-          brightGreen: '#4ade80', // green-400
-          brightYellow: '#facc15', // yellow-400
-          brightBlue: '#60a5fa', // blue-400
-          brightMagenta: '#c084fc', // purple-400
-          brightCyan: '#22d3ee', // cyan-400
-          brightWhite: '#f1f5f9' // slate-100
+  // 使用 callback ref 初始化终端 - 当 DOM 元素挂载/卸载时自动调用
+  const terminalRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      // 元素卸载时执行清理
+      if (!element) {
+        if (cleanupRef.current) {
+          cleanupRef.current()
+          cleanupRef.current = null
         }
-      : {
-          background: '#ffffff',
-          foreground: '#1e293b', // slate-800
-          cursor: '#475569', // slate-600
-          black: '#1e293b',
-          red: '#dc2626', // red-600
-          green: '#16a34a', // green-600
-          yellow: '#ca8a04', // yellow-600
-          blue: '#2563eb', // blue-600
-          magenta: '#9333ea', // purple-600
-          cyan: '#0891b2', // cyan-600
-          white: '#475569', // slate-600
-          brightBlack: '#64748b', // slate-500
-          brightRed: '#ef4444', // red-500
-          brightGreen: '#22c55e', // green-500
-          brightYellow: '#eab308', // yellow-500
-          brightBlue: '#3b82f6' // blue-500
-        }
-
-    const terminal = new Terminal({
-      theme: terminalTheme,
-      fontFamily: 'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace',
-      fontSize: terminalConfig.fontSize,
-      lineHeight: 1.2,
-      rows: 30,
-      cols: 100,
-      cursorBlink: true,
-      convertEol: true,
-      allowTransparency: false,
-      allowProposedApi: true
-    })
-
-    const fitAddon = new FitAddon()
-    terminal.loadAddon(fitAddon)
-
-    // 打开终端
-    terminal.open(terminalRef.current)
-
-    terminalInstanceRef.current = terminal
-    fitAddonRef.current = fitAddon
-
-    // 处理用户输入 - 使用 ref 防止闭包拿到旧值
-    onDataDisposableRef.current = terminal.onData((data) => {
-      if (currentSessionIdRef.current && isShellActiveRef.current) {
-        SSHService.writeToShell(currentSessionIdRef.current, data)
+        return
       }
-    })
 
-    // 初始化调整大小
-    const rafId = requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (throttledFitTerminal()) {
-          setIsTerminalReady(true)
+      // 如果已经初始化过，跳过
+      if (terminalInstanceRef.current) return
+
+      // 用于清理的标志位
+      let isDisposed = false
+      let rafId: number | null = null
+      let timeoutId: NodeJS.Timeout | null = null
+
+      const terminal = new Terminal({
+        theme: terminalTheme,
+        fontSize: terminalFontSize,
+        lineHeight: 1.2,
+        rows: 30,
+        cols: 100,
+        cursorBlink: true,
+        convertEol: true,
+        allowTransparency: false,
+        allowProposedApi: true
+      })
+
+      const fitAddon = new FitAddon()
+      terminal.loadAddon(fitAddon)
+
+      // 打开终端
+      terminal.open(element)
+
+      terminalInstanceRef.current = terminal
+      fitAddonRef.current = fitAddon
+
+      // 处理用户输入 - 使用 ref 防止闭包拿到旧值
+      onDataDisposableRef.current = terminal.onData((data) => {
+        if (currentSessionIdRef.current && isShellActiveRef.current) {
+          SSHService.writeToShell(currentSessionIdRef.current, data)
         }
-      }, 50)
-    })
+      })
 
-    // 初始化欢迎信息（仅此处一次）
-    terminalInstanceRef.current.clear()
-    terminal.writeln(`ASH Terminal - SSH客户端`)
-    terminal.writeln(`请选择一个会话进行连接...`)
+      // 初始化调整大小
+      rafId = requestAnimationFrame(() => {
+        if (isDisposed) return
+        timeoutId = setTimeout(() => {
+          if (isDisposed) return
+          if (throttledFitTerminal()) {
+            setIsTerminalReady(true)
+          }
+        }, 50)
+      })
 
-    return () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId)
-      }
-      setIsTerminalReady(false)
-      if (onDataDisposableRef.current) {
-        try {
-          onDataDisposableRef.current.dispose()
-        } catch (error) {
-          console.warn('Terminal onData dispose error:', error)
+      // 初始化欢迎信息
+      terminal.clear()
+      terminal.writeln('ASH Terminal - SSH客户端')
+      terminal.writeln(`请选择一个会话进行连接...`)
+
+      // 存储清理函数
+      cleanupRef.current = () => {
+        isDisposed = true
+
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId)
         }
-        onDataDisposableRef.current = null
-      }
-      if (terminal) {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId)
+        }
+
+        setIsTerminalReady(false)
+
+        if (onDataDisposableRef.current) {
+          try {
+            onDataDisposableRef.current.dispose()
+          } catch (error) {
+            console.warn('Terminal onData dispose error:', error)
+          }
+          onDataDisposableRef.current = null
+        }
+
         try {
           terminal.dispose()
         } catch (error) {
           console.warn('Terminal dispose error:', error)
         }
+
+        terminalInstanceRef.current = null
+        fitAddonRef.current = null
       }
-      terminalInstanceRef.current = null
-      fitAddonRef.current = null
-    }
-  }, [])
+    },
+    // 依赖初始主题和字体大小，后续变化由单独的 useEffect 处理
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
 
   // 同步 ref 以避免 onData 使用旧的闭包数据
   useEffect(() => {
@@ -237,67 +282,18 @@ export const TerminalListContent: React.FC = () => {
 
   // 主题/字体变化时，仅更新终端选项，不重建实例，避免欢迎信息重复
   useEffect(() => {
-    if (!terminalInstanceRef.current) return
-
-    const terminalConfig = config?.terminal || {
-      fontSize: 14
-    }
-
-    const terminalTheme = isDark
-      ? {
-          background: '#0f172a',
-          foreground: '#e2e8f0',
-          cursor: '#f1f5f9',
-          black: '#1e293b',
-          red: '#ef4444',
-          green: '#22c55e',
-          yellow: '#eab308',
-          blue: '#3b82f6',
-          magenta: '#a855f7',
-          cyan: '#06b6d4',
-          white: '#cbd5e1',
-          brightBlack: '#64748b',
-          brightRed: '#f87171',
-          brightGreen: '#4ade80',
-          brightYellow: '#facc15',
-          brightBlue: '#60a5fa',
-          brightMagenta: '#c084fc',
-          brightCyan: '#22d3ee',
-          brightWhite: '#f1f5f9'
-        }
-      : {
-          background: '#ffffff',
-          foreground: '#1e293b',
-          cursor: '#475569',
-          black: '#1e293b',
-          red: '#dc2626',
-          green: '#16a34a',
-          yellow: '#ca8a04',
-          blue: '#2563eb',
-          magenta: '#9333ea',
-          cyan: '#0891b2',
-          white: '#475569',
-          brightBlack: '#64748b',
-          brightRed: '#ef4444',
-          brightGreen: '#22c55e',
-          brightYellow: '#eab308',
-          brightBlue: '#3b82f6',
-          brightMagenta: '#a855f7',
-          brightCyan: '#06b6d4',
-          brightWhite: '#1e293b'
-        }
+    const terminal = terminalInstanceRef.current
+    if (!terminal) return
 
     try {
-      terminalInstanceRef.current.options.theme = terminalTheme as any
-      terminalInstanceRef.current.options.fontFamily =
-        'Monaco, Menlo, "Ubuntu Mono", "DejaVu Sans Mono", "Courier New", monospace'
-      terminalInstanceRef.current.options.fontSize = terminalConfig.fontSize as number
+      terminal.options.theme = terminalTheme
+      terminal.options.fontSize = terminalFontSize
       // 字体或主题变化后适配尺寸
       throttledFitTerminal()
     } catch (e) {
       console.warn('Update terminal options error:', e)
     }
-  }, [isDark, config?.terminal?.fontSize, throttledFitTerminal])
+  }, [terminalTheme, terminalFontSize, throttledFitTerminal])
 
   // 创建交互式Shell
   const createShell = useCallback(async (): Promise<void> => {
@@ -318,9 +314,6 @@ export const TerminalListContent: React.FC = () => {
       // 设置Shell关闭监听
       const closeCleanup = SSHService.onShellClose(currentSessionId, () => {
         setIsShellActive(false)
-        if (terminalInstanceRef.current) {
-          terminalInstanceRef.current.writeln(`\r\nShell连接已关闭`)
-        }
       })
       shellCloseCleanupRef.current = closeCleanup
 
@@ -356,43 +349,32 @@ export const TerminalListContent: React.FC = () => {
 
   // 当会话连接时创建Shell
   useEffect(() => {
-    if (currentSessionId && sshConnected && terminalInstanceRef.current) {
+    if (currentSessionId && terminalInstanceRef.current) {
       // 清理之前的监听器
       cleanupShellListeners()
 
       // 清空终端并显示连接信息
       terminalInstanceRef.current.clear()
       terminalInstanceRef.current.writeln(`已连接到会话：${currentSessionName}`)
-      terminalInstanceRef.current.writeln(`正在创建交互式Shell...`)
 
       // 创建交互式Shell
       createShell()
-    } else if (!sshConnected && terminalInstanceRef.current) {
+    } else if (!currentSessionId && terminalInstanceRef.current) {
       // 断开连接时清理
       cleanupShellListeners()
       setIsShellActive(false)
-
-      // 仅在曾经连接过后再显示欢迎信息，避免与初始化重复
-      if (prevConnectedRef.current === true) {
-        terminalInstanceRef.current.clear()
-        terminalInstanceRef.current.writeln(`ASH Terminal - SSH客户端`)
-        terminalInstanceRef.current.writeln(`请选择一个会话进行连接...`)
-      }
     }
 
     return () => {
       cleanupShellListeners()
     }
-  }, [currentSessionId, sshConnected, currentSessionName, createShell, cleanupShellListeners])
-
-  // 跟踪连接状态，用于控制断开时是否打印欢迎信息
-  useEffect(() => {
-    prevConnectedRef.current = sshConnected
-  }, [sshConnected])
+  }, [currentSessionId, currentSessionName, createShell, cleanupShellListeners])
 
   // 监听容器大小变化并调整终端大小
   useEffect(() => {
-    if (!containerRef.current || !isTerminalReady) return
+    // 在 effect 开始时捕获 ref 值，确保清理函数使用相同的引用
+    const container = containerRef.current
+    if (!container || !isTerminalReady) return
 
     const resizeTimeoutId: NodeJS.Timeout | null = null
     let lastWidth = 0
@@ -408,7 +390,7 @@ export const TerminalListContent: React.FC = () => {
         currentWidth = width
         currentHeight = height
       } else {
-        const rect = containerRef.current?.getBoundingClientRect()
+        const rect = container.getBoundingClientRect()
         if (rect) {
           currentWidth = rect.width
           currentHeight = rect.height
@@ -434,7 +416,7 @@ export const TerminalListContent: React.FC = () => {
     const resizeObserver = new ResizeObserver((entries) => {
       handleResize(entries)
     })
-    resizeObserver.observe(containerRef.current)
+    resizeObserver.observe(container)
 
     const windowResizeHandler = (): void => handleResize()
     window.addEventListener('resize', windowResizeHandler, { passive: true })
@@ -446,7 +428,6 @@ export const TerminalListContent: React.FC = () => {
 
     // 容器宽高过渡结束时再执行一次最终 fit，避免过渡中测量不准
     const transitionEndHandler = (e: TransitionEvent): void => {
-      if (!containerRef.current) return
       // 仅在尺寸相关过渡结束时处理
       if (
         e.propertyName === 'width' ||
@@ -458,13 +439,14 @@ export const TerminalListContent: React.FC = () => {
         throttledFitTerminal()
       }
     }
-    containerRef.current.addEventListener('transitionend', transitionEndHandler)
+    container.addEventListener('transitionend', transitionEndHandler)
 
     return () => {
       resizeObserver.disconnect()
       window.removeEventListener('resize', windowResizeHandler)
       vv?.removeEventListener('resize', viewportResizeHandler as any)
-      containerRef.current?.removeEventListener('transitionend', transitionEndHandler)
+      // 使用捕获的 container 变量，确保移除正确元素上的监听器
+      container.removeEventListener('transitionend', transitionEndHandler)
       if (resizeTimeoutId) {
         clearTimeout(resizeTimeoutId)
       }
@@ -481,10 +463,10 @@ export const TerminalListContent: React.FC = () => {
         await SSHService.disconnectSSH(currentSessionId)
         setDisconnected()
         setCurrentSessionId(null)
+        toast.simple('连接已断开', { type: 'success' })
         if (terminalInstanceRef.current) {
           terminalInstanceRef.current.clear()
-          terminalInstanceRef.current.writeln(`已与 SSH 会话断开连接`)
-          terminalInstanceRef.current.writeln('')
+          terminalInstanceRef.current.writeln(`\n请选择一个会话进行连接...`)
         }
       } catch (error) {
         console.error('Failed to disconnect:', error)
@@ -500,16 +482,18 @@ export const TerminalListContent: React.FC = () => {
           // 清空终端并尝试重连
           terminalInstanceRef.current.clear()
           terminalInstanceRef.current.writeln(`\n尝试重新连接到 ${session.name}...`)
+          toast.simple(`正在重新连接到 ${session.name}...`, { type: 'info' })
 
           // 在重连前清理旧的 Shell 监听并标记为未激活，避免期间输入写入不存在的 Shell
+          await SSHService.disconnectSSH(currentSessionId)
           cleanupShellListeners()
           setIsShellActive(false)
+          setConnecting()
 
           const result = await SSHService.connectSSH(session)
           if (result.success) {
+            setConnected()
             terminalInstanceRef.current.writeln(`重新连接成功`)
-            // 重新创建交互式 Shell（由于连接状态可能未变化，这里主动创建）
-            terminalInstanceRef.current.writeln(`正在创建交互式Shell...`)
             await createShell()
           } else {
             terminalInstanceRef.current.writeln(`\x1b[31m重新连接失败: ${result.error}\x1b[0m`)

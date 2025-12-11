@@ -135,7 +135,7 @@ export const CommandListContent: React.FC = () => {
             type="number"
             min="0.1"
             step="0.1"
-            value={interval}
+            value={interval.toFixed(1)}
             onChange={handleIntervalChange}
             disabled={status === 'running'}
             className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
