@@ -45,7 +45,6 @@ export const ToastHost: React.FC = () => {
                 onClose={() => handleClosed(t)}
                 title={t.title}
                 message={t.message}
-                children={t.children}
                 type={t.type}
                 position={t.position}
                 size={t.size}
@@ -56,7 +55,9 @@ export const ToastHost: React.FC = () => {
                 icon={t.icon}
                 className={t.className}
                 noContainer={true}
-              />
+              >
+                {t.children}
+              </GeneralToast>
             ))}
           </div>
         )

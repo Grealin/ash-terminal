@@ -209,7 +209,9 @@ export const TerminalListContent: React.FC = () => {
       if (onDataDisposableRef.current) {
         try {
           onDataDisposableRef.current.dispose()
-        } catch {}
+        } catch (error) {
+          console.warn('Terminal onData dispose error:', error)
+        }
         onDataDisposableRef.current = null
       }
       if (terminal) {
@@ -392,7 +394,7 @@ export const TerminalListContent: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current || !isTerminalReady) return
 
-    let resizeTimeoutId: NodeJS.Timeout | null = null
+    const resizeTimeoutId: NodeJS.Timeout | null = null
     let lastWidth = 0
     let lastHeight = 0
 
