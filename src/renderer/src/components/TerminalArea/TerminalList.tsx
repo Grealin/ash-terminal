@@ -31,12 +31,7 @@ export const TerminalListContent: React.FC = () => {
   const sessions = useAtomValue(sessionsAtom)
   const isDark = useAtomValue(darkStateAtom)
   const { config } = useConfig()
-  const {
-    connectionStatus,
-    setDisconnected,
-    isConnecting,
-    isConnected: sshConnected
-  } = useSSHConnection()
+  const { setDisconnected, isConnecting, isConnected: sshConnected } = useSSHConnection()
 
   const terminalRef = useRef<HTMLDivElement>(null)
   // 终端外层容器（用于观察布局变化）

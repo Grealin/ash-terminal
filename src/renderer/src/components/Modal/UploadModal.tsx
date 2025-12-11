@@ -88,8 +88,6 @@ export const UploadModal: React.FC = () => {
     setDragOver(false)
   }
 
-  const handleBrowse = (): void => inputRef.current?.click()
-
   const handleSystemDialogSelect = async (): Promise<void> => {
     try {
       const paths = await ElectronService.openFileDialog()

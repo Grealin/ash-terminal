@@ -51,7 +51,6 @@ export const FileListContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeletePath, setPendingDeletePath] = useState<string | null>(null)
-  const [opMessage, setOpMessage] = useState<string | null>(null)
   const [editConfirmOpen, setEditConfirmOpen] = useState(false)
   const [editingLocalPath, setEditingLocalPath] = useState<string | null>(null)
   const [editingRemotePath, setEditingRemotePath] = useState<string | null>(null)
@@ -396,15 +395,6 @@ export const FileListContent: React.FC = () => {
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(size) / Math.log(k))
     return `${parseFloat((size / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
-  }
-
-  // 格式化时间
-  const formatDate = (date: Date): string => {
-    return (
-      date.toLocaleDateString() +
-      ' ' +
-      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    )
   }
 
   if (!currentSessionId || !isConnected) {

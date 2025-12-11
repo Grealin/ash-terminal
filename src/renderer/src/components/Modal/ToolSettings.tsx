@@ -10,7 +10,7 @@ import { GeneralModal } from './GeneralModal'
 
 export const ToolModal: React.FC = () => {
   const { isModalOpen, closeModal } = useModalTool()
-  const { config, loading } = useConfig()
+  const { loading } = useConfig()
 
   // 使用各个功能区域的 hooks
   const { visible: aiInterfaceVisible, setVisible: setAiInterfaceVisible } = useAiInterface()

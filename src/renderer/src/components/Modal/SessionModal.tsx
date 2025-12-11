@@ -2,7 +2,7 @@ import { useModalSession } from '@/hooks'
 import { SSHService } from '@/services'
 import { editingSessionAtom, sessionsAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { GeneralModal } from './GeneralModal'
@@ -18,7 +18,7 @@ interface SessionFormData {
 
 export const SessionModal: React.FC = () => {
   const { isModalOpen, closeModal } = useModalSession()
-  const [sessions, setSessions] = useAtom(sessionsAtom)
+  const setSessions = useSetAtom(sessionsAtom)
   const [editingSession, setEditingSession] = useAtom(editingSessionAtom)
   const [saving, setSaving] = useState(false)
 

@@ -19,7 +19,8 @@ export const TopDropdown: React.FC<ComponentProps<'ul'>> = ({ children, classNam
       className={twMerge(
         'w-50 dropdown rounded-md shadow-lg',
         'border border-slate-200 bg-white',
-        'dark:bg-slate-800 dark:border-slate-700'
+        'dark:bg-slate-800 dark:border-slate-700',
+        className
       )}
       popover="auto"
       onClick={handleClick}
