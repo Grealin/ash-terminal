@@ -1,3 +1,4 @@
+export * from './aiConfigStore'
 export * from './BaseLib'
 export * from './command'
 export * from './ConfigManager'

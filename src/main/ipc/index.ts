@@ -1,3 +1,5 @@
+import { registerAiHandlers } from './ai'
+import { registerAiConfigHandlers } from './aiConfig'
 import { registerConfigHandlers } from './config'
 import { registerDialogHandlers } from './dialog'
 import { registerFileHandlers } from './file'
@@ -14,4 +16,6 @@ export function registerIpcHandlers(): void {
   registerShellHandlers()
   registerDialogHandlers()
   registerMonitorHandlers()
+  registerAiConfigHandlers()
+  registerAiHandlers()
 }

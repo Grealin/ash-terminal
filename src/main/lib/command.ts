@@ -3,7 +3,7 @@ import { getSSH } from './sshPool'
 export const executeSSHCommand = async (
   sessionId: string,
   command: string
-): Promise<{ stdout: string; stderr: string }> => {
+): Promise<{ stdout: string; stderr: string; code: number }> => {
   const ssh = getSSH(sessionId)
   if (!ssh) {
     throw new Error('SSH connection not found')

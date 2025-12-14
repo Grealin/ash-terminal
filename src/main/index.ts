@@ -1,4 +1,5 @@
 import { initConfigStore, initSessionStore } from '@/lib'
+import { initAiConfigStore } from '@/lib/aiConfigStore'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import {
   WINDOW_INITIAL_HEIGHT,
@@ -10,6 +11,7 @@ import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
+import { initTaskManager } from './ipc/ai'
 
 function createWindow(): void {
   // 创建浏览器窗口
@@ -70,6 +72,12 @@ app.whenReady().then(async () => {
 
   // 初始化会话存储
   await initSessionStore()
+
+  // 初始化 AI 配置存储（加密）
+  await initAiConfigStore()
+
+  // 初始化 AI 任务管理器
+  initTaskManager()
 
   // 开发中默认按F12打开或关闭DevTools
   // 在生产中忽略CommandOrControl+R。

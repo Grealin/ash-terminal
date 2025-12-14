@@ -100,7 +100,7 @@ export class SSH2Wrapper extends EventEmitter {
   /**
    * 执行SSH命令
    */
-  async execCommand(command: string): Promise<{ stdout: string; stderr: string }> {
+  async execCommand(command: string): Promise<{ stdout: string; stderr: string; code: number }> {
     if (!this.connected) {
       throw new Error('SSH connection not established')
     }
@@ -120,11 +120,12 @@ export class SSH2Wrapper extends EventEmitter {
 
         let stdout = ''
         let stderr = ''
+        const exitCode = 0
 
         stream
-          .on('close', () => {
+          .on('close', (code: number) => {
             clearTimeout(timeout)
-            resolve({ stdout, stderr })
+            resolve({ stdout, stderr, code: code ?? exitCode })
           })
           .on('data', (data: Buffer) => {
             stdout += data.toString()
