@@ -1,4 +1,5 @@
 import { SSHConfig } from '@shared/models'
+import { disconnectSSH } from './SSHPool'
 import { app } from 'electron'
 import './Env'
 
@@ -53,4 +54,9 @@ export const removeSession = (sessionId: string): void => {
   }
   const sessions: SSHConfig[] = getSessions().filter((s) => s.id !== sessionId)
   sessionStore.set('sessions', sessions)
+}
+
+export const deleteSession = (sessionId: string): void => {
+  removeSession(sessionId)
+  disconnectSSH(sessionId)
 }
