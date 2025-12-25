@@ -1,4 +1,4 @@
-import { getSSH } from '@/lib/sshPool'
+import { getSSH } from '@/lib/SSHPool'
 import { ToolDefinition, ToolExecutionContext, ToolExecutionResult } from '@shared/models'
 import { BaseTool } from './BaseTool'
 

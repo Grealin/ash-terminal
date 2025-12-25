@@ -1,5 +1,5 @@
-import { removeSession } from './sessionStore'
-import { disconnectSSH } from './sshPool'
+import { removeSession } from './SessionStore'
+import { disconnectSSH } from './SSHPool'
 
 export const deleteSession = (sessionId: string): void => {
   removeSession(sessionId)

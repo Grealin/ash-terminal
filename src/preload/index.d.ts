@@ -26,22 +26,6 @@ import {
 } from '@shared/types/AiConfig'
 
 import {
-  AddMessage,
-  ApproveToolCall,
-  CreateTask,
-  DeleteMessage,
-  DeleteTask,
-  GetTask,
-  GetTaskStatistics,
-  ListTasks,
-  RejectToolCall,
-  RunAgentTask,
-  RunAskTask,
-  UpdateMessage,
-  UpdateTask
-} from '@shared/types/AI'
-
-import {
   BackupRemoteFile,
   ConnectSSH,
   CreateInteractiveShell,
@@ -123,34 +107,12 @@ interface SSH {
   getSystemMonitorData: GetSystemMonitorData
 }
 
-interface AI {
-  // 任务管理
-  createTask: CreateTask
-  listTasks: ListTasks
-  getTask: GetTask
-  updateTask: UpdateTask
-  deleteTask: DeleteTask
-  runAgentTask: RunAgentTask
-  runAskTask: RunAskTask
-  getTaskStatistics: GetTaskStatistics
-
-  // 消息管理
-  addMessage: AddMessage
-  updateMessage: UpdateMessage
-  deleteMessage: DeleteMessage
-
-  // 工具调用
-  approveToolCall: ApproveToolCall
-  rejectToolCall: RejectToolCall
-}
-
 declare global {
   interface Window {
     electron: Electron
     context: Context
     aiConfig: AiConfig
     ssh: SSH
-    ai: AI
   }
 }
 

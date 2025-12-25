@@ -1,6 +1,6 @@
 import { initConfigStore, initSessionStore } from '@/lib'
-import { closeDatabase, initDatabase } from '@/lib/ai/database/core/Database'
-import { initAiConfigStore } from '@/lib/aiConfigStore'
+import { initAiConfigStore } from '@/lib/AiConfigStore'
+import { closeDatabase, initDatabase } from '@/lib/database/core/Database'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import {
   WINDOW_INITIAL_HEIGHT,
@@ -12,7 +12,6 @@ import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
-import { initTaskManager } from './ipc/ai'
 
 function createWindow(): void {
   // 创建浏览器窗口
@@ -79,9 +78,6 @@ app.whenReady().then(async () => {
 
   // 初始化数据库（SQLite - 全局共享）
   initDatabase()
-
-  // 初始化 AI 任务管理器
-  initTaskManager()
 
   // 开发中默认按F12打开或关闭DevTools
   // 在生产中忽略CommandOrControl+R。

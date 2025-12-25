@@ -28,22 +28,6 @@ import {
 } from '@shared/types/AiConfig'
 
 import {
-  AddMessage,
-  ApproveToolCall,
-  CreateTask,
-  DeleteMessage,
-  DeleteTask,
-  GetTask,
-  GetTaskStatistics,
-  ListTasks,
-  RejectToolCall,
-  RunAgentTask,
-  RunAskTask,
-  UpdateMessage,
-  UpdateTask
-} from '@shared/types/AI'
-
-import {
   BackupRemoteFile,
   ConnectSSH,
   CreateInteractiveShell,
@@ -202,39 +186,11 @@ const ssh = {
     ipcRenderer.invoke('getSystemMonitorData', ...args)
 }
 
-const ai = {
-  // 任务管理
-  createTask: (...args: Parameters<CreateTask>) => ipcRenderer.invoke('ai:task:create', ...args),
-  listTasks: (...args: Parameters<ListTasks>) => ipcRenderer.invoke('ai:task:list', ...args),
-  getTask: (...args: Parameters<GetTask>) => ipcRenderer.invoke('ai:task:get', ...args),
-  updateTask: (...args: Parameters<UpdateTask>) => ipcRenderer.invoke('ai:task:update', ...args),
-  deleteTask: (...args: Parameters<DeleteTask>) => ipcRenderer.invoke('ai:task:delete', ...args),
-  runAgentTask: (...args: Parameters<RunAgentTask>) =>
-    ipcRenderer.invoke('ai:task:run-agent', ...args),
-  runAskTask: (...args: Parameters<RunAskTask>) => ipcRenderer.invoke('ai:task:run-ask', ...args),
-  getTaskStatistics: (...args: Parameters<GetTaskStatistics>) =>
-    ipcRenderer.invoke('ai:task:statistics', ...args),
-
-  // 消息管理
-  addMessage: (...args: Parameters<AddMessage>) => ipcRenderer.invoke('ai:message:add', ...args),
-  updateMessage: (...args: Parameters<UpdateMessage>) =>
-    ipcRenderer.invoke('ai:message:update', ...args),
-  deleteMessage: (...args: Parameters<DeleteMessage>) =>
-    ipcRenderer.invoke('ai:message:delete', ...args),
-
-  // 工具调用
-  approveToolCall: (...args: Parameters<ApproveToolCall>) =>
-    ipcRenderer.invoke('ai:tool:approve', ...args),
-  rejectToolCall: (...args: Parameters<RejectToolCall>) =>
-    ipcRenderer.invoke('ai:tool:reject', ...args)
-}
-
 try {
   contextBridge.exposeInMainWorld('electron', electron)
   contextBridge.exposeInMainWorld('context', context)
   contextBridge.exposeInMainWorld('aiConfig', aiConfig)
   contextBridge.exposeInMainWorld('ssh', ssh)
-  contextBridge.exposeInMainWorld('ai', ai)
 } catch (error) {
   console.error(error)
 }

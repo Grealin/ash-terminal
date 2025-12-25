@@ -1,4 +1,4 @@
-import { writeToShell } from '@/lib/shell'
+import { writeToShell } from '@/lib/Shell'
 import { ToolDefinition, ToolExecutionContext, ToolExecutionResult } from '@shared/models'
 import { BaseTool } from './BaseTool'
 

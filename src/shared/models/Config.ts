@@ -10,14 +10,16 @@ export interface TerminalConfig {
 
 // AI 供应商配置（单个）
 export interface AiProviderConfig {
-  id: string // 唯一标识
-  name: string // 显示名称（用户自定义，如 "OpenAI GPT-4"、"DeepSeek" 等）
-  type: 'openai' // 当前仅支持 OpenAI Compatible 接口
+  id: string // 唯一标识使用uuid
+  configName: string // 显示名称（用户自定义，如 "MyAi"、"OtherAi" 等）
+  providerType: 'OpenAI Compatible' // 当前仅支持 OpenAI Compatible
   baseUrl: string // API 基础 URL
-  apiKey: string // API 密钥
-  model: string // 使用的模型名称
-  temperature?: number // 温度参数（0-2），默认 0.7
-  maxTokens?: number // 最大输出 token 数
+  apiKey: string // API 密钥（加密存储）
+  model: string // 模型名称
+  streaming: boolean // 是否启用流式响应
+  temperature?: number // 温度参数
+  maxContextTokens: number // 最大上下文 token 数
+  toolCallProtocol: 'XML' | 'Native JSON' // 工具调用协议：XML或者原生JSON
 }
 
 // AI 助手配置（独立加密存储）
@@ -32,14 +34,13 @@ export interface AiConfig {
     autoApproval: {
       enabled: boolean // 是否启用自动批准
       allowedTools: string[] // 自动批准的工具名称列表（白名单）
+      commandFilter: {
+        allowedCommandPrefixes: string[] // 允许的命令前缀
+        deniedCommandPrefixes: string[] // 禁止的命令前缀
+      }
     }
-    // 上下文配置
-    context: {
-      maxMessages: number // 最大保留消息数量
-      maxTokens: number // 最大上下文 token 数
-    }
-    // 用户提示词
-    userPrompt: string // 用户额外添加的提示词
+    // 用户额外提示词
+    userExtraPrompt: string
   }
 }
 

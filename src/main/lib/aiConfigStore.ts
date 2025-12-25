@@ -1,6 +1,6 @@
 import { AiConfig, AiProviderConfig } from '@shared/models'
 import { app } from 'electron'
-import './env'
+import './Env'
 
 let Store: any = null
 let aiConfigStore: any = null
@@ -28,26 +28,28 @@ export const initAiConfigStore = async (): Promise<void> => {
         providers: [
           {
             id: 'default-openai',
-            name: 'OpenAI',
-            type: 'openai',
+            configName: 'OpenAI',
+            providerType: 'OpenAI Compatible',
             baseUrl: 'https://api.openai.com/v1',
             apiKey: '',
             model: 'gpt-4',
+            streaming: true,
             temperature: 0.7,
-            maxTokens: 4096
+            maxContextTokens: 400000,
+            toolCallProtocol: 'Native JSON'
           }
         ],
         activeProviderId: 'default-openai',
         userSettings: {
           autoApproval: {
             enabled: false,
-            allowedTools: []
+            allowedTools: [],
+            commandFilter: {
+              allowedCommandPrefixes: [],
+              deniedCommandPrefixes: []
+            }
           },
-          context: {
-            maxMessages: 50,
-            maxTokens: 8000
-          },
-          userPrompt: 'You are a helpful AI assistant for managing remote servers via SSH.'
+          userExtraPrompt: ''
         }
       }
     })

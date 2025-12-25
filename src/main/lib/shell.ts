@@ -1,4 +1,4 @@
-import { getSSH } from './sshPool'
+import { getSSH } from './SSHPool'
 
 export const createInteractiveShell = async (sessionId: string): Promise<void> => {
   const ssh = getSSH(sessionId)

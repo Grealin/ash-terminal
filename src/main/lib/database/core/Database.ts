@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 import { app } from 'electron'
 import { join } from 'path'
-import { createTables } from './schema'
+import { createTables } from './Schema'
 
 let db: Database.Database | null = null
 

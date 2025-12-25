@@ -1,6 +1,6 @@
 import { SSHConfig } from '@shared/models'
 import { app } from 'electron'
-import './env'
+import './Env'
 
 let Store: any = null
 let sessionStore: any = null

@@ -18,7 +18,7 @@ import {
   insertTask,
   queryTasks,
   updateTaskDB
-} from '../database/repositories/TaskRepository'
+} from '../../database/repositories/TaskRepository'
 
 /**
  * 创建任务

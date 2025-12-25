@@ -9,7 +9,7 @@ import {
   setActiveProvider,
   updateAiConfigField,
   updateProvider
-} from '@/lib/aiConfigStore'
+} from '@/lib/AiConfigStore'
 import { ipcMain } from 'electron'
 
 /**
