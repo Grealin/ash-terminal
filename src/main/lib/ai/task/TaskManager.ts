@@ -12,7 +12,7 @@ import { ToolCallStatus } from '@shared/models'
 import { EventEmitter } from 'events'
 import { v4 as uuidv4 } from 'uuid'
 import { getAiConfig, getProviders } from '../../aiConfigStore'
-import * as TaskStoreAPI from '../TaskStore'
+import * as TaskStoreAPI from '../storage/TaskStore'
 import { ProviderFactory } from '../providers'
 import { ToolRegistry } from '../tools'
 

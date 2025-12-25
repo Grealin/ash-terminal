@@ -1,4 +1,5 @@
 import { initConfigStore, initSessionStore } from '@/lib'
+import { closeDatabase, initDatabase } from '@/lib/ai/database/core/Database'
 import { initAiConfigStore } from '@/lib/aiConfigStore'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import {
@@ -76,6 +77,9 @@ app.whenReady().then(async () => {
   // 初始化 AI 配置存储（加密）
   await initAiConfigStore()
 
+  // 初始化数据库（SQLite - 全局共享）
+  initDatabase()
+
   // 初始化 AI 任务管理器
   initTaskManager()
 
@@ -105,6 +109,12 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// 应用退出前的清理工作
+app.on('before-quit', () => {
+  // 关闭数据库连接
+  closeDatabase()
 })
 
 // 在此文件中，您可以包含应用程序的其他特定主进程
