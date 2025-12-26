@@ -48,8 +48,6 @@ export interface ToolCall {
   name: string
   /** 工具参数 */
   arguments: Record<string, any>
-  /** 执行状态 */
-  status: ToolCallStatus
   /** 执行结果 */
   result?: string
   /** 错误信息 */
@@ -63,7 +61,7 @@ export interface ToolCall {
  */
 export interface AiMessage {
   /** 消息唯一标识（UUID） */
-  id: string
+  uuid: string
   /** 所属任务 ID */
   taskId: string
   /** 消息角色 */
@@ -72,56 +70,45 @@ export interface AiMessage {
   content: string
   /** 工具调用列表（仅 assistant 角色） */
   toolCalls?: ToolCall[]
-  /** 工具调用 ID（仅 tool 角色） */
+  /** 工具调用 UUID（仅 tool 角色） */
   toolCallId?: string
   /** 时间戳 */
   timestamp: number
+  // 调用模式（仅 'user' 角色）
+  mode: AiMode
 }
 
 /**
  * 工具参数定义
  */
 export interface ToolParameter {
-  /** 参数名称 */
-  name: string
-  /** 参数类型 */
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+  /** 参数类型（JSON Schema 类型） */
+  type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array'
   /** 参数描述 */
   description: string
-  /** 是否必需 */
-  required: boolean
-  /** 枚举值（可选） */
-  enum?: string[]
   /** 默认值（可选） */
   default?: any
 }
 
 /**
- * 工具定义接口
+ * JSON Schema for tool parameters (OpenAI compatible)
+ */
+export interface ToolParametersSchema {
+  type: 'object'
+  properties: Record<string, ToolParameter>
+  required?: string[] // 可选，因为可以没有必填参数（虽然罕见）
+}
+
+/**
+ * 工具定义接口（符合 OpenAI tool_calls 规范）
  */
 export interface ToolDefinition {
   /** 工具名称 */
   name: string
   /** 工具描述 */
   description: string
-  /** 参数定义列表 */
-  parameters: ToolParameter[]
-  /** 是否需要批准（危险操作） */
-  requiresApproval: boolean
-  /** 工具分类标签 */
-  category: 'file' | 'command' | 'system' | 'search'
-}
-
-/**
- * 工具执行上下文
- */
-export interface ToolExecutionContext {
-  /** SSH 会话 ID */
-  sessionId: string
-  /** 工具调用 ID */
-  toolCallId: string
-  /** 是否自动批准 */
-  autoApprove: boolean
+  /** 参数定义 —— 必须是 JSON Schema 对象 */
+  parameters: ToolParametersSchema
 }
 
 /**
@@ -134,6 +121,4 @@ export interface ToolExecutionResult {
   data?: any
   /** 错误信息 */
   error?: string
-  /** 执行耗时（毫秒） */
-  duration?: number
 }
