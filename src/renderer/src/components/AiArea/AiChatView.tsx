@@ -64,7 +64,7 @@ export const AiChatView: React.FC = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="在此处输入您的任务... (@添加上下文, /输入命令, Shift+拖拽文件/图片)"
+            placeholder="在此处输入您的任务..."
             className="w-full min-h-[80px] max-h-[200px] px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 resize-none"
           />
         </div>
@@ -75,24 +75,25 @@ export const AiChatView: React.FC = () => {
           <div className="flex items-center space-x-3">
             {/* 运行模式选择 */}
             <div className="flex items-center space-x-2">
-              <label className="text-xs text-gray-600 dark:text-gray-400">模式:</label>
               <select
                 value={runMode}
                 onChange={(e) => setRunMode(e.target.value as RunMode)}
-                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="select select-info h-7 w-18 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="Ask">Ask</option>
                 <option value="Agent">Agent</option>
               </select>
             </div>
+          </div>
 
+          {/* 右侧控制区 */}
+          <div className="flex items-center space-x-3">
             {/* 供应商选择 */}
             <div className="flex items-center space-x-2">
-              <label className="text-xs text-gray-600 dark:text-gray-400">供应商:</label>
               <select
                 value={selectedProviderId}
                 onChange={(e) => setSelectedProviderId(e.target.value)}
-                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="select select-info h-7 w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={providers.length === 0}
               >
                 {providers.length === 0 ? (
@@ -106,21 +107,21 @@ export const AiChatView: React.FC = () => {
                 )}
               </select>
             </div>
-          </div>
 
-          {/* 右侧发送按钮 */}
-          <button
-            onClick={handleSend}
-            disabled={!message.trim() || providers.length === 0}
-            className={twMerge(
-              'px-4 py-1.5 text-xs rounded-lg transition-colors font-medium',
-              message.trim() && providers.length > 0
-                ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-            )}
-          >
-            发送
-          </button>
+            {/* 发送按钮 */}
+            <button
+              onClick={handleSend}
+              disabled={!message.trim() || providers.length === 0}
+              className={twMerge(
+                'px-4 py-1.5 text-xs rounded-lg transition-colors font-medium',
+                message.trim() && providers.length > 0
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+              )}
+            >
+              发送
+            </button>
+          </div>
         </div>
       </div>
     </div>

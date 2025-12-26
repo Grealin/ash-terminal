@@ -124,7 +124,6 @@ export const SessionListContent: React.FC = () => {
       if (result.success) {
         setCurrentSessionId(session.id)
         setConnected()
-        console.log('Connected to session:', session.name)
       } else {
         setDisconnected()
         console.error('Connection failed:', result.error)
