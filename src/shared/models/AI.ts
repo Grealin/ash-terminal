@@ -43,7 +43,7 @@ export enum ToolCallStatus {
  */
 export interface ToolCall {
   /** 工具调用唯一标识 */
-  id: string
+  uuid: string
   /** 工具名称 */
   name: string
   /** 工具参数 */
@@ -76,39 +76,6 @@ export interface AiMessage {
   timestamp: number
   // 调用模式（仅 'user' 角色）
   mode: AiMode
-}
-
-/**
- * 工具参数定义
- */
-export interface ToolParameter {
-  /** 参数类型（JSON Schema 类型） */
-  type: 'string' | 'number' | 'integer' | 'boolean' | 'object' | 'array'
-  /** 参数描述 */
-  description: string
-  /** 默认值（可选） */
-  default?: any
-}
-
-/**
- * JSON Schema for tool parameters (OpenAI compatible)
- */
-export interface ToolParametersSchema {
-  type: 'object'
-  properties: Record<string, ToolParameter>
-  required?: string[] // 可选，因为可以没有必填参数（虽然罕见）
-}
-
-/**
- * 工具定义接口（符合 OpenAI tool_calls 规范）
- */
-export interface ToolDefinition {
-  /** 工具名称 */
-  name: string
-  /** 工具描述 */
-  description: string
-  /** 参数定义 —— 必须是 JSON Schema 对象 */
-  parameters: ToolParametersSchema
 }
 
 /**
