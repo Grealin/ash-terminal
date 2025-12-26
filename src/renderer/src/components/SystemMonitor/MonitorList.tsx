@@ -48,13 +48,13 @@ export const MonitorListContent: React.FC = () => {
     percent,
     color
   }) => {
-    const radius = 35
+    const radius = 30
     const circumference = 2 * Math.PI * radius
     const offset = circumference - (percent / 100) * circumference
 
     return (
       <div className="flex items-center">
-        <div className="w-full aspect-square flex flex-col items-center justify-center">
+        <div className="w-full flex flex-col items-center justify-center">
           <svg
             viewBox="0 0 100 100"
             className="transform -rotate-90 w-full h-full max-w-[120px] max-h-[120px]"
@@ -318,12 +318,31 @@ export const MonitorListContent: React.FC = () => {
             </div>
           </div>
         ) : monitorData ? (
-          <div className="space-y-3  h-full w-full">
+          <div className="h-full w-full flex flex-col">
             {viewMode === 'system' ? (
               // 性能占用情况
               <>
+                {/* CPU 和内存使用率饼图 */}
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="grid grid-cols-2 gap-3 w-full">
+                    <PieChart
+                      title="CPU"
+                      percent={monitorData.systemInfo.cpuUsage}
+                      color="#3b82f6"
+                    />
+                    <PieChart
+                      title="内存"
+                      percent={
+                        (monitorData.systemInfo.usedMemory / monitorData.systemInfo.totalMemory) *
+                        100
+                      }
+                      color="#f97316"
+                    />
+                  </div>
+                </div>
+
                 {/* 时间信息 */}
-                <div className="bg-gray-50 dark:bg-gray-800 rounded p-2 space-y-1">
+                <div className="flex-[4] bg-gray-50 dark:bg-gray-800 rounded p-2 space-y-1 overflow-y-auto">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600 dark:text-gray-400">当前时间</span>
                     <span className="text-xs font-mono text-gray-900 dark:text-gray-100">
@@ -348,25 +367,6 @@ export const MonitorListContent: React.FC = () => {
                       {formatMemory(monitorData.systemInfo.usedMemory)}/
                       {formatMemory(monitorData.systemInfo.totalMemory)}
                     </span>
-                  </div>
-                </div>
-
-                {/* CPU 和内存使用率饼图 */}
-                <div>
-                  <div className="grid grid-cols-2 gap-3 h-full w-full">
-                    <PieChart
-                      title="CPU"
-                      percent={monitorData.systemInfo.cpuUsage}
-                      color="#3b82f6"
-                    />
-                    <PieChart
-                      title="内存"
-                      percent={
-                        (monitorData.systemInfo.usedMemory / monitorData.systemInfo.totalMemory) *
-                        100
-                      }
-                      color="#f97316"
-                    />
                   </div>
                 </div>
               </>
