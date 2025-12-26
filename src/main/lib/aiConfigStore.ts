@@ -28,14 +28,14 @@ export const initAiConfigStore = async (): Promise<void> => {
         providers: [
           {
             id: 'default-openai',
-            configName: 'OpenAI',
+            configName: 'Default',
             providerType: 'OpenAI Compatible',
             baseUrl: 'https://api.openai.com/v1',
             apiKey: '',
             model: 'gpt-4',
             streaming: true,
             temperature: 0.7,
-            maxContextTokens: 400000,
+            maxContextTokens: 409600,
             toolCallProtocol: 'Native JSON'
           }
         ],

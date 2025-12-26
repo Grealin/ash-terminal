@@ -119,7 +119,7 @@ const ProvidersSettings: React.FC = () => {
       model: '',
       streaming: true,
       temperature: 0.7,
-      maxContextTokens: 4096000,
+      maxContextTokens: 10240,
       toolCallProtocol: 'Native JSON'
     }
     setEditingProvider(newProvider)
@@ -383,7 +383,7 @@ const ProvidersSettings: React.FC = () => {
                       {provider.configName}
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                  <div className="text-xs w-24 text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                     {provider.model}
                   </div>
                 </div>

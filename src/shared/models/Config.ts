@@ -1,13 +1,3 @@
-// 主题配置
-export interface ThemeConfig {
-  defaultDarkMode: boolean // 默认是否为暗色主题
-}
-
-// 终端配置
-export interface TerminalConfig {
-  fontSize: number // 终端字体大小
-}
-
 // AI 供应商配置（单个）
 export interface AiProviderConfig {
   id: string // 唯一标识使用uuid
@@ -42,6 +32,16 @@ export interface AiConfig {
     // 用户额外提示词
     userExtraPrompt: string
   }
+}
+
+// 主题配置
+export interface ThemeConfig {
+  defaultDarkMode: boolean // 默认是否为暗色主题
+}
+
+// 终端配置
+export interface TerminalConfig {
+  fontSize: number // 终端字体大小
 }
 
 // 功能组件配置
