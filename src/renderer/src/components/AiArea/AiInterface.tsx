@@ -1,6 +1,13 @@
 import { useAiInterface } from '@/hooks/AreaClosed'
 import type { ComponentProps } from 'react'
+import { useState } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { AiChatView } from './AiChatView'
+import { AiHistoryView } from './AiHistoryView'
+import { AiSettingsView } from './AiSettingsView'
+import { AiTopBar } from './AiTopBar'
+
+type ViewType = 'chat' | 'history' | 'settings'
 
 export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
   children,
@@ -27,10 +34,18 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
 }
 
 export const AiAgentContent: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewType>('chat')
+
   return (
-    <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
-      <div className="can-select text-gray-900 dark:text-gray-100 ">
-        This is the AiAgent content
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+      {/* 顶栏 */}
+      <AiTopBar onViewChange={setCurrentView} currentView={currentView} />
+
+      {/* 内容区域 */}
+      <div className="flex-1 overflow-hidden">
+        {currentView === 'chat' && <AiChatView />}
+        {currentView === 'history' && <AiHistoryView />}
+        {currentView === 'settings' && <AiSettingsView />}
       </div>
     </div>
   )

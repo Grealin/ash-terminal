@@ -1,1 +1,5 @@
+export * from './AiChatView'
+export * from './AiHistoryView'
 export * from './AiInterface'
+export * from './AiSettingsView'
+export * from './AiTopBar'
