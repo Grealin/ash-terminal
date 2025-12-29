@@ -33,6 +33,15 @@ export const AiChatView: React.FC = () => {
     loadProviders()
   }, [])
 
+  const changeSelectedProviderId = async (providerId: string): Promise<void> => {
+    try {
+      await AiConfigService.setActiveProvider(providerId)
+      setSelectedProviderId(providerId)
+    } catch (error) {
+      console.error('Failed to set active provider:', error)
+    }
+  }
+
   const handleSend = (): void => {
     if (!message.trim()) return
     // TODO: 实现发送消息逻辑
@@ -92,7 +101,7 @@ export const AiChatView: React.FC = () => {
             <div className="flex items-center space-x-2">
               <select
                 value={selectedProviderId}
-                onChange={(e) => setSelectedProviderId(e.target.value)}
+                onChange={(e) => changeSelectedProviderId(e.target.value)}
                 className="select select-info h-7 w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={providers.length === 0}
               >

@@ -21,3 +21,11 @@ export enum MessageRole {
   /** 工具调用结果 */
   TOOL = 'tool'
 }
+
+/**
+ * 用户提问
+ */
+export interface UserQuestion {
+  mode: AiMode
+  question: string
+}
