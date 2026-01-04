@@ -1,17 +1,49 @@
+import { AIService } from '@/services'
+import { currentSessionIdAtom } from '@/store/SessionStore'
+import { currentTaskAtom } from '@/store/TaskStore'
+import { useAtomValue, useSetAtom } from 'jotai'
 import type { ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 interface AiTopBarProps extends ComponentProps<'div'> {
   onViewChange: (view: 'chat' | 'history' | 'settings') => void
   currentView: 'chat' | 'history' | 'settings'
+  onApiError?: (error: string) => void
 }
 
 export const AiTopBar: React.FC<AiTopBarProps> = ({
   onViewChange,
   currentView,
+  onApiError,
   className,
   ...props
 }) => {
+  const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const setCurrentTask = useSetAtom(currentTaskAtom)
+
+  const handleNewTask = async (): Promise<void> => {
+    if (!currentSessionId) return
+
+    // 先切换到 chat 视图，无论是否出错
+    setCurrentTask(null)
+    onViewChange('chat')
+
+    try {
+      await AIService.prepareNewTask(currentSessionId)
+    } catch (error) {
+      console.error('Failed to prepare new task:', error)
+      // 检查是否是 API Key 配置错误
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (
+        errorMessage.includes('API Key 未配置') ||
+        errorMessage.includes('API Key') ||
+        errorMessage.includes('OpenAI 客户端失败')
+      ) {
+        onApiError?.('API 配置有误，请检查您的 API Key 配置')
+      }
+    }
+  }
+
   return (
     <div
       className={twMerge(
@@ -29,10 +61,12 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
       <div className="flex items-center space-x-1">
         {/* 创建任务按钮 */}
         <button
-          onClick={() => onViewChange('chat')}
+          onClick={handleNewTask}
+          disabled={!currentSessionId}
           className={twMerge(
             'p-1.5 rounded transition-colors',
-            currentView === 'chat'
+            !currentSessionId && 'opacity-50 cursor-not-allowed',
+            currentView === 'chat' && currentSessionId
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
               : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
           )}

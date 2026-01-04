@@ -16,6 +16,8 @@ import {
   AddProvider,
   GetActiveProvider,
   GetAiConfig,
+  GetAvailableTools,
+  GetAvailableToolsWithInfo,
   GetProviders,
   RemoveProvider,
   ResetAiConfig,
@@ -24,6 +26,30 @@ import {
   UpdateAiConfigField,
   UpdateProvider
 } from '@shared/types/AiConfig'
+
+import {
+  AskTask,
+  ClearCurrentTask,
+  CloseTaskSession,
+  DeleteTask,
+  GetCurrentTask,
+  GetOperatingSystem,
+  GetTaskList,
+  OnTaskAnswer,
+  OnTaskDone,
+  OnTaskError,
+  OnTaskStream,
+  OnTaskSwitched,
+  OnTaskThought,
+  OnTaskToolCall,
+  OnTaskToolResult,
+  PrepareNewTask,
+  StopTask,
+  SwitchTask,
+  UpdateTaskName
+} from '@shared/types/Task'
+
+import { OnToolApprovalRequest, RespondToolApproval } from '@shared/types/ToolApproval'
 
 import {
   BackupRemoteFile,
@@ -77,6 +103,9 @@ interface AiConfig {
   updateProvider: UpdateProvider
   removeProvider: RemoveProvider
   setActiveProvider: SetActiveProvider
+  // 工具管理
+  getAvailableTools: GetAvailableTools
+  getAvailableToolsWithInfo: GetAvailableToolsWithInfo
 }
 
 interface SSH {
@@ -107,12 +136,46 @@ interface SSH {
   getSystemMonitorData: GetSystemMonitorData
 }
 
+interface AI {
+  // ==================== 任务管理（核心接口）====================
+  prepareNewTask: PrepareNewTask
+  switchTask: SwitchTask
+  askTask: AskTask
+  getTaskList: GetTaskList
+  getCurrentTask: GetCurrentTask
+  deleteTask: DeleteTask
+  updateTaskName: UpdateTaskName
+  clearCurrentTask: ClearCurrentTask
+  stopTask: StopTask
+  closeTaskSession: CloseTaskSession
+
+  // ==================== 任务事件监听 ====================
+  onTaskStream: OnTaskStream
+  onTaskThought: OnTaskThought
+  onTaskToolCall: OnTaskToolCall
+  onTaskToolResult: OnTaskToolResult
+  onTaskAnswer: OnTaskAnswer
+  onTaskError: OnTaskError
+  onTaskDone: OnTaskDone
+  onTaskSwitched: OnTaskSwitched
+
+  // ==================== 辅助接口 ====================
+  getOperatingSystem: GetOperatingSystem
+}
+
+interface ToolApproval {
+  onToolApprovalRequest: OnToolApprovalRequest
+  respondToolApproval: RespondToolApproval
+}
+
 declare global {
   interface Window {
     electron: Electron
     context: Context
     aiConfig: AiConfig
     ssh: SSH
+    ai: AI
+    toolApproval: ToolApproval
   }
 }
 

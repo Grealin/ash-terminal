@@ -1,3 +1,6 @@
+export * from './ai/AgentManager'
+export * from './ai/storage/TaskStore'
+export * from './ai/TaskManager'
 export * from './AiConfigStore'
 export * from './BrowserWindow'
 export * from './Command'

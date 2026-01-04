@@ -50,8 +50,6 @@ export class SudoCommandTool extends BaseTool {
       // 如果指定了工作目录，先 cd
       if (working_directory) {
         fullCommand = `cd "${working_directory}" && ${fullCommand}`
-      } else if (context.workingDirectory) {
-        fullCommand = `cd "${context.workingDirectory}" && ${fullCommand}`
       }
 
       // 如果自动确认，添加换行符

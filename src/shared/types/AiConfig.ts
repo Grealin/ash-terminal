@@ -40,3 +40,13 @@ export type RemoveProvider = (providerId: string) => Promise<void>
 
 // 设置激活的供应商
 export type SetActiveProvider = (providerId: string) => Promise<void>
+
+/**
+ * 工具管理 IPC 方法
+ */
+
+// 获取所有可用工具的名称列表
+export type GetAvailableTools = () => Promise<string[]>
+
+// 获取所有工具的详细信息
+export type GetAvailableToolsWithInfo = () => Promise<Array<{ name: string; description: string }>>

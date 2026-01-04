@@ -248,6 +248,22 @@ export class TaskRepository {
   }
 
   /**
+   * 更新消息内容（用于更新系统提示词等场景）
+   * 修复问题1：支持更新系统提示词
+   */
+  updateMessage(messageId: string, updates: { content?: string | null }): boolean {
+    const db = getDB()
+    const stmt = db.prepare(`
+      UPDATE messages
+      SET content = ?
+      WHERE id = ?
+    `)
+
+    const result = stmt.run(updates.content, messageId)
+    return result.changes > 0
+  }
+
+  /**
    * 批量创建消息（用于导入历史记录等场景）
    */
   createMessages(messages: Message[]): void {

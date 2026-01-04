@@ -2,7 +2,9 @@
 
 ## 项目概览
 
-基于 Electron + React + TypeScript 的智能 SSH 终端，支持多会话、文件传输、系统监控和 AI 助手集成。技术栈：ssh2、node-pty、Jotai、DaisyUI、Better-SQLite3。
+基于 Electron + React + TypeScript 的智能 SSH 终端，支持多会话、文件传输、系统监控和 AI 助手集成。
+
+**技术栈**：ssh2、ssh2-sftp-client、node-pty、Jotai、DaisyUI、TailwindCSS 4、Better-SQLite3、OpenAI SDK
 
 ## 核心架构
 
@@ -10,22 +12,24 @@
 
 **Main Process** (`src/main/`)：
 
-- `lib/SSHPool.ts`：全局 SSH 连接池，通过 `sessionId` 索引 `SSH2Wrapper` 实例
-- `lib/SSH2Wrapper.ts`：EventEmitter 子类，封装 ssh2 库，管理单个 SSH 连接和交互式 Shell
-- `lib/ConfigManager.ts` / `lib/AiConfigStore.ts`：使用 `electron-store` 持久化配置，AI 配置通过 `SECRET_KEY` 环境变量加密
-- `lib/database/`：Better-SQLite3 数据库，存储任务历史（`app.db`，WAL 模式）
-- `ipc/`：按功能模块拆分 IPC handlers（`session.ts`, `shell.ts`, `file.ts` 等），通过 `ipc/index.ts` 统一注册
+- `lib/SSHPool.ts`：全局 SSH 连接池，通过 `sessionId` 索引 `SSH2Wrapper` 实例（`Map<sessionId, SSH2Wrapper>`）
+- `lib/SSH2Wrapper.ts`：EventEmitter 子类，封装 ssh2 库，管理单个 SSH 连接和交互式 Shell，通过 `data`/`close`/`error` 事件传输终端输出
+- `lib/ConfigManager.ts` / `lib/AiConfigStore.ts`：使用 `electron-store` 持久化配置，AI 配置通过 `SECRET_KEY` 环境变量加密（**开发时需配置 `.env` 文件**）
+- `lib/database/`：Better-SQLite3 数据库，存储 AI 任务历史（`app.db`，WAL 模式，外键约束启用）
+- `ipc/`：按功能模块拆分 IPC handlers（`session.ts`, `shell.ts`, `file.ts`, `ai.ts` 等），通过 `ipc/index.ts` 统一注册
 
 **Preload** (`src/preload/`)：
 
-- 使用 `contextBridge` 暴露三个命名空间：`window.electron`（窗口控制）、`window.context`（应用配置）、`window.ssh`（SSH 操作）
-- 必须先在 `src/preload/index.d.ts` 扩展 `Window` 接口，再在 `index.ts` 中实现
+- 使用 `contextBridge` 暴露四个命名空间：`window.electron`（窗口控制）、`window.context`（应用配置）、`window.ssh`（SSH 操作）、`window.aiConfig`（AI 配置）
+- **关键约定**：必须先在 `src/preload/index.d.ts` 扩展 `Window` 接口，再在 `index.ts` 中实现（类型安全）
+- **安全要求**：`contextIsolation: true` + `sandbox: true`，所有 API 必须通过 `contextBridge` 暴露
 
 **Renderer** (`src/renderer/`)：
 
-- Jotai 管理状态（`src/renderer/src/store/`），原子按功能分文件（`SessionStore.ts`、`ModalAtom.ts`）
-- 组件模式：`*Main`（容器组件处理布局）+ `*Content`（内容组件处理逻辑）
-- UI：DaisyUI + TailwindCSS（Vite 4.1+ 原生支持）
+- Jotai 管理全局状态（`src/renderer/src/store/`），原子按功能分文件（`SessionStore.ts`、`ModalAtom.ts`、`TaskStore.ts`）
+- 组件模式：`*Main`（容器组件处理布局）+ `*Content`（内容组件处理逻辑），复用组件放独立子目录（`Button/`、`Modal/`）
+- UI：DaisyUI 5 + TailwindCSS 4（使用 Vite 原生 `@tailwindcss/vite` 插件）
+- 使用 `react-xterm` + `xterm` 实现终端仿真器
 
 ### IPC 通信流程
 
@@ -34,74 +38,260 @@ Renderer → window.ssh.method() → ipcRenderer.invoke()
   → Main ipcMain.handle() → lib/*.ts 业务逻辑
 ```
 
-**添加新 IPC 功能的完整步骤**：
+**添加新 IPC 功能的完整步骤**（强制顺序，保证类型安全）：
 
-1. `src/shared/types/*.ts`：定义类型（如 `export type MyMethod = (arg: string) => Promise<Result>`）
-2. `src/main/lib/*.ts`：实现业务逻辑函数
-3. `src/main/ipc/*.ts`：注册 handler（`ipcMain.handle('myMethod', async (_, arg) => {...})`）
-4. `src/preload/index.ts`：暴露 API（`myMethod: (...args) => ipcRenderer.invoke('myMethod', ...args)`）
-5. `src/preload/index.d.ts`：更新类型声明（`myMethod: MyMethod`）
+1. **定义类型签名**（`src/shared/types/*.ts`）
+
+   ```typescript
+   // 示例：src/shared/types/SSH.ts
+   export type GetDirectoryFiles = (sessionId: string, path: string) => Promise<FileInfo[]>
+   ```
+
+2. **实现业务逻辑**（`src/main/lib/*.ts`）
+
+   ```typescript
+   // 示例：src/main/lib/Files.ts
+   export async function getDirectoryFiles(sessionId: string, path: string): Promise<FileInfo[]> {
+     const ssh = getSSH(sessionId)
+     if (!ssh) throw new Error('SSH connection not found')
+     return ssh.getDirectoryFiles(path)
+   }
+   ```
+
+3. **注册 IPC handler**（`src/main/ipc/*.ts`）
+
+   ```typescript
+   // 示例：src/main/ipc/file.ts
+   ipcMain.handle('getDirectoryFiles', async (_, sessionId: string, path: string) => {
+     return await getDirectoryFiles(sessionId, path)
+   })
+   ```
+
+4. **暴露 Preload API**（`src/preload/index.ts`）
+
+   ```typescript
+   const ssh = {
+     getDirectoryFiles: (...args: Parameters<GetDirectoryFiles>) =>
+       ipcRenderer.invoke('getDirectoryFiles', ...args)
+     // ...其他方法
+   }
+   ```
+
+5. **更新类型声明**（`src/preload/index.d.ts`）
+   ```typescript
+   interface SSH {
+     getDirectoryFiles: GetDirectoryFiles
+     // ...其他方法
+   }
+   ```
+
+**关键约定**：IPC 通道名称与类型名称使用相同的小驼峰命名（如 `getDirectoryFiles`）
 
 ### SSH 连接管理
 
-- **连接池**：`SSHPool.ts` 维护 `Map<sessionId, SSH2Wrapper>`，单例模式
-- **Shell 事件**：`SSH2Wrapper` 继承 EventEmitter，通过 `data`/`close`/`error` 事件向渲染进程传输终端输出
-- **身份验证**：支持密码 (`password`) 和私钥 (`privateKey`) 两种方式，配置存储在 `electron-store`
-
-示例：获取 SSH 连接并写入 Shell
+**连接池模式**：
 
 ```typescript
-const ssh = getSSH(sessionId) // 从连接池获取
+// SSHPool.ts - 单例 Map
+const sshConnections: Map<string, SSH2Wrapper> = new Map()
+
+// 获取连接（业务逻辑中最常用）
+const ssh = getSSH(sessionId)
 if (!ssh) throw new Error('SSH connection not found')
-ssh.writeToShell(data)
+
+// 创建连接（自动加入连接池）
+await connectSSH(config) // config.id 作为 sessionId
+
+// 断开连接（自动清理）
+disconnectSSH(sessionId) // 调用 ssh.dispose() 并从 Map 删除
+```
+
+**Shell 事件系统**（基于 EventEmitter）：
+
+```typescript
+// SSH2Wrapper 发出事件
+this.emit('data', data) // 终端输出
+this.emit('close') // Shell 关闭
+this.emit('error', error) // 错误
+
+// IPC handler 中监听事件（src/main/ipc/shell.ts）
+ssh.on('data', (data: string) => {
+  event.sender.send('shell-data', sessionId, data)
+})
+
+// 前端监听（必须返回清理函数）
+const cleanup = window.ssh.onShellData((sessId, data) => {
+  // 处理终端输出
+})
+return () => cleanup() // 组件卸载时清理
+```
+
+**身份验证**：支持密码和私钥两种方式
+
+```typescript
+// 密码认证
+{ username: 'user', password: 'pass', ... }
+
+// 私钥认证（自动检测文件路径或私钥内容）
+{ username: 'user', privateKey: '/path/to/key 或 -----BEGIN...', ... }
 ```
 
 ### 存储架构
 
-- **electron-store**：`ConfigManager.ts` 存储主题/布局，`AiConfigStore.ts` 存储 AI 配置（**加密**，需 `.env` 中 `SECRET_KEY`）
-- **Better-SQLite3**：`database/core/Database.ts` 初始化 `app.db`，仓库模式访问（`repositories/TaskRepository.ts`）
-- **初始化顺序**：`src/main/index.ts` 中 `app.whenReady()` 后依次调用 `initConfigStore()` → `initSessionStore()` → `initAiConfigStore()` → `initDatabase()`
+**electron-store**（配置持久化）：
+
+- `ConfigManager.ts`：主题、布局等应用配置（明文存储）
+- `AiConfigStore.ts`：AI 配置（加密存储，需 `.env` 中 `SECRET_KEY`）
+- 初始化顺序：`initConfigStore()` → `initSessionStore()` → `initAiConfigStore()`
+
+**Better-SQLite3**（结构化数据）：
+
+- `database/core/Database.ts`：初始化 `app.db`（WAL 模式 + 外键约束）
+- `database/repositories/`：Repository 模式访问数据（如 `TaskRepository.ts`）
+- 使用示例：
+
+  ```typescript
+  // 初始化（在 app.whenReady() 中）
+  initDatabase()
+
+  // 访问
+  const db = getDB()
+  db.prepare('SELECT * FROM tasks WHERE session_id = ?').all(sessionId)
+
+  // 关闭（在 app.quit() 中）
+  closeDatabase()
+  ```
+
+**关键约定**：
+
+- 敏感配置（API Key）必须用 `AiConfigStore`，非敏感配置用 `ConfigManager`
+- 数据库必须先 `initDatabase()` 再调用 `getDB()`
+- App 退出时必须调用 `closeDatabase()` 确保数据完整性
 
 ### AI 助手集成
 
-- **工具系统**：`src/main/lib/ai/tools/` 下的工具类继承 `BaseTool`，实现 `getDefinition()` 和 `execute()` 方法
-- **工具类型**：`CommandTool`（执行命令）、`SudoCommandTool`（需 sudo）、`FileReadTool`、`FileWriteTool`、`DirectoryTool`、`FileSearchTool`
-- **模式**：`AiMode.AGENT`（可使用工具）vs `AiMode.ASK`（仅回答问题）
-- **配置**：多 Provider 支持（OpenAI Compatible），存储在加密的 `ai-config.json`
+**工具系统**（位于 `src/main/lib/ai/tools/`）：
+
+```typescript
+// 工具类继承 BaseTool，实现两个方法
+class CommandTool extends BaseTool {
+  getDefinition(): ToolDefinition {
+    return {
+      name: 'execute_command',
+      description: '在远程服务器执行命令',
+      parameters: {
+        /* JSON Schema */
+      }
+    }
+  }
+
+  async execute(context: ToolContext, params: Record<string, any>): Promise<ToolResult> {
+    const ssh = getSSH(context.sessionId)
+    // 执行逻辑...
+    return { success: true, data: result }
+  }
+}
+```
+
+**可用工具类型**：
+
+- `CommandTool`：执行普通命令
+- `SudoCommandTool`：执行需要 sudo 权限的命令
+- `FileReadTool`、`FileModifyTool`、`FileCreateTool`：文件操作
+- `DirectoryTool`：目录结构查看
+- `FileSearchTool`：文件内容搜索
+
+**AI 模式**：
+
+- `AiMode.AGENT`：可使用工具（function calling）
+- `AiMode.ASK`：仅回答问题（无工具调用）
+
+**配置管理**：
+
+- 多 Provider 支持（OpenAI Compatible API）
+- 配置存储在加密的 `ai-config.json`（需 `.env` 中的 `SECRET_KEY`）
+- 前端通过 `window.aiConfig.*` API 管理
 
 ## 开发约定
 
 ### 路径别名（`electron.vite.config.ts`）
 
-- Main: `@/lib` → `src/main/lib`, `@shared` → `src/shared`
-- Renderer: `@/components`, `@/hooks`, `@/store`, `@/services`, `@shared`
+**Main Process**:
+
+- `@/lib` → `src/main/lib`
+- `@shared` → `src/shared`
+
+**Renderer Process**:
+
+- `@/components` → `src/renderer/src/components`
+- `@/hooks` → `src/renderer/src/hooks`
+- `@/store` → `src/renderer/src/store`
+- `@/services` → `src/renderer/src/services`
+- `@shared` → `src/shared`
 
 ### 组件组织
 
-- `src/renderer/src/components/`：功能模块目录（如 `TerminalArea/`、`SessionManager/`）
-- 每个模块导出 `*Main` 和 `*Content` 组件
-- 可复用组件放 `Button/`、`Modal/`、`Dropdown/` 等子目录
+```
+src/renderer/src/components/
+├── TerminalArea/           # 功能模块目录
+│   ├── index.ts           # 导出 *Main 和 *Content
+│   ├── TerminalList.tsx   # 具体组件
+├── SessionManager/
+├── FileManager/
+├── Button/                # 可复用组件
+├── Modal/
+└── Dropdown/
+```
+
+**组件命名规范**：
+
+- `*Main.tsx`：容器组件，处理布局和数据获取
+- `*Content.tsx`：内容组件，处理具体业务逻辑
+- 可复用组件独立成目录（如 `Button/`、`Modal/`）
 
 ### 类型定义位置
 
-- 数据模型：`src/shared/models/` (SSHConfig, FileInfo, AppConfig, AI.ts 等)
-- API 签名：`src/shared/types/` (SSH.ts, Context.ts, Electron.ts)
-- Preload 类型：`src/preload/index.d.ts` 扩展 Window 接口
+- **数据模型**：`src/shared/models/`（SSHConfig, FileInfo, AppConfig, AI.ts 等）
+- **API 签名**：`src/shared/types/`（SSH.ts, Context.ts, Electron.ts, AiConfig.ts）
+- **Preload 类型**：`src/preload/index.d.ts` 扩展 Window 接口
+
+### 状态管理（Jotai）
+
+```typescript
+// 定义原子（src/renderer/src/store/SessionStore.ts）
+export const sessionsAtom = atom<SSHConfig[]>([])
+export const currentSessionIdAtom = atom<string | null>(null)
+
+// 组件中使用
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+const [sessions, setSessions] = useAtom(sessionsAtom) // 读写
+const currentId = useAtomValue(currentSessionIdAtom) // 只读
+const setCurrentId = useSetAtom(currentSessionIdAtom) // 只写
+```
 
 ### 关键常量
 
 - 窗口尺寸：`src/shared/constants.ts` 定义 `WINDOW_INITIAL_WIDTH/HEIGHT`
 - 使用无边框窗口 (`frame: false`)，自定义 `TopBar.tsx` 处理拖拽和窗口控制
+- 监控采样间隔：`MONITOR_SAMPLING_INTERVAL = 1000`（1 秒）
 
 ## 开发命令
 
 ```bash
 yarn dev          # 开发模式（HMR，自动打开 DevTools）
 yarn build:win    # 构建 Windows 安装包（需先 typecheck）
+yarn build:mac    # 构建 macOS 安装包
+yarn build:linux  # 构建 Linux 安装包
 yarn typecheck    # TS 类型检查（node + web）
 yarn lint         # ESLint 检查
 yarn format       # Prettier 格式化
 ```
+
+**注意**：
+
+- `yarn build:*` 会先执行 `typecheck`，确保类型安全
+- 开发模式会自动开启 DevTools（`src/main/index.ts` 中 `is.dev` 判断）
+- 使用 `lint-staged` + `husky` 确保提交前代码质量
 
 ## 常见任务
 
@@ -113,23 +303,45 @@ yarn format       # Prettier 格式化
 4. 在 `src/preload/index.ts` 的 `ssh` 对象添加方法
 5. 更新 `src/preload/index.d.ts` 中 `SSH` 接口
 
-### 调试 IPC 通信
-
-- 在 `src/main/ipc/*.ts` handler 中打断点或 console.log
-- 渲染进程错误会显示在 Electron 窗口的 DevTools 中
-- 主进程错误显示在启动 Electron 的终端
-
-### 修改 UI 主题
-
-- DaisyUI 主题切换：修改 `src/shared/models/Config.ts` 中 `theme.defaultDarkMode`
-- Tailwind 配置：项目使用 Vite 原生 TailwindCSS 4.1+ 插件（`@tailwindcss/vite`）
-
-### 扩展 AI 工具
+### 添加新的 AI 工具
 
 1. 在 `src/main/lib/ai/tools/` 创建新工具类（继承 `BaseTool`）
 2. 实现 `getDefinition()` 返回 `ToolDefinition`（名称、描述、参数 schema）
 3. 实现 `execute(context, params)` 处理工具逻辑
 4. 在 `src/main/lib/ai/tools/index.ts` 导出新工具
+
+### 调试技巧
+
+**IPC 通信调试**：
+
+- Main Process 错误：查看启动 Electron 的终端输出
+- Renderer Process 错误：查看 Electron 窗口的 DevTools Console
+- IPC 调用追踪：在 `src/main/ipc/*.ts` handler 中添加 console.log
+
+**Shell 事件调试**：
+
+```typescript
+// 在 SSH2Wrapper 中添加日志
+this.emit('data', data)
+console.log('[SSH2Wrapper] Data emitted:', data.substring(0, 50))
+```
+
+**数据库调试**：
+
+```typescript
+// 查看数据库文件位置
+const dbPath = join(app.getPath('userData'), 'app.db')
+console.log('Database path:', dbPath)
+
+// 直接查询（仅开发环境）
+const db = getDB()
+console.log(db.prepare('SELECT * FROM tasks').all())
+```
+
+### 修改 UI 主题
+
+- DaisyUI 主题切换：修改 `src/shared/models/Config.ts` 中 `theme.defaultDarkMode`
+- Tailwind 配置：项目使用 Vite 原生 TailwindCSS 4.1+ 插件（`@tailwindcss/vite`），配置在 `electron.vite.config.ts` renderer 部分
 
 ## 注意事项
 

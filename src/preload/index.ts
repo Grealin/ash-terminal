@@ -18,6 +18,8 @@ import {
   AddProvider,
   GetActiveProvider,
   GetAiConfig,
+  GetAvailableTools,
+  GetAvailableToolsWithInfo,
   GetProviders,
   RemoveProvider,
   ResetAiConfig,
@@ -26,6 +28,30 @@ import {
   UpdateAiConfigField,
   UpdateProvider
 } from '@shared/types/AiConfig'
+
+import {
+  AskTask,
+  ClearCurrentTask,
+  CloseTaskSession,
+  DeleteTask,
+  GetCurrentTask,
+  GetOperatingSystem,
+  GetTaskList,
+  OnTaskAnswer,
+  OnTaskDone,
+  OnTaskError,
+  OnTaskStream,
+  OnTaskSwitched,
+  OnTaskThought,
+  OnTaskToolCall,
+  OnTaskToolResult,
+  PrepareNewTask,
+  StopTask,
+  SwitchTask,
+  UpdateTaskName
+} from '@shared/types/Task'
+
+import { OnToolApprovalRequest, RespondToolApproval } from '@shared/types/ToolApproval'
 
 import {
   BackupRemoteFile,
@@ -104,7 +130,13 @@ const aiConfig = {
   removeProvider: (...args: Parameters<RemoveProvider>) =>
     ipcRenderer.invoke('removeProvider', ...args),
   setActiveProvider: (...args: Parameters<SetActiveProvider>) =>
-    ipcRenderer.invoke('setActiveProvider', ...args)
+    ipcRenderer.invoke('setActiveProvider', ...args),
+
+  // 工具管理
+  getAvailableTools: (...args: Parameters<GetAvailableTools>) =>
+    ipcRenderer.invoke('getAvailableTools', ...args),
+  getAvailableToolsWithInfo: (...args: Parameters<GetAvailableToolsWithInfo>) =>
+    ipcRenderer.invoke('getAvailableToolsWithInfo', ...args)
 }
 
 const ssh = {
@@ -186,11 +218,201 @@ const ssh = {
     ipcRenderer.invoke('getSystemMonitorData', ...args)
 }
 
+const ai = {
+  // ==================== 任务管理（核心接口）====================
+
+  prepareNewTask: (...args: Parameters<PrepareNewTask>) =>
+    ipcRenderer.invoke('prepareNewTask', ...args),
+
+  switchTask: (...args: Parameters<SwitchTask>) => ipcRenderer.invoke('switchTask', ...args),
+
+  askTask: (...args: Parameters<AskTask>) => ipcRenderer.invoke('askTask', ...args),
+
+  getTaskList: (...args: Parameters<GetTaskList>) => ipcRenderer.invoke('getTaskList', ...args),
+
+  getCurrentTask: (...args: Parameters<GetCurrentTask>) =>
+    ipcRenderer.invoke('getCurrentTask', ...args),
+
+  deleteTask: (...args: Parameters<DeleteTask>) => ipcRenderer.invoke('deleteTask', ...args),
+
+  updateTaskName: (...args: Parameters<UpdateTaskName>) =>
+    ipcRenderer.invoke('updateTaskName', ...args),
+
+  clearCurrentTask: (...args: Parameters<ClearCurrentTask>) =>
+    ipcRenderer.invoke('clearCurrentTask', ...args),
+
+  stopTask: (...args: Parameters<StopTask>) => ipcRenderer.invoke('stopTask', ...args),
+
+  closeTaskSession: (...args: Parameters<CloseTaskSession>) =>
+    ipcRenderer.invoke('closeTaskSession', ...args),
+
+  // ==================== 任务事件监听 ====================
+
+  onTaskStream: (...args: Parameters<OnTaskStream>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-stream', subscription)
+    ipcRenderer.invoke('onTaskStream', sessionId)
+    return () => ipcRenderer.removeListener('task-stream', subscription)
+  },
+
+  onTaskThought: (...args: Parameters<OnTaskThought>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-thought', subscription)
+    ipcRenderer.invoke('onTaskThought', sessionId)
+    return () => ipcRenderer.removeListener('task-thought', subscription)
+  },
+
+  onTaskToolCall: (...args: Parameters<OnTaskToolCall>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-tool-call', subscription)
+    ipcRenderer.invoke('onTaskToolCall', sessionId)
+    return () => ipcRenderer.removeListener('task-tool-call', subscription)
+  },
+
+  onTaskToolResult: (...args: Parameters<OnTaskToolResult>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-tool-result', subscription)
+    ipcRenderer.invoke('onTaskToolResult', sessionId)
+    return () => ipcRenderer.removeListener('task-tool-result', subscription)
+  },
+
+  onTaskAnswer: (...args: Parameters<OnTaskAnswer>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-answer', subscription)
+    ipcRenderer.invoke('onTaskAnswer', sessionId)
+    return () => ipcRenderer.removeListener('task-answer', subscription)
+  },
+
+  onTaskError: (...args: Parameters<OnTaskError>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-error', subscription)
+    ipcRenderer.invoke('onTaskError', sessionId)
+    return () => ipcRenderer.removeListener('task-error', subscription)
+  },
+
+  onTaskDone: (...args: Parameters<OnTaskDone>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-done', subscription)
+    ipcRenderer.invoke('onTaskDone', sessionId)
+    return () => ipcRenderer.removeListener('task-done', subscription)
+  },
+
+  onTaskSwitched: (...args: Parameters<OnTaskSwitched>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      data: any
+    ): void => {
+      if (receivedSessionId === sessionId) {
+        callback(data)
+      }
+    }
+    ipcRenderer.on('task-switched', subscription)
+    ipcRenderer.invoke('onTaskSwitched', sessionId)
+    return () => ipcRenderer.removeListener('task-switched', subscription)
+  },
+
+  // ==================== 辅助接口 ====================
+
+  getOperatingSystem: (...args: Parameters<GetOperatingSystem>) =>
+    ipcRenderer.invoke('getOperatingSystem', ...args)
+}
+
+const toolApproval = {
+  // 监听工具批准请求（按需订阅）
+  onToolApprovalRequest: (...args: Parameters<OnToolApprovalRequest>): (() => void) => {
+    const [sessionId, callback] = args
+    const subscription = (
+      _event: Electron.IpcRendererEvent,
+      receivedSessionId: string,
+      request: any
+    ): void => {
+      // 只接收匹配 sessionId 的请求
+      if (receivedSessionId === sessionId) {
+        callback(request)
+      }
+    }
+    ipcRenderer.on('tool-approval-request', subscription)
+    ipcRenderer.invoke('onToolApprovalRequest', sessionId)
+    return () => ipcRenderer.removeListener('tool-approval-request', subscription)
+  },
+
+  // 响应工具批准
+  respondToolApproval: (...args: Parameters<RespondToolApproval>) =>
+    ipcRenderer.invoke('respondToolApproval', ...args)
+}
+
 try {
   contextBridge.exposeInMainWorld('electron', electron)
   contextBridge.exposeInMainWorld('context', context)
   contextBridge.exposeInMainWorld('aiConfig', aiConfig)
   contextBridge.exposeInMainWorld('ssh', ssh)
+  contextBridge.exposeInMainWorld('ai', ai)
+  contextBridge.exposeInMainWorld('toolApproval', toolApproval)
 } catch (error) {
   console.error(error)
 }

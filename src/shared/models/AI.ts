@@ -29,3 +29,32 @@ export interface UserQuestion {
   mode: AiMode
   question: string
 }
+
+/**
+ * Agent 配置
+ */
+export interface AgentConfig {
+  sessionId: string
+  mode: AiMode
+  operatingSystem: string
+}
+
+/**
+ * Agent 事件枚举
+ */
+export enum AgentEvent {
+  /** 接收到消息流片段 */
+  STREAM = 'stream',
+  /** 思考过程 */
+  THOUGHT = 'thought',
+  /** 工具调用 */
+  TOOL_CALL = 'tool-call',
+  /** 工具执行结果 */
+  TOOL_RESULT = 'tool-result',
+  /** 最终回答 */
+  ANSWER = 'answer',
+  /** 错误 */
+  ERROR = 'error',
+  /** 完成 */
+  DONE = 'done'
+}

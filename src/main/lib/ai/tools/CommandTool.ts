@@ -47,8 +47,6 @@ export class CommandTool extends BaseTool {
       let finalCommand = command
       if (working_directory) {
         finalCommand = `cd "${working_directory}" && ${command}`
-      } else if (context.workingDirectory) {
-        finalCommand = `cd "${context.workingDirectory}" && ${command}`
       }
 
       const result = await executeSSHCommand(context.sessionId, finalCommand)

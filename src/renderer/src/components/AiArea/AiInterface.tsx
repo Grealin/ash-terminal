@@ -35,15 +35,22 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
 
 export const AiAgentContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('chat')
+  const [apiConfigError, setApiConfigError] = useState<string>('')
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* 顶栏 */}
-      <AiTopBar onViewChange={setCurrentView} currentView={currentView} />
+      <AiTopBar
+        onViewChange={setCurrentView}
+        currentView={currentView}
+        onApiError={setApiConfigError}
+      />
 
       {/* 内容区域 */}
       <div className="flex-1 overflow-hidden">
-        {currentView === 'chat' && <AiChatView />}
+        {currentView === 'chat' && (
+          <AiChatView apiConfigError={apiConfigError} onClearError={() => setApiConfigError('')} />
+        )}
         {currentView === 'history' && <AiHistoryView />}
         {currentView === 'settings' && <AiSettingsView />}
       </div>

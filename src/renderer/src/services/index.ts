@@ -1,4 +1,6 @@
 export * from './AiConfigService'
+export * from './AIService'
 export * from './ContextService'
 export * from './ElectronService'
 export * from './SSHService'
+export * from './ToolApprovalService'

@@ -10,6 +10,7 @@ import {
   updateAiConfigField,
   updateProvider
 } from '@/lib/AiConfigStore'
+import { toolManager } from '@/lib/ai/tools/ToolManager'
 import { ipcMain } from 'electron'
 
 /**
@@ -112,6 +113,33 @@ export function registerAiConfigHandlers(): void {
       setActiveProvider(providerId)
     } catch (error) {
       console.error('Failed to set active provider:', error)
+      throw error
+    }
+  })
+
+  // 获取所有可用工具的名称列表
+  ipcMain.handle('getAvailableTools', async () => {
+    try {
+      return toolManager.getToolNames()
+    } catch (error) {
+      console.error('Failed to get available tools:', error)
+      throw error
+    }
+  })
+
+  // 获取所有工具的详细信息（包含描述）
+  ipcMain.handle('getAvailableToolsWithInfo', async () => {
+    try {
+      const tools = toolManager.getAllTools()
+      return tools.map((tool) => {
+        const def = tool.getDefinition()
+        return {
+          name: def.name,
+          description: def.description
+        }
+      })
+    } catch (error) {
+      console.error('Failed to get available tools with info:', error)
       throw error
     }
   })

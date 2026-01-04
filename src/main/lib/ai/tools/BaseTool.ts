@@ -19,8 +19,6 @@ export interface ToolDefinition {
 export interface ToolContext {
   /** SSH 会话 ID */
   sessionId: string
-  /** 工作目录 */
-  workingDirectory?: string
   /** 其他上下文信息 */
   [key: string]: any
 }

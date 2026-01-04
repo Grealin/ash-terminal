@@ -45,4 +45,13 @@ export class AiConfigService {
   static async setActiveProvider(providerId: string): Promise<void> {
     return window.aiConfig.setActiveProvider(providerId)
   }
+
+  // 工具管理
+  static async getAvailableTools(): Promise<string[]> {
+    return window.aiConfig.getAvailableTools()
+  }
+
+  static async getAvailableToolsWithInfo(): Promise<Array<{ name: string; description: string }>> {
+    return window.aiConfig.getAvailableToolsWithInfo()
+  }
 }
