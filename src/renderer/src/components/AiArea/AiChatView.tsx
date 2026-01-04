@@ -63,6 +63,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const eventCleanupRef = useRef<Array<() => void>>([])
+  const listenersSetupRef = useRef(false)
 
   // 自动滚动到底部
   const scrollToBottom = (): void => {
@@ -189,6 +190,12 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId])
 
+  // 当会话切换时，重置监听器状态
+  useEffect(() => {
+    listenersSetupRef.current = false
+    cleanupEventListeners()
+  }, [currentSessionId])
+
   const changeSelectedProviderId = async (providerId: string): Promise<void> => {
     try {
       await AiConfigService.setActiveProvider(providerId)
@@ -218,72 +225,74 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     }
     setMessages((prev) => [...prev, userMsg])
 
-    // 清理旧的监听器
-    cleanupEventListeners()
+    // 仅在第一次发送消息时设置监听器
+    if (!listenersSetupRef.current) {
+      listenersSetupRef.current = true
 
-    // 设置新的监听器
-    const streamCleanup = AIService.onTaskStream(currentSessionId, (data) => {
-      setStreamingMessage(data.content)
-    })
+      // 设置新的监听器
+      const streamCleanup = AIService.onTaskStream(currentSessionId, (data) => {
+        setStreamingMessage((prev) => prev + data.content)
+      })
 
-    const thoughtCleanup = AIService.onTaskThought(currentSessionId, (data) => {
-      setCurrentThought(data.content)
-    })
+      const thoughtCleanup = AIService.onTaskThought(currentSessionId, (data) => {
+        setCurrentThought(data.content)
+      })
 
-    const answerCleanup = AIService.onTaskAnswer(currentSessionId, async () => {
-      // 任务回答完成，重新加载任务获取最新消息
-      try {
-        const task = await AIService.getCurrentTask(currentSessionId)
-        if (task && task.messages) {
-          setMessages(task.messages)
+      const answerCleanup = AIService.onTaskAnswer(currentSessionId, async () => {
+        // 任务回答完成，重新加载任务获取最新消息
+        try {
+          const task = await AIService.getCurrentTask(currentSessionId)
+          if (task && task.messages) {
+            setMessages(task.messages)
+          }
+        } catch (error) {
+          console.error('Failed to reload task messages:', error)
         }
-      } catch (error) {
-        console.error('Failed to reload task messages:', error)
-      }
-      setStreamingMessage('')
-      setCurrentThought('')
-    })
+        setStreamingMessage('')
+        setCurrentThought('')
+      })
 
-    const toolCallCleanup = AIService.onTaskToolCall(currentSessionId, (data) => {
-      setToolCalls((prev) => [
-        ...prev,
-        {
-          name: data.name,
-          params: data.arguments,
-          timestamp: Date.now()
-        }
-      ])
-    })
+      const toolCallCleanup = AIService.onTaskToolCall(currentSessionId, (data) => {
+        setToolCalls((prev) => [
+          ...prev,
+          {
+            name: data.name,
+            params: data.arguments,
+            timestamp: Date.now()
+          }
+        ])
+      })
 
-    const toolResultCleanup = AIService.onTaskToolResult(currentSessionId, (data) => {
-      setToolResults((prev) => [
-        ...prev,
-        {
-          name: data.name,
-          result: data.result,
-          timestamp: Date.now()
-        }
-      ])
-    })
+      const toolResultCleanup = AIService.onTaskToolResult(currentSessionId, (data) => {
+        setToolResults((prev) => [
+          ...prev,
+          {
+            name: data.name,
+            result: data.result,
+            timestamp: Date.now()
+          }
+        ])
+      })
 
-    const taskDoneCleanup = AIService.onTaskDone(currentSessionId, () => {
-      setIsProcessing(false)
-    })
+      const taskDoneCleanup = AIService.onTaskDone(currentSessionId, () => {
+        setIsProcessing(false)
+      })
 
-    const taskErrorCleanup = AIService.onTaskError(currentSessionId, (error) => {
-      console.error('Task error:', error)
-      setIsProcessing(false)
-    })
+      const taskErrorCleanup = AIService.onTaskError(currentSessionId, (error) => {
+        console.error('Task error:', error)
+        setIsProcessing(false)
+      })
 
-    eventCleanupRef.current = [
-      streamCleanup,
-      thoughtCleanup,
-      answerCleanup,
-      toolCallCleanup,
-      toolResultCleanup,
-      taskDoneCleanup,
-      taskErrorCleanup
-    ]
+      eventCleanupRef.current = [
+        streamCleanup,
+        thoughtCleanup,
+        answerCleanup,
+        toolCallCleanup,
+        toolResultCleanup,
+        taskDoneCleanup,
+        taskErrorCleanup
+      ]
+    }
 
     try {
       const mode = runMode === 'agent' ? AiMode.AGENT : AiMode.ASK
@@ -291,7 +300,6 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     } catch (error) {
       console.error('Failed to send message:', error)
       setIsProcessing(false)
-      cleanupEventListeners()
     }
   }
 
@@ -302,7 +310,6 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       setIsProcessing(false)
       setStreamingMessage('')
       setCurrentThought('')
-      cleanupEventListeners()
     } catch (error) {
       console.error('Failed to stop task:', error)
     }
@@ -378,7 +385,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
                 查看结果
               </summary>
-              <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+              <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                 {msg.content}
               </pre>
             </details>
@@ -479,7 +486,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                       查看参数
                     </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                       {JSON.stringify(toolCall.params, null, 2)}
                     </pre>
                   </details>
@@ -508,7 +515,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                       查看结果
                     </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                       {typeof toolResult.result === 'string'
                         ? toolResult.result
                         : JSON.stringify(toolResult.result, null, 2)}
@@ -573,7 +580,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               </p>
               <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                 <summary className="cursor-pointer">查看参数</summary>
-                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[250px] whitespace-pre">
+                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[200px] whitespace-pre">
                   {JSON.stringify(pendingApproval.params, null, 2)}
                 </pre>
               </details>
