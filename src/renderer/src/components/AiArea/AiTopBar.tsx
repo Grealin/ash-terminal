@@ -22,11 +22,12 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
   const setCurrentTask = useSetAtom(currentTaskAtom)
 
   const handleNewTask = async (): Promise<void> => {
-    if (!currentSessionId) return
-
-    // 先切换到 chat 视图，无论是否出错
+    // 清空当前任务状态并切换到 chat 视图
     setCurrentTask(null)
     onViewChange('chat')
+
+    // 只有在存在 SSH 连接时才创建新任务
+    if (!currentSessionId) return
 
     try {
       await AIService.prepareNewTask(currentSessionId)
@@ -62,11 +63,9 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
         {/* 创建任务按钮 */}
         <button
           onClick={handleNewTask}
-          disabled={!currentSessionId}
           className={twMerge(
             'p-1.5 rounded transition-colors',
-            !currentSessionId && 'opacity-50 cursor-not-allowed',
-            currentView === 'chat' && currentSessionId
+            currentView === 'chat'
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
               : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
           )}

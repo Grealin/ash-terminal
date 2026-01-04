@@ -54,7 +54,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   }
 
   const currentSessionId = useAtomValue(currentSessionIdAtom)
-  const currentTask = useAtomValue(currentTaskAtom)
+  const [currentTask, setCurrentTask] = useAtom(currentTaskAtom)
   const [messages, setMessages] = useAtom(currentMessagesAtom)
   const [isProcessing, setIsProcessing] = useAtom(isAiProcessingAtom)
   const [streamingMessage, setStreamingMessage] = useAtom(streamingMessageAtom)
@@ -94,24 +94,35 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     loadProviders()
   }, [])
 
-  // 加载当前任务和消息
+  // 初始化会话（确保 Agent 存在并加载当前任务）
   useEffect(() => {
-    if (!currentSessionId) return
+    if (!currentSessionId) {
+      // 当 SSH 连接断开时，清空对话消息
+      setMessages([])
+      setStreamingMessage('')
+      setCurrentThought('')
+      setToolCalls([])
+      setToolResults([])
+      setIsProcessing(false)
+      setCurrentTask(null)
+      return
+    }
 
-    const loadCurrentTask = async (): Promise<void> => {
+    const initSession = async (): Promise<void> => {
       try {
         setApiConfigError('') // 清除之前的错误
-        // 确保 Agent 存在，避免后续监听器报错
-        await AIService.prepareNewTask(currentSessionId)
 
+        // 加载当前会话的任务（如果存在）
         const task = await AIService.getCurrentTask(currentSessionId)
-        if (task && task.messages) {
-          setMessages(task.messages)
-        } else {
-          setMessages([])
+        setCurrentTask(task)
+
+        // 只有在没有当前任务时才初始化新任务准备
+        // 这样避免在切换任务后清空消息
+        if (!task) {
+          await AIService.prepareNewTask(currentSessionId)
         }
       } catch (error) {
-        console.error('Failed to load current task:', error)
+        console.error('Failed to initialize session:', error)
         // 检查是否是 API Key 配置错误
         const errorMessage = error instanceof Error ? error.message : String(error)
         if (
@@ -124,9 +135,28 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       }
     }
 
-    loadCurrentTask()
+    initSession()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSessionId, currentTask])
+  }, [currentSessionId])
+
+  // 监听 currentTask 变化，加载对应的消息列表
+  useEffect(() => {
+    if (!currentSessionId || !currentTask) {
+      setMessages([])
+      return
+    }
+
+    // 当任务切换时，加载该任务的消息列表
+    if (currentTask.messages) {
+      setMessages(currentTask.messages)
+      // 清空流式输出和思考过程
+      setStreamingMessage('')
+      setCurrentThought('')
+      setToolCalls([])
+      setToolResults([])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTask])
 
   // 清理事件监听器
   const cleanupEventListeners = (): void => {
@@ -344,9 +374,14 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               </svg>
               工具执行结果
             </p>
-            <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
-              {msg.content}
-            </p>
+            <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+              <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+                查看结果
+              </summary>
+              <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                {msg.content}
+              </pre>
+            </details>
           </div>
         </div>
       )
@@ -440,11 +475,11 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     </svg>
                     调用工具：{toolCall.name}
                   </p>
-                  <details className="text-xs text-gray-600 dark:text-gray-400">
+                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                     <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                       查看参数
                     </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-auto border border-gray-200 dark:border-gray-700">
+                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                       {JSON.stringify(toolCall.params, null, 2)}
                     </pre>
                   </details>
@@ -469,11 +504,11 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     </svg>
                     工具结果：{toolResult.name}
                   </p>
-                  <details className="text-xs text-gray-600 dark:text-gray-400">
+                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                     <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                       查看结果
                     </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-auto max-h-40 border border-gray-200 dark:border-gray-700">
+                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[250px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                       {typeof toolResult.result === 'string'
                         ? toolResult.result
                         : JSON.stringify(toolResult.result, null, 2)}
@@ -536,9 +571,9 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                 {pendingApproval.reason}
               </p>
-              <details className="text-xs text-gray-600 dark:text-gray-400">
+              <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                 <summary className="cursor-pointer">查看参数</summary>
-                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-auto">
+                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[250px] whitespace-pre">
                   {JSON.stringify(pendingApproval.params, null, 2)}
                 </pre>
               </details>

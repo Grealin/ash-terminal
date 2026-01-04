@@ -6,13 +6,18 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-export const AiHistoryView: React.FC = () => {
+interface AiHistoryViewProps {
+  onViewChange?: (view: 'chat' | 'history' | 'settings') => void
+}
+
+export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
   const [tasks, setTasks] = useAtom(tasksAtom)
   const setCurrentTask = useSetAtom(currentTaskAtom)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   // 加载任务列表
   useEffect(() => {
@@ -49,13 +54,19 @@ export const AiHistoryView: React.FC = () => {
   }, [currentSessionId])
 
   const handleSwitchTask = async (taskId: string): Promise<void> => {
-    if (!currentSessionId) return
+    if (!currentSessionId || isLoading) return
     try {
+      setIsLoading(true)
       const task = await AIService.switchTask(currentSessionId, taskId)
+      // 更新当前任务状态，触发对话视图加载消息
       setCurrentTask(task)
       setSelectedTaskId(taskId)
+      // 自动切换到对话视图
+      onViewChange?.('chat')
     } catch (error) {
       console.error('Failed to switch task:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -127,7 +138,7 @@ export const AiHistoryView: React.FC = () => {
   }
 
   const getMessageCount = (task: Task): number => {
-    return task.messages?.length || 0
+    return task.messageCount ?? task.messages?.length ?? 0
   }
 
   return (
@@ -139,7 +150,17 @@ export const AiHistoryView: React.FC = () => {
       </div>
 
       {/* 任务列表 */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative">
+        {/* 加载遮罩 */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 flex items-center justify-center z-10">
+            <div className="flex flex-col items-center space-y-2">
+              <div className="loading loading-spinner loading-md text-blue-500"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">加载任务中...</span>
+            </div>
+          </div>
+        )}
+
         {!currentSessionId ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-sm text-gray-500 dark:text-gray-400">请先连接 SSH 会话</p>
@@ -155,9 +176,15 @@ export const AiHistoryView: React.FC = () => {
                 key={task.id}
                 className={twMerge(
                   'p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                  selectedTaskId === task.id && 'bg-blue-50 dark:bg-blue-900/20'
+                  selectedTaskId === task.id && 'bg-blue-50 dark:bg-blue-900/20',
+                  isLoading && 'pointer-events-none opacity-60'
                 )}
-                onClick={() => handleSwitchTask(task.id)}
+                onClick={() => {
+                  // 编辑模式下不触发切换任务
+                  if (editingTaskId !== task.id && !isLoading) {
+                    handleSwitchTask(task.id)
+                  }
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0 mr-2">

@@ -29,6 +29,12 @@ export interface Task {
    * 注意：此字段不存储在数据库中，而是通过 taskId 关联查询
    */
   messages?: Message[]
+
+  /**
+   * 任务的消息数量（从数据库查询时填充）
+   * 用于列表展示，避免加载完整消息列表
+   */
+  messageCount?: number
 }
 
 /**

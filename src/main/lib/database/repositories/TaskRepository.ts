@@ -45,29 +45,43 @@ export class TaskRepository {
   }
 
   /**
-   * 根据 Session ID 获取所有任务（不含消息）
+   * 根据 Session ID 获取所有任务（不含消息，但包含消息数量统计）
    */
   getTasksBySessionId(sessionId: string): Task[] {
     const db = getDB()
     const stmt = db.prepare(`
-      SELECT id, sessionId, name, createdAt
-      FROM tasks
-      WHERE sessionId = ?
-      ORDER BY createdAt DESC
+      SELECT 
+        t.id, 
+        t.sessionId, 
+        t.name, 
+        t.createdAt,
+        COUNT(m.id) as messageCount
+      FROM tasks t
+      LEFT JOIN messages m ON t.id = m.taskId
+      WHERE t.sessionId = ?
+      GROUP BY t.id
+      ORDER BY t.createdAt DESC
     `)
 
     return stmt.all(sessionId) as Task[]
   }
 
   /**
-   * 获取所有任务（不含消息）
+   * 获取所有任务（不含消息，但包含消息数量统计）
    */
   getAllTasks(): Task[] {
     const db = getDB()
     const stmt = db.prepare(`
-      SELECT id, sessionId, name, createdAt
-      FROM tasks
-      ORDER BY createdAt DESC
+      SELECT 
+        t.id, 
+        t.sessionId, 
+        t.name, 
+        t.createdAt,
+        COUNT(m.id) as messageCount
+      FROM tasks t
+      LEFT JOIN messages m ON t.id = m.taskId
+      GROUP BY t.id
+      ORDER BY t.createdAt DESC
     `)
 
     return stmt.all() as Task[]
