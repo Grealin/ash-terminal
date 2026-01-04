@@ -136,11 +136,15 @@ export class TaskManager {
 
   /**
    * 监听任务相关事件
+   * 如果 Agent 不存在，返回空清理函数
    */
   onTaskEvent(sessionId: string, event: AgentEvent, callback: (data: any) => void): () => void {
     const agent = agentPool.getAgent(sessionId)
     if (!agent) {
-      throw new Error('Agent not found')
+      // Agent 还未创建，返回空清理函数
+      return () => {
+        // 空清理函数
+      }
     }
 
     agent.on(event, callback)
@@ -149,11 +153,16 @@ export class TaskManager {
 
   /**
    * 监听任务切换事件
+   * 如果 Agent 不存在，返回空清理函数
    */
   onTaskSwitched(sessionId: string, callback: (data: any) => void): () => void {
     const agent = agentPool.getAgent(sessionId)
     if (!agent) {
-      throw new Error('Agent not found')
+      // Agent 还未创建，返回空清理函数
+      // 当 Agent 创建后（首次 ask 时），会自动触发事件
+      return () => {
+        // 空清理函数
+      }
     }
 
     agent.on('task-switched', callback)
