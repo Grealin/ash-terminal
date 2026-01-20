@@ -580,7 +580,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               </p>
               <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                 <summary className="cursor-pointer">查看参数</summary>
-                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[200px] whitespace-pre">
+                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
                   {JSON.stringify(pendingApproval.params, null, 2)}
                 </pre>
               </details>
@@ -588,15 +588,43 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             <div className="flex space-x-2">
               <button
                 onClick={handleApprove}
-                className="px-3 py-1.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
+                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
+                title="批准"
               >
-                批准
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
               </button>
               <button
                 onClick={handleReject}
-                className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                className="p-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                title="拒绝"
               >
-                拒绝
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
           </div>
