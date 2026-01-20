@@ -176,7 +176,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, onAp
           {/* 创建新任务按钮 */}
           <button
             onClick={handleNewTask}
-            className="p-1 text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+            className="px-2 py-1 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded border border-blue-600 dark:border-blue-700 transition-colors shadow-sm hover:shadow-md"
             title="创建新任务"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
