@@ -286,7 +286,10 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) =>
                         autoFocus
                       />
                     ) : (
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      <h4
+                        className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[180px]"
+                        title={task.name}
+                      >
                         {task.name}
                       </h4>
                     )}
