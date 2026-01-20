@@ -257,7 +257,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           ...prev,
           {
             name: data.name,
-            params: data.arguments,
+            params: data.params,
             timestamp: Date.now()
           }
         ])
