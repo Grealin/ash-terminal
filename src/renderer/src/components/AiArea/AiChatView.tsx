@@ -1,4 +1,5 @@
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
+import { activeProviderIdAtom } from '@/store/AiConfigAtom'
 import { currentSessionIdAtom } from '@/store/SessionStore'
 import {
   currentMessagesAtom,
@@ -41,7 +42,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const [message, setMessage] = useState('')
   const [runMode, setRunMode] = useState<RunMode>('agent')
   const [providers, setProviders] = useState<AiProviderConfig[]>([])
-  const [selectedProviderId, setSelectedProviderId] = useState<string>('')
+  const [selectedProviderId, setSelectedProviderId] = useAtom(activeProviderIdAtom)
   const [toolCalls, setToolCalls] = useState<ToolCallInfo[]>([])
   const [toolResults, setToolResults] = useState<ToolResultInfo[]>([])
   const [apiConfigError, setApiConfigError] = useState<string>('')
@@ -81,11 +82,14 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         const providerList = await AiConfigService.getProviders()
         setProviders(providerList)
 
+        // activeProviderId 已在 useInitializeConfig 中初始化，这里只需确保有默认值
         const activeProvider = await AiConfigService.getActiveProvider()
         if (activeProvider) {
           setSelectedProviderId(activeProvider.id)
         } else if (providerList.length > 0) {
+          // 如果配置文件中没有激活的供应商，设置第一个为默认
           setSelectedProviderId(providerList[0].id)
+          await AiConfigService.setActiveProvider(providerList[0].id)
         }
       } catch (error) {
         console.error('Failed to load providers:', error)
@@ -93,6 +97,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     }
 
     loadProviders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // 初始化会话（确保 Agent 存在并加载当前任务）

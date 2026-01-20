@@ -1,7 +1,7 @@
 import {
   useAiInterface,
   useFileList,
-  useInitializeTheme,
+  useInitializeConfig,
   useLeftSideBar,
   useMonitorList,
   useRightSideBar,
@@ -13,7 +13,7 @@ import type { ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, className, ...props }) => {
-  const { loading } = useInitializeTheme()
+  const { loading } = useInitializeConfig()
   const isDark = useAtomValue(darkStateAtom)
 
   // 如果正在加载，显示加载状态防止闪烁

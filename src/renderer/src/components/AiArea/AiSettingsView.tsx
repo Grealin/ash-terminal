@@ -1,7 +1,9 @@
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useToast } from '@/hooks'
 import { AiConfigService } from '@/services'
+import { activeProviderIdAtom } from '@/store/AiConfigAtom'
 import type { AiProviderConfig } from '@shared/models'
+import { useAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { v4 as uuidv4 } from 'uuid'
@@ -76,7 +78,7 @@ export const AiSettingsView: React.FC = () => {
 
       {/* 右侧内容区 */}
       <div className="flex-[4] overflow-y-auto min-w-0">
-        {activeTab === 'providers' && <ProvidersSettings />}
+        {activeTab === 'providers' && <ProvidersSettings isVisible={activeTab === 'providers'} />}
         {activeTab === 'autoApproval' && <AutoApprovalSettings />}
         {activeTab === 'prompt' && <PromptSettings />}
       </div>
@@ -85,9 +87,13 @@ export const AiSettingsView: React.FC = () => {
 }
 
 // 供应商设置组件
-const ProvidersSettings: React.FC = () => {
+interface ProvidersSettingsProps {
+  isVisible: boolean
+}
+
+const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
   const [providers, setProviders] = useState<AiProviderConfig[]>([])
-  const [activeProviderId, setActiveProviderId] = useState<string>('')
+  const [activeProviderId, setActiveProviderId] = useAtom(activeProviderIdAtom)
   const [editingProvider, setEditingProvider] = useState<AiProviderConfig | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -96,14 +102,21 @@ const ProvidersSettings: React.FC = () => {
 
   useEffect(() => {
     loadProviders()
+    // activeProviderId 已在 useInitializeConfig 中初始化，无需重复加载
   }, [])
+
+  // 当组件可见时，重新加载供应商列表
+  useEffect(() => {
+    if (isVisible) {
+      loadProviders()
+    }
+  }, [isVisible])
 
   const loadProviders = async (): Promise<void> => {
     try {
       const providerList = await AiConfigService.getProviders()
       setProviders(providerList)
-      const config = await AiConfigService.getAiConfig()
-      setActiveProviderId(config.activeProviderId)
+      // activeProviderId 由全局状态管理，无需在此设置
     } catch (error) {
       console.error('Failed to load providers:', error)
     }

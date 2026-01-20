@@ -1,0 +1,36 @@
+import { useConfig, useDarkTheme } from '@/hooks'
+import { AiConfigService } from '@/services'
+import { activeProviderIdAtom } from '@/store/AiConfigAtom'
+import { useSetAtom } from 'jotai'
+import { useEffect, useRef } from 'react'
+
+export const useInitializeConfig = (): { loading: boolean } => {
+  const { config, loading } = useConfig()
+  const { setTheme } = useDarkTheme()
+  const setActiveProviderId = useSetAtom(activeProviderIdAtom)
+  const initializedRef = useRef(false)
+
+  useEffect(() => {
+    if (!loading && config && !initializedRef.current) {
+      // 从配置文件读取默认主题设置（仅在首次加载时）
+      setTheme(config.theme.defaultDarkMode)
+
+      // 从配置文件读取激活的 AI Provider ID（仅在首次加载时）
+      const initActiveProvider = async (): Promise<void> => {
+        try {
+          const aiConfig = await AiConfigService.getAiConfig()
+          if (aiConfig.activeProviderId) {
+            setActiveProviderId(aiConfig.activeProviderId)
+          }
+        } catch (error) {
+          console.error('Failed to load active provider:', error)
+        }
+      }
+      initActiveProvider()
+
+      initializedRef.current = true
+    }
+  }, [config, loading, setTheme, setActiveProviderId])
+
+  return { loading }
+}

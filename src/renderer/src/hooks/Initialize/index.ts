@@ -1,1 +1,1 @@
-export * from './InitializeTheme'
+export * from './InitializeConfig'
