@@ -136,7 +136,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           errorMessage.includes('API Key') ||
           errorMessage.includes('OpenAI 客户端失败')
         ) {
-          setApiConfigError('API 配置有误，请检查您的 API Key 配置')
+          setApiConfigError('API 配置有误，请检查您的配置后创建新的任务。')
         }
       }
     }
