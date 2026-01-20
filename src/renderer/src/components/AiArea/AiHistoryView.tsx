@@ -15,9 +15,10 @@ import { twMerge } from 'tailwind-merge'
 
 interface AiHistoryViewProps {
   onViewChange?: (view: 'chat' | 'history' | 'settings') => void
+  isVisible?: boolean
 }
 
-export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) => {
+export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVisible }) => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
   const [tasks, setTasks] = useAtom(tasksAtom)
   const setCurrentTask = useSetAtom(currentTaskAtom)
@@ -99,6 +100,14 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) =>
     return () => unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId])
+
+  // 当组件可见时，重新加载任务列表
+  useEffect(() => {
+    if (isVisible) {
+      handleRefresh()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
   const handleSwitchTask = async (taskId: string): Promise<void> => {
     if (!currentSessionId || isLoading) return
