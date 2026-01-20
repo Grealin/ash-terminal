@@ -250,6 +250,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         }
         setStreamingMessage('')
         setCurrentThought('')
+        setToolCalls([])
+        setToolResults([])
       })
 
       const toolCallCleanup = AIService.onTaskToolCall(currentSessionId, (data) => {
@@ -448,7 +450,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           </div>
         ) : (
           <div className="space-y-2">
-            {messages.map((msg) => renderMessage(msg))}
+            {messages.sort((a, b) => a.index - b.index).map((msg) => renderMessage(msg))}
 
             {/* 思考过程 */}
             {currentThought && (
