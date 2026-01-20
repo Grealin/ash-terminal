@@ -1,5 +1,5 @@
 import { useConfig, useSSHConnection, useToast } from '@/hooks'
-import { SSHService } from '@/services'
+import { AIService, SSHService } from '@/services'
 import { currentSessionIdAtom, darkStateAtom, sessionsAtom } from '@/store'
 import { useAtom, useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
@@ -460,6 +460,9 @@ export const TerminalListContent: React.FC = () => {
   const handleDisconnect = async (): Promise<void> => {
     if (currentSessionId) {
       try {
+        // 先关闭 AI 会话，清理 Agent 和任务资源
+        await AIService.closeTaskSession(currentSessionId)
+        // 再断开 SSH 连接
         await SSHService.disconnectSSH(currentSessionId)
         setDisconnected()
         setCurrentSessionId(null)
@@ -484,7 +487,8 @@ export const TerminalListContent: React.FC = () => {
           terminalInstanceRef.current.writeln(`\n尝试重新连接到 ${session.name}...`)
           toast.simple(`正在重新连接到 ${session.name}...`, { type: 'info' })
 
-          // 在重连前清理旧的 Shell 监听并标记为未激活，避免期间输入写入不存在的 Shell
+          // 在重连前清理 AI 会话和旧的 Shell 监听
+          await AIService.closeTaskSession(currentSessionId)
           await SSHService.disconnectSSH(currentSessionId)
           cleanupShellListeners()
           setIsShellActive(false)
