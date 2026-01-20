@@ -1,9 +1,40 @@
 import { AiConfig, AiProviderConfig } from '@shared/models'
 import { app } from 'electron'
+import { existsSync, unlinkSync } from 'fs'
+import { join } from 'path'
 import './Env'
 
 let Store: any = null
 let aiConfigStore: any = null
+
+const defaultAiConfig = {
+  providers: [
+    {
+      id: 'default-openai',
+      configName: 'Default',
+      providerType: 'OpenAI Compatible',
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: '',
+      model: 'gpt-4',
+      streaming: true,
+      temperature: 0.7,
+      maxContextTokens: 409600,
+      toolCallProtocol: 'Native JSON'
+    }
+  ],
+  activeProviderId: 'default-openai',
+  userSettings: {
+    autoApproval: {
+      enabled: false,
+      allowedTools: [],
+      commandFilter: {
+        allowedCommandPrefixes: [],
+        deniedCommandPrefixes: []
+      }
+    },
+    userExtraPrompt: ''
+  }
+}
 
 /**
  * 初始化 AI 配置存储（加密）
@@ -20,39 +51,40 @@ export const initAiConfigStore = async (): Promise<void> => {
       throw new Error('SECRET_KEY not found in environment variables')
     }
 
-    aiConfigStore = new Store({
-      name: 'ai-config',
-      cwd: app.getPath('userData'),
-      encryptionKey,
-      defaults: {
-        providers: [
-          {
-            id: 'default-openai',
-            configName: 'Default',
-            providerType: 'OpenAI Compatible',
-            baseUrl: 'https://api.openai.com/v1',
-            apiKey: '',
-            model: 'gpt-4',
-            streaming: true,
-            temperature: 0.7,
-            maxContextTokens: 409600,
-            toolCallProtocol: 'Native JSON'
+    try {
+      aiConfigStore = new Store({
+        name: 'ai-config',
+        cwd: app.getPath('userData'),
+        encryptionKey,
+        defaults: defaultAiConfig
+      })
+      // 尝试访问以验证文件是否有效
+      aiConfigStore.get('providers')
+    } catch (error) {
+      console.error('Failed to initialize AI config store:', error)
+      // 如果是 JSON 解析错误，删除损坏的配置文件
+      if (error instanceof SyntaxError || (error as any).message?.includes('JSON')) {
+        const configPath = join(app.getPath('userData'), 'ai-config.json')
+        if (existsSync(configPath)) {
+          console.log('Deleting corrupted AI config file:', configPath)
+          try {
+            unlinkSync(configPath)
+          } catch (unlinkError) {
+            console.error('Failed to delete corrupted AI config file:', unlinkError)
           }
-        ],
-        activeProviderId: 'default-openai',
-        userSettings: {
-          autoApproval: {
-            enabled: false,
-            allowedTools: [],
-            commandFilter: {
-              allowedCommandPrefixes: [],
-              deniedCommandPrefixes: []
-            }
-          },
-          userExtraPrompt: ''
         }
+        // 重新创建
+        aiConfigStore = new Store({
+          name: 'ai-config',
+          cwd: app.getPath('userData'),
+          encryptionKey,
+          defaults: defaultAiConfig
+        })
+        console.log('AI config store reinitialized successfully')
+      } else {
+        throw error
       }
-    })
+    }
   }
 }
 

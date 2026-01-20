@@ -1,7 +1,9 @@
 import { SSHConfig } from '@shared/models'
-import { disconnectSSH } from './SSHPool'
 import { app } from 'electron'
+import { existsSync, unlinkSync } from 'fs'
+import { join } from 'path'
 import './Env'
+import { disconnectSSH } from './SSHPool'
 
 let Store: any = null
 let sessionStore: any = null
@@ -18,12 +20,40 @@ export const initSessionStore = async (): Promise<void> => {
       throw new Error('SECRET_KEY not found in environment variables')
     }
 
-    sessionStore = new Store({
-      name: 'sessions',
-      cwd: app.getPath('userData'),
-      encryptionKey,
-      defaults: { sessions: [] }
-    })
+    try {
+      sessionStore = new Store({
+        name: 'sessions',
+        cwd: app.getPath('userData'),
+        encryptionKey,
+        defaults: { sessions: [] }
+      })
+      // 尝试访问以验证文件是否有效
+      sessionStore.get('sessions', [])
+    } catch (error) {
+      console.error('Failed to initialize session store:', error)
+      // 如果是 JSON 解析错误，删除损坏的配置文件
+      if (error instanceof SyntaxError || (error as any).message?.includes('JSON')) {
+        const configPath = join(app.getPath('userData'), 'sessions.json')
+        if (existsSync(configPath)) {
+          console.log('Deleting corrupted config file:', configPath)
+          try {
+            unlinkSync(configPath)
+          } catch (unlinkError) {
+            console.error('Failed to delete corrupted config file:', unlinkError)
+          }
+        }
+        // 重新创建
+        sessionStore = new Store({
+          name: 'sessions',
+          cwd: app.getPath('userData'),
+          encryptionKey,
+          defaults: { sessions: [] }
+        })
+        console.log('Session store reinitialized successfully')
+      } else {
+        throw error
+      }
+    }
   }
 }
 

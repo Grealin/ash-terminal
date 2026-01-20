@@ -1,9 +1,34 @@
 import { AppConfig } from '@shared/models'
 import { app } from 'electron'
+import { existsSync, unlinkSync } from 'fs'
+import { join } from 'path'
 
 // 动态导入 electron-store
 let Store: any = null
 let store: any = null
+
+const defaultConfig = {
+  theme: {
+    defaultDarkMode: false
+  },
+  layout: {
+    leftSideBarVisible: true,
+    rightSideBarVisible: true,
+    components: {
+      // 左侧栏功能组件
+      aiInterfaceVisible: true,
+      // 右侧栏功能组件
+      sessionListVisible: true,
+      fileListVisible: true,
+      monitorListVisible: true,
+      // 中央区域功能组件
+      commandListVisible: true
+    }
+  },
+  terminal: {
+    fontSize: 14
+  }
+}
 
 // 初始化配置存储
 export const initConfigStore = async (): Promise<void> => {
@@ -14,32 +39,38 @@ export const initConfigStore = async (): Promise<void> => {
       Store = ElectronStore
     }
 
-    store = new Store({
-      name: 'config',
-      cwd: app.getPath('userData'),
-      defaults: {
-        theme: {
-          defaultDarkMode: false
-        },
-        layout: {
-          leftSideBarVisible: true,
-          rightSideBarVisible: true,
-          components: {
-            // 左侧栏功能组件
-            aiInterfaceVisible: true,
-            // 右侧栏功能组件
-            sessionListVisible: true,
-            fileListVisible: true,
-            monitorListVisible: true,
-            // 中央区域功能组件
-            commandListVisible: true
+    try {
+      store = new Store({
+        name: 'config',
+        cwd: app.getPath('userData'),
+        defaults: defaultConfig
+      })
+      // 尝试访问以验证文件是否有效
+      store.get('theme')
+    } catch (error) {
+      console.error('Failed to initialize config store:', error)
+      // 如果是 JSON 解析错误，删除损坏的配置文件
+      if (error instanceof SyntaxError || (error as any).message?.includes('JSON')) {
+        const configPath = join(app.getPath('userData'), 'config.json')
+        if (existsSync(configPath)) {
+          console.log('Deleting corrupted config file:', configPath)
+          try {
+            unlinkSync(configPath)
+          } catch (unlinkError) {
+            console.error('Failed to delete corrupted config file:', unlinkError)
           }
-        },
-        terminal: {
-          fontSize: 14
         }
+        // 重新创建
+        store = new Store({
+          name: 'config',
+          cwd: app.getPath('userData'),
+          defaults: defaultConfig
+        })
+        console.log('Config store reinitialized successfully')
+      } else {
+        throw error
       }
-    })
+    }
   }
 }
 
