@@ -1,7 +1,3 @@
-import { AIService } from '@/services'
-import { currentSessionIdAtom } from '@/store/SessionStore'
-import { currentTaskAtom } from '@/store/TaskStore'
-import { useAtomValue, useSetAtom } from 'jotai'
 import type { ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
 
@@ -14,35 +10,12 @@ interface AiTopBarProps extends ComponentProps<'div'> {
 export const AiTopBar: React.FC<AiTopBarProps> = ({
   onViewChange,
   currentView,
-  onApiError,
   className,
   ...props
 }) => {
-  const currentSessionId = useAtomValue(currentSessionIdAtom)
-  const setCurrentTask = useSetAtom(currentTaskAtom)
-
-  const handleNewTask = async (): Promise<void> => {
-    // 清空当前任务状态并切换到 chat 视图
-    setCurrentTask(null)
+  const handleChatView = (): void => {
+    // 切换到对话视图
     onViewChange('chat')
-
-    // 只有在存在 SSH 连接时才创建新任务
-    if (!currentSessionId) return
-
-    try {
-      await AIService.prepareNewTask(currentSessionId)
-    } catch (error) {
-      console.error('Failed to prepare new task:', error)
-      // 检查是否是 API Key 配置错误
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      if (
-        errorMessage.includes('API Key 未配置') ||
-        errorMessage.includes('API Key') ||
-        errorMessage.includes('OpenAI 客户端失败')
-      ) {
-        onApiError?.('API 配置有误，请检查您的 API Key 配置')
-      }
-    }
   }
 
   return (
@@ -60,16 +33,16 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
 
       {/* 右侧按钮组 */}
       <div className="flex items-center space-x-1">
-        {/* 创建任务按钮 */}
+        {/* 对话按钮 */}
         <button
-          onClick={handleNewTask}
+          onClick={handleChatView}
           className={twMerge(
             'p-1.5 rounded transition-colors',
             currentView === 'chat'
               ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
               : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
           )}
-          title="创建任务"
+          title="对话"
         >
           <svg
             className="w-5 h-5"
@@ -78,7 +51,12 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
           </svg>
         </button>
 

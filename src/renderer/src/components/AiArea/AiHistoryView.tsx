@@ -8,9 +8,10 @@ import { twMerge } from 'tailwind-merge'
 
 interface AiHistoryViewProps {
   onViewChange?: (view: 'chat' | 'history' | 'settings') => void
+  onApiError?: (error: string) => void
 }
 
-export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) => {
+export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, onApiError }) => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
   const [tasks, setTasks] = useAtom(tasksAtom)
   const setCurrentTask = useSetAtom(currentTaskAtom)
@@ -18,6 +19,30 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) =>
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  const handleNewTask = async (): Promise<void> => {
+    // 清空当前任务状态并切换到 chat 视图
+    setCurrentTask(null)
+    onViewChange?.('chat')
+
+    // 只有在存在 SSH 连接时才创建新任务
+    if (!currentSessionId) return
+
+    try {
+      await AIService.prepareNewTask(currentSessionId)
+    } catch (error) {
+      console.error('Failed to prepare new task:', error)
+      // 检查是否是 API Key 配置错误
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (
+        errorMessage.includes('API Key 未配置') ||
+        errorMessage.includes('API Key') ||
+        errorMessage.includes('OpenAI 客户端失败')
+      ) {
+        onApiError?.('API 配置有误，请检查您的 API Key 配置')
+      }
+    }
+  }
 
   // 加载任务列表
   useEffect(() => {
@@ -146,7 +171,24 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) =>
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">历史任务</h3>
-        <span className="text-xs text-gray-500 dark:text-gray-400">{tasks.length} 个任务</span>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500 dark:text-gray-400">{tasks.length} 个任务</span>
+          {/* 创建新任务按钮 */}
+          <button
+            onClick={handleNewTask}
+            className="p-1 text-gray-600 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+            title="创建新任务"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* 任务列表 */}
