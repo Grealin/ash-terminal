@@ -1,6 +1,13 @@
 import { AIService } from '@/services'
 import { currentSessionIdAtom } from '@/store/SessionStore'
-import { currentTaskAtom, tasksAtom } from '@/store/TaskStore'
+import {
+  currentMessagesAtom,
+  currentTaskAtom,
+  currentThoughtAtom,
+  isAiProcessingAtom,
+  streamingMessageAtom,
+  tasksAtom
+} from '@/store/TaskStore'
 import { Task } from '@shared/models/Task'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
@@ -8,39 +15,54 @@ import { twMerge } from 'tailwind-merge'
 
 interface AiHistoryViewProps {
   onViewChange?: (view: 'chat' | 'history' | 'settings') => void
-  onApiError?: (error: string) => void
 }
 
-export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, onApiError }) => {
+export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange }) => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
   const [tasks, setTasks] = useAtom(tasksAtom)
   const setCurrentTask = useSetAtom(currentTaskAtom)
+  const setCurrentMessages = useSetAtom(currentMessagesAtom)
+  const setStreamingMessage = useSetAtom(streamingMessageAtom)
+  const setCurrentThought = useSetAtom(currentThoughtAtom)
+  const setIsProcessing = useSetAtom(isAiProcessingAtom)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleNewTask = async (): Promise<void> => {
-    // 清空当前任务状态并切换到 chat 视图
+    // 清空所有任务相关状态
     setCurrentTask(null)
-    onViewChange?.('chat')
+    setSelectedTaskId(null)
+    setCurrentMessages([])
+    setStreamingMessage('')
+    setCurrentThought('')
+    setIsProcessing(false)
 
-    // 只有在存在 SSH 连接时才创建新任务
-    if (!currentSessionId) return
+    // 如果存在 SSH 连接，清空后端 Agent 的状态
+    if (currentSessionId) {
+      try {
+        await AIService.prepareNewTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to prepare new task:', error)
+      }
+    }
+
+    // 切换到 chat 视图，等待用户输入问题后再创建新任务
+    onViewChange?.('chat')
+  }
+
+  const handleRefresh = async (): Promise<void> => {
+    if (!currentSessionId || isLoading) return
 
     try {
-      await AIService.prepareNewTask(currentSessionId)
+      setIsLoading(true)
+      const taskList = await AIService.getTaskList(currentSessionId)
+      setTasks(taskList)
     } catch (error) {
-      console.error('Failed to prepare new task:', error)
-      // 检查是否是 API Key 配置错误
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      if (
-        errorMessage.includes('API Key 未配置') ||
-        errorMessage.includes('API Key') ||
-        errorMessage.includes('OpenAI 客户端失败')
-      ) {
-        onApiError?.('API 配置有误，请检查您的 API Key 配置')
-      }
+      console.error('Failed to refresh tasks:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -173,6 +195,22 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, onAp
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">历史任务</h3>
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-500 dark:text-gray-400">{tasks.length} 个任务</span>
+          {/* 刷新按钮 */}
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="刷新任务列表"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
           {/* 创建新任务按钮 */}
           <button
             onClick={handleNewTask}

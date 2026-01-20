@@ -496,6 +496,14 @@ export class Agent extends EventEmitter {
   }
 
   /**
+   * 清空内存中的对话历史（不删除数据库记录）
+   * 用于准备创建新任务时，避免删除历史任务的记录
+   */
+  clearConversationHistory(): void {
+    this.conversationHistory = []
+  }
+
+  /**
    * 切换到指定任务（加载历史消息）
    */
   switchTask(taskId: string): void {

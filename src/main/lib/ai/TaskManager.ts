@@ -25,8 +25,8 @@ export class TaskManager {
 
     const agent = agentPool.getAgent(sessionId)
     if (agent) {
-      // 清空 Agent 的对话历史
-      agent.reset()
+      // 只清空内存中的对话历史，不删除数据库记录
+      agent.clearConversationHistory()
     }
 
     // 清空 TaskStore 的当前任务 ID
