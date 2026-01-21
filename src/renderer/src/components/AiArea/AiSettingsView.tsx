@@ -495,7 +495,10 @@ const AutoApprovalSettings: React.FC = () => {
   const [allowedTools, setAllowedTools] = useState<string[]>([])
   const [allowedPrefixes, setAllowedPrefixes] = useState<string[]>([])
   const [deniedPrefixes, setDeniedPrefixes] = useState<string[]>([])
-  const [newTool, setNewTool] = useState('')
+  const [availableTools, setAvailableTools] = useState<
+    Array<{ name: string; description: string }>
+  >([])
+  const [selectedTool, setSelectedTool] = useState('')
   const [newAllowedPrefix, setNewAllowedPrefix] = useState('')
   const [newDeniedPrefix, setNewDeniedPrefix] = useState('')
   const toast = useToast()
@@ -512,6 +515,10 @@ const AutoApprovalSettings: React.FC = () => {
       setAllowedTools(autoApproval.allowedTools)
       setAllowedPrefixes(autoApproval.commandFilter.allowedCommandPrefixes)
       setDeniedPrefixes(autoApproval.commandFilter.deniedCommandPrefixes)
+
+      // 加载可用工具列表
+      const tools = await AiConfigService.getAvailableToolsWithInfo()
+      setAvailableTools(tools)
     } catch (error) {
       console.error('Failed to load auto approval settings:', error)
     }
@@ -535,9 +542,9 @@ const AutoApprovalSettings: React.FC = () => {
   }
 
   const addTool = (): void => {
-    if (newTool.trim() && !allowedTools.includes(newTool.trim())) {
-      setAllowedTools([...allowedTools, newTool.trim()])
-      setNewTool('')
+    if (selectedTool && !allowedTools.includes(selectedTool)) {
+      setAllowedTools([...allowedTools, selectedTool])
+      setSelectedTool('')
     }
   }
 
@@ -590,33 +597,44 @@ const AutoApprovalSettings: React.FC = () => {
               允许的工具
             </label>
             <div className="mb-2 min-w-0">
-              <input
-                type="text"
-                value={newTool}
-                onChange={(e) => setNewTool(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addTool()}
-                placeholder="输入工具名称"
-                className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <select
+                value={selectedTool}
+                onChange={(e) => setSelectedTool(e.target.value)}
+                className="w-45 select select-info px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">选择工具</option>
+                {availableTools
+                  .filter((tool) => !allowedTools.includes(tool.name))
+                  .map((tool) => (
+                    <option key={tool.name} value={tool.name} title={tool.description}>
+                      {tool.name}
+                    </option>
+                  ))}
+              </select>
               <button
                 onClick={addTool}
-                className="mt-2 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                disabled={!selectedTool}
+                className="mt-2 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded transition-colors"
               >
                 添加
               </button>
             </div>
             <div className="flex flex-wrap gap-2 break-words min-w-0">
-              {allowedTools.map((tool) => (
-                <span
-                  key={tool}
-                  className="inline-flex items-center px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
-                >
-                  {tool}
-                  <button onClick={() => removeTool(tool)} className="ml-2 text-red-500">
-                    ×
-                  </button>
-                </span>
-              ))}
+              {allowedTools.map((tool) => {
+                const toolInfo = availableTools.find((t) => t.name === tool)
+                return (
+                  <span
+                    key={tool}
+                    title={toolInfo?.description || tool}
+                    className="inline-flex items-center px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                  >
+                    {tool}
+                    <button onClick={() => removeTool(tool)} className="ml-2 text-red-500">
+                      ×
+                    </button>
+                  </span>
+                )
+              })}
             </div>
           </div>
 
@@ -632,7 +650,7 @@ const AutoApprovalSettings: React.FC = () => {
                 onChange={(e) => setNewAllowedPrefix(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
-                className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={addAllowedPrefix}
@@ -668,7 +686,7 @@ const AutoApprovalSettings: React.FC = () => {
                 onChange={(e) => setNewDeniedPrefix(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
-                className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={addDeniedPrefix}
