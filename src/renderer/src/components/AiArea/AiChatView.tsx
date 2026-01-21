@@ -33,11 +33,13 @@ interface ToolResultInfo {
 interface AiChatViewProps {
   apiConfigError?: string
   onClearError?: () => void
+  isVisible?: boolean
 }
 
 export const AiChatView: React.FC<AiChatViewProps> = ({
   apiConfigError: externalApiConfigError,
-  onClearError
+  onClearError,
+  isVisible
 }) => {
   const [message, setMessage] = useState('')
   const [runMode, setRunMode] = useState<RunMode>('agent')
@@ -99,6 +101,28 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     loadProviders()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 当组件可见时，重新加载供应商列表
+  useEffect(() => {
+    if (isVisible) {
+      const loadProviders = async (): Promise<void> => {
+        try {
+          const providerList = await AiConfigService.getProviders()
+          setProviders(providerList)
+
+          const activeProvider = await AiConfigService.getActiveProvider()
+          if (activeProvider) {
+            setSelectedProviderId(activeProvider.id)
+          }
+        } catch (error) {
+          console.error('Failed to refresh providers:', error)
+        }
+      }
+
+      loadProviders()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
   // 初始化会话（确保 Agent 存在并加载当前任务）
   useEffect(() => {

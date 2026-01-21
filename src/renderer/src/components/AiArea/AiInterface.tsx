@@ -49,7 +49,11 @@ export const AiAgentContent: React.FC = () => {
       {/* 内容区域 */}
       <div className="flex-1 overflow-hidden">
         <div className={currentView === 'chat' ? 'h-full' : 'hidden'}>
-          <AiChatView apiConfigError={apiConfigError} onClearError={() => setApiConfigError('')} />
+          <AiChatView
+            apiConfigError={apiConfigError}
+            onClearError={() => setApiConfigError('')}
+            isVisible={currentView === 'chat'}
+          />
         </div>
         <div className={currentView === 'history' ? 'h-full' : 'hidden'}>
           <AiHistoryView onViewChange={setCurrentView} isVisible={currentView === 'history'} />
