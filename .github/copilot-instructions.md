@@ -206,11 +206,57 @@ class CommandTool extends BaseTool {
 - `AiMode.AGENT`：可使用工具（function calling）
 - `AiMode.ASK`：仅回答问题（无工具调用）
 
+**工具批准机制**（`ToolManager` + EventEmitter）：
+
+```typescript
+// ToolManager 发出批准请求
+this.emit('approval-request', { requestId, sessionId, toolName, params })
+
+// IPC 传递到前端（src/main/ipc/toolApproval.ts）
+toolManager.on('approval-request', (request) => {
+  event.sender.send('tool-approval-request', sessionId, request)
+})
+
+// 前端响应批准结果
+toolManager.handleApprovalResponse({ requestId, approved: true })
+```
+
+**自动批准规则**（`aiConfigStore.userSettings.autoApproval`）：
+
+- `allowedTools`：工具白名单（如 `['read_file', 'list_directory']`）
+- `commandFilter.allowedCommandPrefixes`：命令白名单（如 `['ls', 'cat']`）
+- `commandFilter.deniedCommandPrefixes`：命令黑名单（如 `['rm -rf', 'dd if=']`）
+- 黑名单优先级最高，其次白名单，最后默认需要用户批准
+
 **配置管理**：
 
 - 多 Provider 支持（OpenAI Compatible API）
 - 配置存储在加密的 `ai-config.json`（需 `.env` 中的 `SECRET_KEY`）
 - 前端通过 `window.aiConfig.*` API 管理
+
+**Agent 生命周期**（`AgentManager` + `AgentPool`）：
+
+```typescript
+// 创建 Agent（自动获取系统信息）
+const agent = await agentPool.createAgent({ sessionId, mode: AiMode.AGENT })
+
+// 发送消息
+agent.sendMessage(prompt)
+
+// 监听事件
+agent.on('message', (data) => {
+  /* AI 回复消息 */
+})
+agent.on('tool-call', (data) => {
+  /* 工具调用 */
+})
+agent.on('error', (error) => {
+  /* 错误处理 */
+})
+
+// 停止并清理
+agentPool.removeAgent(sessionId)
+```
 
 ## 开发约定
 
@@ -309,6 +355,15 @@ yarn format       # Prettier 格式化
 2. 实现 `getDefinition()` 返回 `ToolDefinition`（名称、描述、参数 schema）
 3. 实现 `execute(context, params)` 处理工具逻辑
 4. 在 `src/main/lib/ai/tools/index.ts` 导出新工具
+5. 在 `ToolManager` 构造函数中注册工具实例（`registerTool(new MyTool())`）
+
+### 修改 AI 助手行为
+
+**修改系统提示词**：编辑 `src/main/lib/ai/core/Agent.ts` 中的 `buildSystemPrompt()` 方法
+
+**添加工具执行前后钩子**：在 `ToolManager.executeTool()` 中添加逻辑（工具批准检查在此处理）
+
+**自定义工具批准规则**：修改 `ToolManager.shouldAutoApprove()` 方法
 
 ### 调试技巧
 
@@ -343,6 +398,32 @@ console.log(db.prepare('SELECT * FROM tasks').all())
 - DaisyUI 主题切换：修改 `src/shared/models/Config.ts` 中 `theme.defaultDarkMode`
 - Tailwind 配置：项目使用 Vite 原生 TailwindCSS 4.1+ 插件（`@tailwindcss/vite`），配置在 `electron.vite.config.ts` renderer 部分
 
+### 管理 AI 任务历史
+
+- 任务存储：使用 Better-SQLite3 的 `tasks` 表（见 `src/main/lib/database/repositories/TaskRepository.ts`）
+- 任务字段：`id`、`session_id`、`prompt`、`response`、`tool_calls`（JSON）、`status`、`created_at`、`updated_at`
+- 查询示例：`taskRepo.getTasksBySession(sessionId)` 获取会话所有任务
+- 任务管理器：`TaskManager` 提供任务创建、更新、查询和统计接口（如 `getTaskStats()`）
+
+### 调试 AI Agent
+
+**查看 Agent 日志**：
+
+```typescript
+// 在 Agent.ts 中启用详细日志
+console.log('[Agent] Message:', message)
+console.log('[Agent] Tool calls:', toolCalls)
+```
+
+**追踪工具执行**：
+
+```typescript
+// 在 ToolManager.executeTool() 中添加日志
+console.log(`[Tool] Executing ${toolName} with params:`, params)
+```
+
+**检查批准队列**：查看 `ToolManager.pendingApprovals` Map 状态（Main Process 控制台）
+
 ## 注意事项
 
 - **安全**：`contextIsolation: true`，preload 必须用 `contextBridge` 暴露 API
@@ -350,3 +431,23 @@ console.log(db.prepare('SELECT * FROM tasks').all())
 - **连接生命周期**：断开 SSH 时调用 `ssh.dispose()` 并从 `sshConnections` Map 中删除
 - **数据库**：必须先 `initDatabase()` 再调用 `getDB()`，app 退出时调用 `closeDatabase()`
 - **环境变量**：AI 配置加密需要 `.env` 文件中设置 `SECRET_KEY`（通过 `dotenv` 加载）
+- **EventEmitter 清理**：所有 EventEmitter 监听器必须在适当时机清理（使用 `off()` 或 `removeAllListeners()`）
+- **IPC 订阅清理**：IPC 事件订阅时要在 `event.sender.on('destroyed', cleanup)` 中清理（避免内存泄漏）
+- **工具批准超时**：批准请求有 5 分钟超时（`ToolManager.APPROVAL_TIMEOUT = 5 * 60 * 1000`），超时自动拒绝
+
+## 快速参考
+
+### 常用文件路径
+
+- **IPC 注册**：`src/main/ipc/index.ts`（统一入口）
+- **类型定义**：`src/shared/types/` + `src/shared/models/`
+- **AI 工具**：`src/main/lib/ai/tools/`
+- **数据库 Schema**：`src/main/lib/database/core/Database.ts`（`initializeSchema()` 方法）
+- **Preload API**：`src/preload/index.ts` + `index.d.ts`
+
+### 重要文档
+
+- **AI 工具使用**：`docs/AI_TOOLS_GUIDE.md`
+- **工具批准机制**：`docs/TOOL_APPROVAL_MECHANISM.md`
+- **任务存储**：`docs/TASK_STORAGE_GUIDE.md`
+- **AI Agent 使用**：`docs/AI_AGENT_USAGE.md`
