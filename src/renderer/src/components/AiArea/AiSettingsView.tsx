@@ -176,8 +176,10 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
     try {
       await AiConfigService.removeProvider(pendingDeleteProvider.id)
       await loadProviders()
+      toast.simple('供应商配置已删除', { type: 'info' })
     } catch (error) {
       console.error('Failed to delete provider:', error)
+      toast.simple('删除失败', { type: 'error' })
     } finally {
       setConfirmOpen(false)
       setPendingDeleteProvider(null)

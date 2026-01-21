@@ -1,3 +1,5 @@
+import { ConfirmModal } from '@/components/Modal'
+import { useToast } from '@/hooks'
 import { AIService } from '@/services'
 import { currentSessionIdAtom } from '@/store/SessionStore'
 import {
@@ -30,6 +32,9 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingDeleteTask, setPendingDeleteTask] = useState<Task | null>(null)
+  const toast = useToast()
 
   const handleNewTask = async (): Promise<void> => {
     // 清空所有任务相关状态
@@ -126,23 +131,34 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
     }
   }
 
-  const handleDeleteTask = async (taskId: string): Promise<void> => {
-    if (!currentSessionId) return
-    if (!confirm('确定要删除这个任务吗？')) return
+  // 触发删除确认
+  const handleAskDelete = (task: Task): void => {
+    setPendingDeleteTask(task)
+    setConfirmOpen(true)
+  }
+
+  // 确认删除
+  const handleConfirmDelete = async (): Promise<void> => {
+    if (!currentSessionId || !pendingDeleteTask) return
 
     try {
-      const deleted = await AIService.deleteTask(currentSessionId, taskId)
+      const deleted = await AIService.deleteTask(currentSessionId, pendingDeleteTask.id)
       if (deleted) {
         // 刷新任务列表
         const taskList = await AIService.getTaskList(currentSessionId)
         setTasks(taskList)
-        if (selectedTaskId === taskId) {
+        if (selectedTaskId === pendingDeleteTask.id) {
           setSelectedTaskId(null)
           setCurrentTask(null)
         }
+        toast.simple('任务已删除', { type: 'info' })
       }
     } catch (error) {
       console.error('Failed to delete task:', error)
+      toast.simple('删除失败', { type: 'error' })
+    } finally {
+      setConfirmOpen(false)
+      setPendingDeleteTask(null)
     }
   }
 
@@ -331,7 +347,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
                     </button>
                     {/* 删除按钮 */}
                     <button
-                      onClick={() => handleDeleteTask(task.id)}
+                      onClick={() => handleAskDelete(task)}
                       className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
                       title="删除"
                     >
@@ -356,6 +372,20 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
           </div>
         )}
       </div>
+
+      {/* 确认删除对话框 */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false)
+          setPendingDeleteTask(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="确认删除"
+        message={`确定要删除任务${pendingDeleteTask ? `「${pendingDeleteTask.name}」` : ''}吗？此操作不可撤销。`}
+        confirmText="删除"
+        cancelText="取消"
+      />
     </div>
   )
 }
