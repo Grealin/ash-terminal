@@ -594,7 +594,7 @@ const AutoApprovalSettings: React.FC = () => {
                 type="text"
                 value={newTool}
                 onChange={(e) => setNewTool(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addTool()}
+                onKeyDown={(e) => e.key === 'Enter' && addTool()}
                 placeholder="输入工具名称"
                 className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -630,7 +630,7 @@ const AutoApprovalSettings: React.FC = () => {
                 type="text"
                 value={newAllowedPrefix}
                 onChange={(e) => setNewAllowedPrefix(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addAllowedPrefix()}
+                onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
                 className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -666,7 +666,7 @@ const AutoApprovalSettings: React.FC = () => {
                 type="text"
                 value={newDeniedPrefix}
                 onChange={(e) => setNewDeniedPrefix(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addDeniedPrefix()}
+                onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
                 className="min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
