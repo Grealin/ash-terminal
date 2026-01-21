@@ -1,6 +1,7 @@
 export interface PromptParameter {
   toolList: string
   operatingSystem: string
+  userExtraPrompt?: string
 }
 
 export class PromptProvider {
@@ -87,6 +88,17 @@ ${params.toolList}
 ## 开始任务
 
 请认真分析用户的问题，逐步执行操作，根据观察结果不断调整策略，最终提供准确完整的答案。
+${
+  params.userExtraPrompt
+    ? `
+
+---
+
+## 用户额外要求
+
+${params.userExtraPrompt}`
+    : ''
+}
 `
   }
 
@@ -111,6 +123,17 @@ ${params.toolList}
 - 处理大文件时可以使用行范围读取
 
 请根据用户的需求，合理调用工具完成任务。
+${
+  params.userExtraPrompt
+    ? `
+
+---
+
+## 用户额外要求
+
+${params.userExtraPrompt}`
+    : ''
+}
 `
   }
 
@@ -144,6 +167,17 @@ ${params.toolList}
 - 涉及敏感操作时，请明确说明可能的影响
 
 请根据用户的问题，提供专业的解答和建议。
+${
+  params.userExtraPrompt
+    ? `
+
+---
+
+## 用户额外要求
+
+${params.userExtraPrompt}`
+    : ''
+}
 `
   }
 }

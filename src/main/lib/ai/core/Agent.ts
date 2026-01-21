@@ -1,4 +1,4 @@
-import { getActiveProvider } from '@/lib/AiConfigStore'
+import { getActiveProvider, getAiConfig } from '@/lib/AiConfigStore'
 import { AgentConfig, AiMode, MessageRole } from '@shared/models/AI'
 import {
   ChatCompletionChunk,
@@ -85,10 +85,13 @@ export class Agent extends EventEmitter {
   private getSystemPrompt(mode?: AiMode): string {
     const provider = getActiveProvider()
     const toolList = this.getToolListDescription()
+    const aiConfig = getAiConfig()
+    const userExtraPrompt = aiConfig.userSettings.userExtraPrompt
 
     const params = {
       toolList,
-      operatingSystem: this.config.operatingSystem
+      operatingSystem: this.config.operatingSystem,
+      userExtraPrompt: userExtraPrompt || undefined
     }
 
     // 使用传入的 mode 或 config.mode
