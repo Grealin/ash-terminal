@@ -309,6 +309,16 @@ export class Agent extends EventEmitter {
 
     const choice = response.choices[0]
     if (choice && choice.message.content) {
+      // 检测并提取 thought（XML 模式）
+      const provider = getActiveProvider()
+      const isXMLMode = provider?.toolCallProtocol === 'XML'
+      if (isXMLMode) {
+        const thought = this.extractXMLThought(choice.message.content)
+        if (thought) {
+          this.emit(AgentEvent.THOUGHT, { content: thought })
+        }
+      }
+
       this.addMessageToHistory(choice.message)
       this.emit(AgentEvent.ANSWER, { content: choice.message.content })
     }
@@ -639,6 +649,12 @@ export class Agent extends EventEmitter {
 
       const choice = response.choices[0]
       if (!choice || !choice.message.content) break
+
+      // 检测并提取 thought
+      const thought = this.extractXMLThought(choice.message.content)
+      if (thought) {
+        this.emit(AgentEvent.THOUGHT, { content: thought })
+      }
 
       // 解析 XML 格式的工具调用
       const xmlToolCalls = this.parseXMLToolCalls(choice.message.content)
