@@ -25,6 +25,16 @@ export class TaskManager {
 
     const agent = agentPool.getAgent(sessionId)
     if (agent) {
+      // 清除所有任务相关的事件监听器，防止监听器累积导致输出重复
+      agent.removeAllListeners(AgentEvent.STREAM)
+      agent.removeAllListeners(AgentEvent.THOUGHT)
+      agent.removeAllListeners(AgentEvent.TOOL_CALL)
+      agent.removeAllListeners(AgentEvent.TOOL_RESULT)
+      agent.removeAllListeners(AgentEvent.ANSWER)
+      agent.removeAllListeners(AgentEvent.ERROR)
+      agent.removeAllListeners(AgentEvent.DONE)
+      agent.removeAllListeners('task-switched')
+
       // 只清空内存中的对话历史，不删除数据库记录
       agent.clearConversationHistory()
     }
@@ -42,6 +52,16 @@ export class TaskManager {
     if (!agent) {
       throw new Error('Agent not found. Please create a task first.')
     }
+
+    // 切换任务前清除所有任务相关的事件监听器，防止监听器累积
+    agent.removeAllListeners(AgentEvent.STREAM)
+    agent.removeAllListeners(AgentEvent.THOUGHT)
+    agent.removeAllListeners(AgentEvent.TOOL_CALL)
+    agent.removeAllListeners(AgentEvent.TOOL_RESULT)
+    agent.removeAllListeners(AgentEvent.ANSWER)
+    agent.removeAllListeners(AgentEvent.ERROR)
+    agent.removeAllListeners(AgentEvent.DONE)
+    // 不清除 task-switched，因为切换操作本身需要触发这个事件
 
     agent.switchTask(taskId)
     const task = agent.getCurrentTask()

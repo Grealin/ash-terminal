@@ -27,6 +27,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   const setCurrentMessages = useSetAtom(currentMessagesAtom)
   const setStreamingMessage = useSetAtom(streamingMessageAtom)
   const setCurrentThought = useSetAtom(currentThoughtAtom)
+  const isProcessing = useAtomValue(isAiProcessingAtom)
   const setIsProcessing = useSetAtom(isAiProcessingAtom)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
@@ -37,9 +38,28 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   const toast = useToast()
 
   const handleNewTask = async (): Promise<void> => {
-    // 清空所有任务相关状态
-    setCurrentTask(null)
-    setSelectedTaskId(null)
+    // 如果当前任务正在执行，先停止它
+    if (isProcessing && currentSessionId) {
+      try {
+        await AIService.stopTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to stop current task:', error)
+      }
+    }
+
+    // 创建临时 Task 对象（使用时间戳生成临时 ID）
+    const tempTask: Task = {
+      id: `temp-${Date.now()}`,
+      sessionId: currentSessionId || '',
+      name: '新任务',
+      createdAt: Date.now(),
+      messages: [],
+      messageCount: 0
+    }
+
+    // 设置临时任务为当前任务
+    setCurrentTask(tempTask)
+    setSelectedTaskId(null) // 临时任务不在历史列表中，所以 selectedTaskId 为 null
     setCurrentMessages([])
     setStreamingMessage('')
     setCurrentThought('')
@@ -118,10 +138,24 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
     if (!currentSessionId || isLoading) return
     try {
       setIsLoading(true)
+
+      // 如果当前任务正在执行，先停止它
+      if (isProcessing) {
+        try {
+          await AIService.stopTask(currentSessionId)
+        } catch (error) {
+          console.error('Failed to stop current task:', error)
+        }
+      }
+
       const task = await AIService.switchTask(currentSessionId, taskId)
       // 更新当前任务状态，触发对话视图加载消息
       setCurrentTask(task)
       setSelectedTaskId(taskId)
+      // 清空临时状态（切换任务时不应有流式输出或思考过程）
+      setStreamingMessage('')
+      setCurrentThought('')
+      setIsProcessing(false)
       // 自动切换到对话视图
       onViewChange?.('chat')
     } catch (error) {

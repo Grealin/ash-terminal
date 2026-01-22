@@ -11,23 +11,20 @@ import {
 } from '@/store/TaskStore'
 import type { AiProviderConfig } from '@shared/models'
 import { AiMode, MessageRole } from '@shared/models'
-import { Message } from '@shared/models/Task'
+import { Message, Task } from '@shared/models/Task'
 import { useAtom, useAtomValue } from 'jotai'
 import { useEffect, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 type RunMode = 'ask' | 'agent'
 
-interface ToolCallInfo {
+interface ToolExecutionRecord {
+  id: string
   name: string
   params: Record<string, any>
+  result?: any
   timestamp: number
-}
-
-interface ToolResultInfo {
-  name: string
-  result: any
-  timestamp: number
+  status: 'calling' | 'completed'
 }
 
 interface AiChatViewProps {
@@ -45,8 +42,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const [runMode, setRunMode] = useState<RunMode>('agent')
   const [providers, setProviders] = useState<AiProviderConfig[]>([])
   const [selectedProviderId, setSelectedProviderId] = useAtom(activeProviderIdAtom)
-  const [toolCalls, setToolCalls] = useState<ToolCallInfo[]>([])
-  const [toolResults, setToolResults] = useState<ToolResultInfo[]>([])
+  const [toolExecutions, setToolExecutions] = useState<ToolExecutionRecord[]>([])
   const [apiConfigError, setApiConfigError] = useState<string>('')
 
   // 合并外部和内部的错误状态
@@ -67,6 +63,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const eventCleanupRef = useRef<Array<() => void>>([])
   const listenersSetupRef = useRef(false)
+  const taskIdRef = useRef<string | null>(null) // 跟踪上一个任务 ID
 
   // 自动滚动到底部
   const scrollToBottom = (): void => {
@@ -75,7 +72,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, streamingMessage, currentThought, toolCalls, toolResults])
+  }, [messages, streamingMessage, currentThought, toolExecutions])
 
   // 加载供应商列表
   useEffect(() => {
@@ -131,8 +128,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       setMessages([])
       setStreamingMessage('')
       setCurrentThought('')
-      setToolCalls([])
-      setToolResults([])
+      setToolExecutions([])
       setIsProcessing(false)
       setCurrentTask(null)
       return
@@ -150,6 +146,16 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         // 这样避免在切换任务后清空消息
         if (!task) {
           await AIService.prepareNewTask(currentSessionId)
+          // 创建临时任务对象
+          const tempTask: Task = {
+            id: `temp-${Date.now()}`,
+            sessionId: currentSessionId,
+            name: '新任务',
+            createdAt: Date.now(),
+            messages: [],
+            messageCount: 0
+          }
+          setCurrentTask(tempTask)
         }
       } catch (error) {
         console.error('Failed to initialize session:', error)
@@ -171,27 +177,54 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
   // 监听 currentTask 变化，加载对应的消息列表
   useEffect(() => {
-    if (!currentSessionId || !currentTask) {
+    if (!currentSessionId) {
+      return
+    }
+
+    const newTaskId = currentTask?.id || null
+    const oldTaskId = taskIdRef.current
+
+    // 判断是否是临时任务升级为真实任务
+    // 临时任务升级：旧任务是 temp-xxx，新任务不是 temp-xxx
+    const isTempTaskUpgrade =
+      oldTaskId?.startsWith('temp-') && newTaskId && !newTaskId.startsWith('temp-')
+
+    // 只在真正的任务切换时清理监听器和资源
+    // 临时任务升级为真实任务时，保持监听器继续工作
+    if (!isTempTaskUpgrade) {
+      cleanupEventListeners()
+      setStreamingMessage('')
+      setCurrentThought('')
+      setToolExecutions([])
+    }
+
+    // 更新任务 ID 引用
+    taskIdRef.current = newTaskId
+
+    if (!currentTask) {
       setMessages([])
       return
     }
 
-    // 当任务切换时，加载该任务的消息列表
+    // 加载该任务的消息列表
     if (currentTask.messages) {
       setMessages(currentTask.messages)
-      // 清空流式输出和思考过程
-      setStreamingMessage('')
-      setCurrentThought('')
-      setToolCalls([])
-      setToolResults([])
+    } else {
+      // 临时任务或新任务，消息列表为空
+      setMessages([])
     }
+
+    // 清理函数：组件卸载或下次任务变化前执行
+    // 这里不执行清理，因为已经在上面判断后执行了
+    // 避免重复清理和清理时机错误
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTask])
+  }, [currentTask?.id, currentSessionId]) // 监听任务 ID 和会话 ID 的变化
 
   // 清理事件监听器
   const cleanupEventListeners = (): void => {
     eventCleanupRef.current.forEach((cleanup) => cleanup())
     eventCleanupRef.current = []
+    listenersSetupRef.current = false
   }
 
   // 组件卸载时清理
@@ -219,10 +252,10 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId])
 
-  // 当会话切换时，重置监听器状态
+  // 当会话切换时，清理监听器状态和重置任务引用
   useEffect(() => {
-    listenersSetupRef.current = false
     cleanupEventListeners()
+    taskIdRef.current = null // 重置任务 ID 引用
   }, [currentSessionId])
 
   const changeSelectedProviderId = async (providerId: string): Promise<void> => {
@@ -240,8 +273,6 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     const userMessage = message.trim()
     setMessage('')
     setIsProcessing(true)
-    setToolCalls([])
-    setToolResults([])
 
     // 立即添加用户消息到对话列表
     const userMsg: Message = {
@@ -256,6 +287,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
     // 仅在第一次发送消息时设置监听器
     if (!listenersSetupRef.current) {
+      // 先清理可能存在的旧监听器（确保清理彻底）
+      cleanupEventListeners()
       listenersSetupRef.current = true
 
       // 设置新的监听器
@@ -273,36 +306,63 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           const task = await AIService.getCurrentTask(currentSessionId)
           if (task && task.messages) {
             setMessages(task.messages)
+            // 如果当前是临时任务（ID 以 temp- 开头），替换为真实任务
+            if (currentTask?.id.startsWith('temp-')) {
+              setCurrentTask(task)
+            }
           }
         } catch (error) {
           console.error('Failed to reload task messages:', error)
         }
         setStreamingMessage('')
         setCurrentThought('')
-        setToolCalls([])
-        setToolResults([])
       })
 
       const toolCallCleanup = AIService.onTaskToolCall(currentSessionId, (data) => {
-        setToolCalls((prev) => [
+        const recordId = `tool-${Date.now()}-${Math.random()}`
+        setToolExecutions((prev) => [
           ...prev,
           {
+            id: recordId,
             name: data.name,
             params: data.params,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            status: 'calling'
           }
         ])
       })
 
       const toolResultCleanup = AIService.onTaskToolResult(currentSessionId, (data) => {
-        setToolResults((prev) => [
-          ...prev,
-          {
-            name: data.name,
-            result: data.result,
-            timestamp: Date.now()
+        setToolExecutions((prev) => {
+          // 查找最近的匹配工具调用记录
+          const lastCallIndex = [...prev]
+            .reverse()
+            .findIndex((record) => record.name === data.name && record.status === 'calling')
+
+          if (lastCallIndex !== -1) {
+            const actualIndex = prev.length - 1 - lastCallIndex
+            const updated = [...prev]
+            updated[actualIndex] = {
+              ...updated[actualIndex],
+              result: data.result,
+              status: 'completed'
+            }
+            return updated
           }
-        ])
+
+          // 如果没找到对应的调用记录，创建一个新的完成记录
+          return [
+            ...prev,
+            {
+              id: `tool-${Date.now()}-${Math.random()}`,
+              name: data.name,
+              params: {},
+              result: data.result,
+              timestamp: Date.now(),
+              status: 'completed'
+            }
+          ]
+        })
       })
 
       const taskDoneCleanup = AIService.onTaskDone(currentSessionId, () => {
@@ -373,6 +433,40 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     }
   }
 
+  // 根据消息的时间戳查找对应的工具执行记录
+  const findToolExecutionForMessage = (msg: Message): ToolExecutionRecord | undefined => {
+    if (msg.role !== MessageRole.TOOL) return undefined
+
+    // 查找时间戳最接近且在消息之前的已完成工具执行记录
+    const matchingExecution = toolExecutions
+      .filter((exec) => exec.status === 'completed' && exec.timestamp <= msg.createdAt)
+      .sort(
+        (a, b) => Math.abs(msg.createdAt - a.timestamp) - Math.abs(msg.createdAt - b.timestamp)
+      )[0]
+
+    return matchingExecution
+  }
+
+  // 获取所有已经与 TOOL 消息绑定的工具执行记录 ID
+  const getBoundToolExecutionIds = (): Set<string> => {
+    const boundIds = new Set<string>()
+    messages.forEach((msg) => {
+      if (msg.role === MessageRole.TOOL) {
+        const execution = findToolExecutionForMessage(msg)
+        if (execution) {
+          boundIds.add(execution.id)
+        }
+      }
+    })
+    return boundIds
+  }
+
+  // 获取未绑定的工具执行记录（用于实时显示）
+  const getUnboundToolExecutions = (): ToolExecutionRecord[] => {
+    const boundIds = getBoundToolExecutionIds()
+    return toolExecutions.filter((exec) => !boundIds.has(exec.id))
+  }
+
   const renderMessage = (msg: Message): React.JSX.Element => {
     if (msg.role === MessageRole.USER) {
       return (
@@ -399,27 +493,89 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         </div>
       )
     } else if (msg.role === MessageRole.TOOL) {
+      const toolExecution = findToolExecutionForMessage(msg)
+
       return (
-        <div key={msg.id} className="flex justify-start mb-4 animate-in fade-in duration-300">
-          <div className="max-w-[70%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
-            <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              工具执行结果
-            </p>
-            <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-              <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-                查看结果
-              </summary>
-              <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                {msg.content}
-              </pre>
-            </details>
+        <div key={msg.id}>
+          {/* 如果找到对应的工具执行记录，先显示工具调用和结果卡片 */}
+          {toolExecution && (
+            <>
+              {/* 工具调用卡片 */}
+              <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                  <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    调用工具：{toolExecution.name}
+                  </p>
+                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                    <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                      查看参数
+                    </summary>
+                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                      {JSON.stringify(toolExecution.params, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              </div>
+
+              {/* 工具结果卡片 */}
+              {toolExecution.result !== undefined && (
+                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                  <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      工具结果：{toolExecution.name}
+                    </p>
+                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                      <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                        查看结果
+                      </summary>
+                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                        {typeof toolExecution.result === 'string'
+                          ? toolExecution.result
+                          : JSON.stringify(toolExecution.result, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* TOOL 消息卡片 */}
+          <div className="flex justify-start mb-4 animate-in fade-in duration-300">
+            <div className="max-w-[70%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                工具执行结果
+              </p>
+              <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+                  查看结果
+                </summary>
+                <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                  {msg.content}
+                </pre>
+              </details>
+            </div>
           </div>
         </div>
       )
@@ -481,6 +637,63 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           <div className="space-y-2">
             {messages.sort((a, b) => a.index - b.index).map((msg) => renderMessage(msg))}
 
+            {/* 未绑定的工具执行记录（实时显示） */}
+            {getUnboundToolExecutions().map((execution) => (
+              <div key={execution.id}>
+                {/* 工具调用卡片 */}
+                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                  <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                    <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      调用工具：{execution.name}
+                    </p>
+                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                      <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                        查看参数
+                      </summary>
+                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                        {JSON.stringify(execution.params, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                </div>
+
+                {/* 工具结果卡片 */}
+                {execution.status === 'completed' && execution.result !== undefined && (
+                  <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                    <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        工具结果：{execution.name}
+                      </p>
+                      <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                        <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                          查看结果
+                        </summary>
+                        <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                          {typeof execution.result === 'string'
+                            ? execution.result
+                            : JSON.stringify(execution.result, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
             {/* 思考过程 */}
             {currentThought && (
               <div className="flex justify-start mb-4 animate-in fade-in duration-300">
@@ -495,66 +708,6 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 </div>
               </div>
             )}
-
-            {/* 工具调用记录 */}
-            {toolCalls.map((toolCall, index) => (
-              <div
-                key={`tool-call-${index}`}
-                className="flex justify-start mb-4 animate-in slide-in-from-left duration-300"
-              >
-                <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    调用工具：{toolCall.name}
-                  </p>
-                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                    <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                      查看参数
-                    </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                      {JSON.stringify(toolCall.params, null, 2)}
-                    </pre>
-                  </details>
-                </div>
-              </div>
-            ))}
-
-            {/* 工具执行结果 */}
-            {toolResults.map((toolResult, index) => (
-              <div
-                key={`tool-result-${index}`}
-                className="flex justify-start mb-4 animate-in slide-in-from-left duration-300"
-              >
-                <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    工具结果：{toolResult.name}
-                  </p>
-                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                    <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                      查看结果
-                    </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                      {typeof toolResult.result === 'string'
-                        ? toolResult.result
-                        : JSON.stringify(toolResult.result, null, 2)}
-                    </pre>
-                  </details>
-                </div>
-              </div>
-            ))}
 
             {/* 加载动画 */}
             {isProcessing && !streamingMessage && !currentThought && (
