@@ -652,6 +652,9 @@ export class Agent extends EventEmitter {
 
         // 执行工具调用
         await this.executeXMLToolCalls(xmlToolCalls)
+
+        // 工具执行完成后，继续循环让 AI 根据 observation 生成下一步响应
+        continue
       } else {
         // 检查是否有 final_answer
         const finalAnswer = this.extractXMLFinalAnswer(choice.message.content)
@@ -665,10 +668,6 @@ export class Agent extends EventEmitter {
           this.emit(AgentEvent.ANSWER, { content: choice.message.content })
           break
         }
-      }
-
-      if (choice.finish_reason === 'stop') {
-        break
       }
     }
 
