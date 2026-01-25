@@ -1,8 +1,26 @@
 import icon from '@/assets/images/icon.png'
 import { MenuButton, TopButton, TopDropdown } from '@/components'
-import { useDarkTheme, useModalAbout, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
+import {
+  useDarkTheme,
+  useModalAbout,
+  useModalLayout,
+  useModalSession,
+  useModalTheme,
+  useModalTool
+} from '@/hooks'
 import { useModalTerminalSettings } from '@/hooks/ModalOpen'
-import { ElectronService } from '@/services'
+import { AIService, ElectronService } from '@/services'
+import {
+  currentMessagesAtom,
+  currentSessionIdAtom,
+  currentTaskAtom,
+  currentThoughtAtom,
+  editingSessionAtom,
+  isAiProcessingAtom,
+  streamingMessageAtom
+} from '@/store'
+import { Task } from '@shared/models/Task'
+import { useAtomValue, useSetAtom } from 'jotai'
 import { ComponentProps, useEffect, useState } from 'react'
 
 export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
@@ -13,6 +31,15 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openToolModal } = useModalTool()
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
   const { openModal: openAboutModal } = useModalAbout()
+  const { openModal: openSessionModal } = useModalSession()
+  const setEditingSession = useSetAtom(editingSessionAtom)
+  const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const setCurrentTask = useSetAtom(currentTaskAtom)
+  const setCurrentMessages = useSetAtom(currentMessagesAtom)
+  const setStreamingMessage = useSetAtom(streamingMessageAtom)
+  const setCurrentThought = useSetAtom(currentThoughtAtom)
+  const isProcessing = useAtomValue(isAiProcessingAtom)
+  const setIsProcessing = useSetAtom(isAiProcessingAtom)
 
   useEffect(() => {
     // 获取初始窗口状态
@@ -27,6 +54,50 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
     return unsubscribe
   }, [])
 
+  // 新建 SSH 会话
+  const handleCreateSession = (): void => {
+    setEditingSession(null)
+    openSessionModal()
+  }
+
+  // 新建 Agent 任务
+  const handleNewTask = async (): Promise<void> => {
+    // 如果当前任务正在执行，先停止它
+    if (isProcessing && currentSessionId) {
+      try {
+        await AIService.stopTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to stop current task:', error)
+      }
+    }
+
+    // 创建临时 Task 对象（使用时间戳生成临时 ID）
+    const tempTask: Task = {
+      id: `temp-${Date.now()}`,
+      sessionId: currentSessionId || '',
+      name: '新任务',
+      createdAt: Date.now(),
+      messages: [],
+      messageCount: 0
+    }
+
+    // 设置临时任务为当前任务
+    setCurrentTask(tempTask)
+    setCurrentMessages([])
+    setStreamingMessage('')
+    setCurrentThought('')
+    setIsProcessing(false)
+
+    // 如果存在 SSH 连接，清空后端 Agent 的状态
+    if (currentSessionId) {
+      try {
+        await AIService.prepareNewTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to prepare new task:', error)
+      }
+    }
+  }
+
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm p-0 dark:bg-slate-900/80 dark:border-slate-700/60">
       <div className="flex items-center justify-between h-12">
@@ -37,7 +108,19 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           </div>
 
           {/* 选项按钮 */}
-          <TopButton>会话</TopButton>
+          <TopButton
+            popoverTarget="popover-session"
+            style={{ anchorName: '--anchor-session' } as React.CSSProperties}
+          >
+            会话
+          </TopButton>
+          <TopDropdown
+            id="popover-session"
+            style={{ positionAnchor: '--anchor-session' } as React.CSSProperties}
+          >
+            <MenuButton onClick={handleCreateSession}>新建SSH会话</MenuButton>
+            <MenuButton onClick={handleNewTask}>新建Agent任务</MenuButton>
+          </TopDropdown>
           <TopButton>编辑</TopButton>
           <TopButton
             popoverTarget="popover-layout"
