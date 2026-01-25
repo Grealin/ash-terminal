@@ -524,7 +524,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               <>
                 {/* 工具调用卡片 */}
                 <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
                     <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -549,7 +549,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 {/* 工具结果卡片 */}
                 {toolExecution.result !== undefined && (
                   <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                    <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                    <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
                       <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                           <path
@@ -578,7 +578,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
             {/* OBSERVATION 消息卡片 */}
             <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-              <div className="max-w-[70%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
+              <div className="max-w-[90%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
                 <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path
@@ -609,7 +609,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           key={msg.id}
           className="flex justify-end mb-4 animate-in slide-in-from-right duration-300"
         >
-          <div className="max-w-[70%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm">
+          <div className="max-w-[90%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-sm whitespace-pre-wrap leading-relaxed">
               {cleanMessageContent(msg.content)}
             </p>
@@ -622,7 +622,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           key={msg.id}
           className="flex justify-start mb-4 animate-in slide-in-from-left duration-300"
         >
-          <div className="max-w-[70%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+          <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
               {cleanMessageContent(msg.content)}
             </p>
@@ -639,7 +639,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             <>
               {/* 工具调用卡片 */}
               <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
                   <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path
@@ -664,7 +664,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               {/* 工具结果卡片 */}
               {toolExecution.result !== undefined && (
                 <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
                     <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -693,7 +693,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
           {/* TOOL 消息卡片 */}
           <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-            <div className="max-w-[70%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
+            <div className="max-w-[90%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
               <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -779,7 +779,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               <div key={execution.id}>
                 {/* 工具调用卡片 */}
                 <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
                     <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -804,7 +804,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 {/* 工具结果卡片 */}
                 {execution.status === 'completed' && execution.result !== undefined && (
                   <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                    <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                    <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
                       <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                           <path
@@ -834,7 +834,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 思考过程 */}
             {currentThought && (
               <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-                <div className="max-w-[70%] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="max-w-[90%] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-2xl px-4 py-3 shadow-sm">
                   <p className="text-xs text-purple-700 dark:text-purple-400 font-semibold mb-2 flex items-center gap-1">
                     <span className="inline-block animate-pulse">💭</span>
                     思考中...
@@ -849,7 +849,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 加载动画 */}
             {isProcessing && !streamingMessage && !currentThought && (
               <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-                <div className="max-w-[70%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       <span
@@ -874,7 +874,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 流式输出 */}
             {streamingMessage && (
               <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                <div className="max-w-[70%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
                   <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
                     {streamingMessage}
                     <span className="inline-block w-1 h-4 ml-1 bg-blue-500 animate-pulse"></span>
