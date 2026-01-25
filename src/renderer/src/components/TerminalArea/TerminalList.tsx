@@ -74,6 +74,8 @@ export const TerminalListContent: React.FC = () => {
             background: '#0f172a', // slate-900
             foreground: '#e2e8f0', // slate-200
             cursor: '#f1f5f9', // slate-100
+            selectionBackground: '#3b82f680', // blue-500 with opacity
+            selectionForeground: '#ffffff', // white
             black: '#1e293b', // slate-800
             red: '#ef4444', // red-500
             green: '#22c55e', // green-500
@@ -95,6 +97,8 @@ export const TerminalListContent: React.FC = () => {
             background: '#ffffff',
             foreground: '#1e293b', // slate-800
             cursor: '#475569', // slate-600
+            selectionBackground: '#3b82f6', // blue-500 - 明显的蓝色选择背景
+            selectionForeground: '#ffffff', // white - 白色选择前景
             black: '#1e293b',
             red: '#dc2626', // red-600
             green: '#16a34a', // green-600
@@ -216,6 +220,31 @@ export const TerminalListContent: React.FC = () => {
         if (currentSessionIdRef.current && isShellActiveRef.current) {
           SSHService.writeToShell(currentSessionIdRef.current, data)
         }
+      })
+
+      // 处理键盘快捷键（仅处理 xterm.js 未内置的功能）
+      terminal.attachCustomKeyEventHandler((event: KeyboardEvent) => {
+        // Ctrl+Shift+C: 复制选中的文本（xterm.js 可能已内置，但这里显式处理以确保兼容性）
+        if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+          const selection = terminal.getSelection()
+          if (selection) {
+            navigator.clipboard.writeText(selection).catch((err) => {
+              console.warn('Failed to copy to clipboard:', err)
+            })
+          }
+          return false // 阻止事件传播
+        }
+
+        // 注意：Ctrl+Shift+V 粘贴功能由 xterm.js 内置支持，无需自定义处理
+
+        // Ctrl+Shift+A: 全选终端内容（xterm.js 未内置此功能）
+        if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+          terminal.selectAll()
+          return false // 阻止事件传播
+        }
+
+        // 允许其他按键正常处理（包括 xterm.js 内置的 Ctrl+Shift+V 粘贴）
+        return true
       })
 
       // 初始化调整大小
@@ -575,7 +604,7 @@ export const TerminalListContent: React.FC = () => {
       </div>
 
       {/* 终端区域 */}
-      <div className="flex-1 relative min-h-0" ref={containerRef}>
+      <div className="flex-1 relative min-h-0 xterm-text-selectable" ref={containerRef}>
         <div
           ref={terminalRef}
           className="h-full w-full"

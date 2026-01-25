@@ -57,3 +57,19 @@
     padding-bottom: 0 !important;
   }
 }
+
+/* xterm: 允许文本选择 - 覆盖默认的 user-select: none */
+@layer utilities {
+  .xterm-text-selectable .xterm,
+  .xterm-text-selectable .xterm * {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+  }
+
+  /* 确保选择层可见 */
+  .xterm-text-selectable .xterm .xterm-selection-layer {
+    pointer-events: none;
+    user-select: none;
+  }
+}
