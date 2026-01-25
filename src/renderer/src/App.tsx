@@ -13,6 +13,7 @@ import {
   MainContent,
   MonitorListContent,
   MonitorListMain,
+  MonitorSettingsModal,
   RightSideBar,
   RootLayout,
   SessionListContent,
@@ -67,6 +68,7 @@ const App: React.FC = () => {
         <LayoutModal />
         <ToolModal />
         <TerminalSettingsModal />
+        <MonitorSettingsModal />
         <AboutModal />
         <UploadModal />
         {/* 全局 Toast Host */}

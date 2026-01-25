@@ -44,6 +44,11 @@ export interface TerminalConfig {
   fontSize: number // 终端字体大小
 }
 
+// 监控配置
+export interface MonitorConfig {
+  refreshInterval: number // 监控刷新间隔（毫秒），最小值为3000
+}
+
 // 功能组件配置
 export interface ComponentConfig {
   // 左侧栏功能组件
@@ -68,4 +73,5 @@ export interface AppConfig {
   theme: ThemeConfig
   layout: LayoutConfig
   terminal: TerminalConfig
+  monitor: MonitorConfig
 }

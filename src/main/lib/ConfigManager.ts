@@ -7,7 +7,7 @@ import { join } from 'path'
 let Store: any = null
 let store: any = null
 
-const defaultConfig = {
+const defaultConfig: AppConfig = {
   theme: {
     defaultDarkMode: false
   },
@@ -27,6 +27,9 @@ const defaultConfig = {
   },
   terminal: {
     fontSize: 14
+  },
+  monitor: {
+    refreshInterval: 3000
   }
 }
 

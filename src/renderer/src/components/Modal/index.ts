@@ -1,6 +1,7 @@
 export * from './AboutModal'
 export * from './GeneralModal'
 export * from './LayoutSettings'
+export * from './MonitorSettings'
 export * from './SessionModal'
 export * from './TerminalSettings'
 export * from './ThemeModal'

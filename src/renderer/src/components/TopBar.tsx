@@ -8,7 +8,7 @@ import {
   useModalTheme,
   useModalTool
 } from '@/hooks'
-import { useModalTerminalSettings } from '@/hooks/ModalOpen'
+import { useModalMonitorSettings, useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { AIService, ElectronService } from '@/services'
 import {
   currentMessagesAtom,
@@ -30,6 +30,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openLayoutModal } = useModalLayout()
   const { openModal: openToolModal } = useModalTool()
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
+  const { openModal: openMonitorSettingsModal } = useModalMonitorSettings()
   const { openModal: openAboutModal } = useModalAbout()
   const { openModal: openSessionModal } = useModalSession()
   const setEditingSession = useSetAtom(editingSessionAtom)
@@ -147,6 +148,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           >
             <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
             <MenuButton onClick={() => openTerminalSettingsModal()}>终端设置</MenuButton>
+            <MenuButton onClick={() => openMonitorSettingsModal()}>性能监视器设置</MenuButton>
           </TopDropdown>
           <TopButton
             popoverTarget="popover-help"

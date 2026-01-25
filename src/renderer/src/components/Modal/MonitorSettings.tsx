@@ -1,22 +1,23 @@
 import { useConfig } from '@/hooks'
-import { isModalTerminalSettingsOpenAtom } from '@/store'
-import { TerminalConfig } from '@shared/models'
-import { useAtom } from 'jotai'
+import { isModalMonitorSettingsOpenAtom, monitorRefreshIntervalAtom } from '@/store'
+import { MonitorConfig } from '@shared/models'
+import { useAtom, useSetAtom } from 'jotai'
 import { useCallback, useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-export const TerminalSettingsModal: React.FC = () => {
-  const [isOpen, setIsOpen] = useAtom(isModalTerminalSettingsOpenAtom)
+export const MonitorSettingsModal: React.FC = () => {
+  const [isOpen, setIsOpen] = useAtom(isModalMonitorSettingsOpenAtom)
   const { config, updateConfigField, loading } = useConfig()
-  const [localSettings, setLocalSettings] = useState<TerminalConfig>(() => ({
-    fontSize: 14
+  const setMonitorRefreshInterval = useSetAtom(monitorRefreshIntervalAtom)
+  const [localSettings, setLocalSettings] = useState<MonitorConfig>(() => ({
+    refreshInterval: 3000
   }))
 
   // 当 Modal 打开时，重置本地状态为配置文件中的实际值
   useEffect(() => {
     if (isOpen && !loading && config) {
       setLocalSettings({
-        fontSize: config.terminal?.fontSize || 14
+        refreshInterval: Math.max(3000, config.monitor?.refreshInterval || 3000)
       })
     }
   }, [isOpen, loading, config])
@@ -27,21 +28,23 @@ export const TerminalSettingsModal: React.FC = () => {
 
   const handleSave = useCallback(async () => {
     try {
-      await updateConfigField('terminal.fontSize', localSettings.fontSize)
+      // 先更新配置文件
+      await updateConfigField('monitor.refreshInterval', localSettings.refreshInterval)
+      // 再更新原子状态
+      setMonitorRefreshInterval(localSettings.refreshInterval)
       handleClose()
     } catch (error) {
-      console.error('Failed to save terminal settings:', error)
+      console.error('Failed to save monitor settings:', error)
     }
-  }, [localSettings, updateConfigField, handleClose])
+  }, [localSettings, updateConfigField, setMonitorRefreshInterval, handleClose])
 
-  const handleFontSizeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRefreshIntervalChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value)
-    if (!isNaN(value) && value >= 8 && value <= 32) {
-      setLocalSettings((prev) => ({ ...prev, fontSize: value }))
+    // 确保最小值为3000
+    if (!isNaN(value) && value >= 3000 && value <= 60000) {
+      setLocalSettings((prev) => ({ ...prev, refreshInterval: value }))
     }
   }, [])
-
-  // 其它配置项已移除
 
   if (!isOpen) return null
 
@@ -55,7 +58,9 @@ export const TerminalSettingsModal: React.FC = () => {
       >
         {/* 标题 */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">终端设置</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            性能监视器设置
+          </h3>
           <button
             onClick={handleClose}
             className={twMerge(
@@ -76,18 +81,19 @@ export const TerminalSettingsModal: React.FC = () => {
 
         {/* 内容 */}
         <div className="space-y-6">
-          {/* 字体大小 */}
+          {/* 刷新间隔 */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              字体大小
+              刷新间隔（毫秒）
             </label>
             <div className="flex items-center space-x-3">
               <input
                 type="range"
-                min="8"
-                max="32"
-                value={localSettings.fontSize}
-                onChange={handleFontSizeChange}
+                min="3000"
+                max="60000"
+                step="1000"
+                value={localSettings.refreshInterval}
+                onChange={handleRefreshIntervalChange}
                 className={twMerge(
                   'h-2 w-full appearance-none rounded-lg bg-slate-200 dark:bg-slate-600',
                   'slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-blue-500'
@@ -95,24 +101,26 @@ export const TerminalSettingsModal: React.FC = () => {
               />
               <input
                 type="number"
-                min="8"
-                max="32"
-                value={localSettings.fontSize}
-                onChange={handleFontSizeChange}
+                min="3000"
+                max="60000"
+                step="1000"
+                value={localSettings.refreshInterval}
+                onChange={handleRefreshIntervalChange}
                 className={twMerge(
-                  'w-16 rounded border border-slate-300 px-2 py-1 text-center text-sm',
+                  'w-20 rounded border border-slate-300 px-2 py-1 text-center text-sm',
                   'dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200'
                 )}
               />
             </div>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              最小值：3000 毫秒（3 秒）
+            </p>
           </div>
 
-          {/* 提示：需重启后生效 */}
+          {/* 提示 */}
           <p className={twMerge('text-xs text-slate-500', 'dark:text-slate-400')}>
-            修改设置后重启后生效
+            修改刷新间隔后立即生效
           </p>
-
-          {/* 其它配置项（字体族、时间戳、行号）已取消 */}
         </div>
 
         {/* 按钮 */}

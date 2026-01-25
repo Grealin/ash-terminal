@@ -1,7 +1,7 @@
 import { useSSHConnection } from '@/hooks'
 import { useMonitorList } from '@/hooks/AreaClosed'
 import { SSHService } from '@/services'
-import { currentSessionIdAtom } from '@/store'
+import { currentSessionIdAtom, monitorRefreshIntervalAtom } from '@/store'
 import { SystemMonitorData } from '@shared/models'
 import { useAtomValue } from 'jotai'
 import type { ComponentProps } from 'react'
@@ -36,6 +36,7 @@ export const MonitorListMain: React.FC<ComponentProps<'div'>> = ({
 
 export const MonitorListContent: React.FC = () => {
   const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const refreshInterval = useAtomValue(monitorRefreshIntervalAtom)
   const { isConnected, isDisconnected } = useSSHConnection()
   const [monitorData, setMonitorData] = useState<SystemMonitorData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -125,15 +126,15 @@ export const MonitorListContent: React.FC = () => {
   useEffect(() => {
     if (currentSessionId && isConnected) {
       loadMonitorData()
-      // 设置定时刷新（每3秒）
-      const interval = setInterval(loadMonitorData, 3000)
+      // 使用配置的刷新间隔
+      const interval = setInterval(loadMonitorData, refreshInterval)
       return () => clearInterval(interval)
     } else {
       setMonitorData(null)
       setError(null)
     }
     return undefined
-  }, [currentSessionId, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, isConnected, refreshInterval]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 当连接断开时重置状态
   useEffect(() => {

@@ -1,6 +1,7 @@
 import {
   isModalAboutOpenAtom,
   isModalLayoutOpenAtom,
+  isModalMonitorSettingsOpenAtom,
   isModalSessionOpenAtom,
   isModalTerminalSettingsOpenAtom,
   isModalThemeOpenAtom,
@@ -90,6 +91,21 @@ export const useModalTerminalSettings = (): {
   closeModal: () => void
 } => {
   const [isModalOpen, setIsModalOpen] = useAtom(isModalTerminalSettingsOpenAtom)
+  const openModal = (): void => setIsModalOpen(true)
+  const closeModal = (): void => setIsModalOpen(false)
+  return {
+    isModalOpen,
+    openModal,
+    closeModal
+  }
+}
+
+export const useModalMonitorSettings = (): {
+  isModalOpen: boolean
+  openModal: () => void
+  closeModal: () => void
+} => {
+  const [isModalOpen, setIsModalOpen] = useAtom(isModalMonitorSettingsOpenAtom)
   const openModal = (): void => setIsModalOpen(true)
   const closeModal = (): void => setIsModalOpen(false)
   return {

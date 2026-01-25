@@ -41,6 +41,9 @@ export const useConfig = (): {
         },
         terminal: {
           fontSize: 14
+        },
+        monitor: {
+          refreshInterval: 3000
         }
       }
       setConfig(defaultConfig)
