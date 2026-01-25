@@ -390,6 +390,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       await AIService.askTask(currentSessionId, userMessage, mode)
     } catch (error) {
       console.error('Failed to send message:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      setApiConfigError(`发送消息失败：${errorMessage}。如若配置无误请创建新的任务重试。`)
       setIsProcessing(false)
     }
   }

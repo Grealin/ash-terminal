@@ -33,6 +33,10 @@ function createWindow(): void {
     }
   })
 
+  // 增加 WebContents 的最大监听器限制
+  // 由于多个 IPC 处理器会监听 'destroyed' 事件用于清理，需要提高上限
+  mainWindow.webContents.setMaxListeners(20)
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
