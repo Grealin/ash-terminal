@@ -14,7 +14,7 @@ export const AiSettingsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('providers')
 
   return (
-    <div className="flex h-full bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="flex h-full min-w-[248px] bg-white dark:bg-gray-900 overflow-hidden">
       {/* 左侧导航 */}
       <div className="flex-[1] flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center pb-4">
         <button
