@@ -1,4 +1,4 @@
-import { getAiConfig } from '@/lib/AiConfigStoreT'
+import { getAiConfig } from '@/lib/AiConfigStore'
 import { ChatCompletionTool } from '@shared/models/OpenAICompatible'
 import { EventEmitter } from 'events'
 import {

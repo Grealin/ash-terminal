@@ -3,8 +3,8 @@ import { execFile } from 'child_process'
 import { app, dialog, shell, type OpenDialogOptions } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
-import { resolveTildePath } from './PathUtilsT'
-import { getSSH } from './SSHPoolT'
+import { resolveTildePath } from './PathUtils'
+import { getSSH } from './SSHPool'
 
 // 标记是否已打开过系统文件选择对话框（用于仅首次使用 home 目录）
 let hasOpenedFileDialog = false

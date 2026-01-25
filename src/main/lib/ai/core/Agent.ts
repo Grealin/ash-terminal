@@ -1,4 +1,4 @@
-import { getActiveProvider, getAiConfig } from '@/lib/AiConfigStoreT'
+import { getActiveProvider, getAiConfig } from '@/lib/AiConfigStore'
 import { AgentConfig, AiMode, MessageRole } from '@shared/models/AI'
 import {
   ChatCompletionChunk,

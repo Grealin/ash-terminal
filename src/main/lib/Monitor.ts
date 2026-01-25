@@ -1,5 +1,5 @@
 import { ProcessInfo, ProcessStats, SystemMonitorData, SystemMonitorInfo } from '@shared/models'
-import { getSSH } from './SSHPoolT'
+import { getSSH } from './SSHPool'
 
 /**
  * 解析top命令输出，提取系统监控信息

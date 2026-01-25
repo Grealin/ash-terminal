@@ -2,8 +2,8 @@ import { SSHConfig } from '@shared/models'
 import { app } from 'electron'
 import { existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import './EnvT'
-import { disconnectSSH } from './SSHPoolT'
+import './Env'
+import { disconnectSSH } from './SSHPool'
 
 let Store: any = null
 let sessionStore: any = null

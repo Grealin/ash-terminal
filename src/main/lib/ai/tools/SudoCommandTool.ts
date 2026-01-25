@@ -1,4 +1,4 @@
-import { writeToShell } from '../../ShellT'
+import { writeToShell } from '../../Shell'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
 
 /**
