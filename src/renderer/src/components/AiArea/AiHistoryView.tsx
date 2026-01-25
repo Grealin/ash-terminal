@@ -341,6 +341,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
                           }
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        spellCheck={false}
                         className="w-full px-2 py-1 text-sm border border-blue-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none"
                         autoFocus
                       />

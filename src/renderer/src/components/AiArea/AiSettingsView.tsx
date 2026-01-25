@@ -220,6 +220,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 onChange={(e) =>
                   setEditingProvider({ ...editingProvider, configName: e.target.value })
                 }
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -235,6 +236,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 onChange={(e) =>
                   setEditingProvider({ ...editingProvider, baseUrl: e.target.value })
                 }
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -248,6 +250,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 type="password"
                 value={editingProvider.apiKey}
                 onChange={(e) => setEditingProvider({ ...editingProvider, apiKey: e.target.value })}
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -261,6 +264,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 type="text"
                 value={editingProvider.model}
                 onChange={(e) => setEditingProvider({ ...editingProvider, model: e.target.value })}
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -282,6 +286,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                     temperature: parseFloat(e.target.value)
                   })
                 }
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -302,6 +307,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                     maxContextTokens: parseInt(e.target.value)
                   })
                 }
+                spellCheck={false}
                 className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -650,6 +656,7 @@ const AutoApprovalSettings: React.FC = () => {
                 onChange={(e) => setNewAllowedPrefix(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
+                spellCheck={false}
                 className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -686,6 +693,7 @@ const AutoApprovalSettings: React.FC = () => {
                 onChange={(e) => setNewDeniedPrefix(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
+                spellCheck={false}
                 className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -770,6 +778,7 @@ const PromptSettings: React.FC = () => {
               onChange={(e) => setUserExtraPrompt(e.target.value)}
               placeholder="在此输入您的自定义提示词，这些内容将被添加到系统提示词中..."
               rows={10}
+              spellCheck={false}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>

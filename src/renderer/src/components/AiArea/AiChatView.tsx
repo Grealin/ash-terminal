@@ -964,6 +964,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             onKeyDown={handleKeyPress}
             placeholder={currentSessionId ? '在此处输入您的任务...' : '请先连接 SSH 会话'}
             disabled={!currentSessionId || isProcessing}
+            spellCheck={false}
             className="w-full min-h-[80px] max-h-[200px] px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>

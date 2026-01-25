@@ -99,6 +99,7 @@ export const TerminalSettingsModal: React.FC = () => {
                 max="32"
                 value={localSettings.fontSize}
                 onChange={handleFontSizeChange}
+                spellCheck={false}
                 className={twMerge(
                   'w-16 rounded border border-slate-300 px-2 py-1 text-center text-sm',
                   'dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200'

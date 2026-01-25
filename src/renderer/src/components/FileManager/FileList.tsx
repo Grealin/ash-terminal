@@ -491,6 +491,7 @@ export const FileListContent: React.FC = () => {
               onChange={(e) => setEditPath(e.target.value)}
               onKeyDown={handlePathKeyDown}
               onBlur={handlePathBlur}
+              spellCheck={false}
               className="flex-1 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 font-mono focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
               autoFocus
             />

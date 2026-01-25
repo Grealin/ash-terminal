@@ -138,6 +138,7 @@ export const CommandListContent: React.FC = () => {
             value={interval.toFixed(1)}
             onChange={handleIntervalChange}
             disabled={status === 'running'}
+            spellCheck={false}
             className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <span className="text-xs text-gray-600 dark:text-gray-400">秒</span>
@@ -151,6 +152,7 @@ export const CommandListContent: React.FC = () => {
           onChange={(e) => setCommandText(e.target.value)}
           placeholder="在此输入批量命令，每行一个命令..."
           disabled={status === 'running'}
+          spellCheck={false}
           className="w-full h-full px-3 py-2 text-sm font-mono bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none resize-none overflow-auto disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             whiteSpace: 'pre',

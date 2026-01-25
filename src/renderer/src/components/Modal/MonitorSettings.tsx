@@ -94,6 +94,7 @@ export const MonitorSettingsModal: React.FC = () => {
                 step="1000"
                 value={localSettings.refreshInterval}
                 onChange={handleRefreshIntervalChange}
+                spellCheck={false}
                 className={twMerge(
                   'h-2 w-full appearance-none rounded-lg bg-slate-200 dark:bg-slate-600',
                   'slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-blue-500'
@@ -106,6 +107,7 @@ export const MonitorSettingsModal: React.FC = () => {
                 step="1000"
                 value={localSettings.refreshInterval}
                 onChange={handleRefreshIntervalChange}
+                spellCheck={false}
                 className={twMerge(
                   'w-20 rounded border border-slate-300 px-2 py-1 text-center text-sm',
                   'dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200'

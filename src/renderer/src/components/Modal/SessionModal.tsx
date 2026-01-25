@@ -110,6 +110,7 @@ export const SessionModal: React.FC = () => {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              spellCheck={false}
               className={twMerge(
                 'w-full px-3 py-2 rounded-lg border transition-all duration-200',
                 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
@@ -129,6 +130,7 @@ export const SessionModal: React.FC = () => {
               type="text"
               value={formData.host}
               onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
+              spellCheck={false}
               className={twMerge(
                 'w-full px-3 py-2 rounded-lg border transition-all duration-200',
                 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
@@ -150,6 +152,7 @@ export const SessionModal: React.FC = () => {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, port: parseInt(e.target.value) || 22 }))
               }
+              spellCheck={false}
               className={twMerge(
                 'w-full px-3 py-2 rounded-lg border transition-all duration-200',
                 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
@@ -171,6 +174,7 @@ export const SessionModal: React.FC = () => {
               type="text"
               value={formData.username}
               onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+              spellCheck={false}
               className={twMerge(
                 'w-full px-3 py-2 rounded-lg border transition-all duration-200',
                 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
@@ -190,6 +194,7 @@ export const SessionModal: React.FC = () => {
               type="password"
               value={formData.password}
               onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+              spellCheck={false}
               className={twMerge(
                 'w-full px-3 py-2 rounded-lg border transition-all duration-200',
                 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
