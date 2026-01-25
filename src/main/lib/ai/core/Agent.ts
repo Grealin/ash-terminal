@@ -642,7 +642,7 @@ export class Agent extends EventEmitter {
       // 获取响应
       let response: ChatCompletionResponse
       if (streaming) {
-        response = await this.handleStreamingResponseWithTools(request)
+        response = await this.handleXMLStreamingResponse(request)
       } else {
         response = await this.handleNonStreamingResponseWithTools(request)
       }
@@ -676,12 +676,13 @@ export class Agent extends EventEmitter {
         const finalAnswer = this.extractXMLFinalAnswer(choice.message.content)
         if (finalAnswer) {
           this.addMessageToHistory(choice.message)
-          this.emit(AgentEvent.ANSWER, { content: finalAnswer })
+          // 清理 XML 标签后发送
+          this.emit(AgentEvent.ANSWER, { content: this.cleanXMLTags(choice.message.content) })
           break
         } else {
-          // 普通回复
+          // 普通回复，清理 XML 标签后发送
           this.addMessageToHistory(choice.message)
-          this.emit(AgentEvent.ANSWER, { content: choice.message.content })
+          this.emit(AgentEvent.ANSWER, { content: this.cleanXMLTags(choice.message.content) })
           break
         }
       }
@@ -788,5 +789,247 @@ export class Agent extends EventEmitter {
         content: observationContent
       })
     }
+  }
+
+  /**
+   * 清理 XML 标签
+   * - 删除 <action>...</action> 及其内容
+   * - 去掉 <thought> 和 </thought> 标签，保留内容
+   * - 去掉 <final_answer> 和 </final_answer> 标签，保留内容
+   * - 去掉 <observation> 和 </observation> 标签（如果有）
+   */
+  private cleanXMLTags(content: string): string {
+    let cleaned = content
+
+    // 1. 删除 <action>...</action> 及其内容
+    cleaned = cleaned.replace(/<action>[\s\S]*?<\/action>/g, '')
+
+    // 2. 去掉 <thought> 标签，保留内容
+    cleaned = cleaned.replace(/<thought>/g, '').replace(/<\/thought>/g, '')
+
+    // 3. 去掉 <final_answer> 标签，保留内容
+    cleaned = cleaned.replace(/<final_answer>/g, '').replace(/<\/final_answer>/g, '')
+
+    // 4. 去掉 <observation> 标签（如果有）
+    cleaned = cleaned.replace(/<observation>/g, '').replace(/<\/observation>/g, '')
+
+    return cleaned.trim()
+  }
+
+  /**
+   * 处理 XML 模式的流式响应
+   * 专门为 XML 模式设计，在发送流式内容时清理 XML 标签
+   */
+  private async handleXMLStreamingResponse(
+    request: ChatCompletionRequest
+  ): Promise<ChatCompletionResponse> {
+    if (!this.openai) throw new Error('OpenAI 客户端未初始化')
+
+    const stream = await this.openai.chat.completions.create(request as any)
+
+    let fullContent = ''
+    let buffer = '' // 缓冲区，用于处理可能被分割的标签
+    let inAction = false // 是否在 <action> 标签内
+    let inThought = false // 是否在 <thought> 标签内
+    let inFinalAnswer = false // 是否在 <final_answer> 标签内
+
+    for await (const chunk of stream as any) {
+      const typedChunk = chunk as ChatCompletionChunk
+      const delta = typedChunk.choices[0]?.delta
+
+      if (delta?.content) {
+        fullContent += delta.content
+        buffer += delta.content
+
+        // 处理缓冲区中的内容
+        const result = this.processXMLStreamBuffer(buffer, inAction, inThought, inFinalAnswer)
+        buffer = result.buffer
+        inAction = result.inAction
+        inThought = result.inThought
+        inFinalAnswer = result.inFinalAnswer
+
+        // 发送清理后的内容
+        if (result.output) {
+          this.emit(AgentEvent.STREAM, { content: result.output })
+        }
+      }
+    }
+
+    // 处理剩余缓冲区（如果不在 action 标签内）
+    if (buffer && !inAction) {
+      this.emit(AgentEvent.STREAM, { content: buffer })
+    }
+
+    // 构造完整的响应对象
+    const message: ChatCompletionMessage = {
+      role: MessageRole.ASSISTANT,
+      content: fullContent || null
+    }
+
+    return {
+      id: 'stream-response',
+      object: 'chat.completion',
+      created: Date.now(),
+      model: request.model,
+      choices: [
+        {
+          index: 0,
+          message,
+          logprobs: null,
+          finish_reason: 'stop'
+        }
+      ],
+      usage: {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0
+      }
+    }
+  }
+
+  /**
+   * 处理 XML 流式缓冲区
+   * 使用状态机处理分批到达的 XML 标签
+   */
+  private processXMLStreamBuffer(
+    buffer: string,
+    inAction: boolean,
+    inThought: boolean,
+    inFinalAnswer: boolean
+  ): {
+    buffer: string
+    output: string
+    inAction: boolean
+    inThought: boolean
+    inFinalAnswer: boolean
+  } {
+    let output = ''
+    let remaining = buffer
+
+    while (remaining.length > 0) {
+      // 处理 action 标签（完全隐藏）
+      if (inAction) {
+        const endIndex = remaining.indexOf('</action>')
+        if (endIndex !== -1) {
+          // 找到结束标签，跳过 action 内容
+          remaining = remaining.substring(endIndex + '</action>'.length)
+          inAction = false
+          continue
+        } else {
+          // 还没找到结束标签，清空缓冲区（不输出）
+          return { buffer: '', output, inAction: true, inThought, inFinalAnswer }
+        }
+      }
+
+      const actionStart = remaining.indexOf('<action>')
+      if (actionStart !== -1) {
+        // 输出 action 标签之前的内容
+        output += remaining.substring(0, actionStart)
+        remaining = remaining.substring(actionStart + '<action>'.length)
+        inAction = true
+        continue
+      }
+
+      // 处理 thought 标签（隐藏标签，保留内容）
+      if (inThought) {
+        const endIndex = remaining.indexOf('</thought>')
+        if (endIndex !== -1) {
+          // 输出 thought 内容（不包括标签）
+          output += remaining.substring(0, endIndex)
+          remaining = remaining.substring(endIndex + '</thought>'.length)
+          inThought = false
+          continue
+        } else {
+          // 可能还在接收 thought 内容，输出当前内容但保留可能的结束标签
+          if (this.hasIncompleteClosingTag(remaining, '</thought>')) {
+            return { buffer: remaining, output, inAction, inThought: true, inFinalAnswer }
+          }
+          output += remaining
+          return { buffer: '', output, inAction, inThought: true, inFinalAnswer }
+        }
+      }
+
+      const thoughtStart = remaining.indexOf('<thought>')
+      if (thoughtStart !== -1) {
+        output += remaining.substring(0, thoughtStart)
+        remaining = remaining.substring(thoughtStart + '<thought>'.length)
+        inThought = true
+        continue
+      }
+
+      // 处理 final_answer 标签（隐藏标签，保留内容）
+      if (inFinalAnswer) {
+        const endIndex = remaining.indexOf('</final_answer>')
+        if (endIndex !== -1) {
+          output += remaining.substring(0, endIndex)
+          remaining = remaining.substring(endIndex + '</final_answer>'.length)
+          inFinalAnswer = false
+          continue
+        } else {
+          if (this.hasIncompleteClosingTag(remaining, '</final_answer>')) {
+            return { buffer: remaining, output, inAction, inThought, inFinalAnswer: true }
+          }
+          output += remaining
+          return { buffer: '', output, inAction, inThought, inFinalAnswer: true }
+        }
+      }
+
+      const finalAnswerStart = remaining.indexOf('<final_answer>')
+      if (finalAnswerStart !== -1) {
+        output += remaining.substring(0, finalAnswerStart)
+        remaining = remaining.substring(finalAnswerStart + '<final_answer>'.length)
+        inFinalAnswer = true
+        continue
+      }
+
+      // 检查是否有不完整的开始标签
+      if (this.hasIncompleteOpeningTag(remaining)) {
+        // 保留在缓冲区，等待更多数据
+        return { buffer: remaining, output, inAction, inThought, inFinalAnswer }
+      }
+
+      // 没有标签，输出所有内容
+      output += remaining
+      remaining = ''
+    }
+
+    return {
+      buffer: remaining,
+      output,
+      inAction,
+      inThought,
+      inFinalAnswer
+    }
+  }
+
+  /**
+   * 检查是否有不完整的开始标签
+   */
+  private hasIncompleteOpeningTag(text: string): boolean {
+    const tags = ['<action>', '<thought>', '<final_answer>']
+
+    for (const tag of tags) {
+      // 检查 text 是否以 tag 的前缀结尾
+      for (let i = 1; i < tag.length; i++) {
+        if (text.endsWith(tag.substring(0, i))) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * 检查是否有不完整的结束标签
+   */
+  private hasIncompleteClosingTag(text: string, closingTag: string): boolean {
+    // 检查 text 是否以 closingTag 的前缀结尾
+    for (let i = 1; i < closingTag.length; i++) {
+      if (text.endsWith(closingTag.substring(0, i))) {
+        return true
+      }
+    }
+    return false
   }
 }
