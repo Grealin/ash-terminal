@@ -84,14 +84,17 @@ export const downloadFile = async (sessionId: string, remotePath: string): Promi
     }
   }
 
-  await new Promise<void>((resolve, reject) => {
-    sftp.fastGet(remotePath, targetPath, (err: any) => {
-      if (err) return reject(err)
-      resolve()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      sftp.fastGet(remotePath, targetPath, (err: any) => {
+        if (err) return reject(err)
+        resolve()
+      })
     })
-  })
-
-  return targetPath
+    return targetPath
+  } finally {
+    sftp.end()
+  }
 }
 
 export const deleteRemoteFile = async (sessionId: string, remotePath: string): Promise<void> => {
@@ -100,12 +103,16 @@ export const deleteRemoteFile = async (sessionId: string, remotePath: string): P
     throw new Error('SSH connection not found')
   }
   const sftp = await ssh.getSftp()
-  await new Promise<void>((resolve, reject) => {
-    sftp.unlink(remotePath, (err: any) => {
-      if (err) return reject(err)
-      resolve()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      sftp.unlink(remotePath, (err: any) => {
+        if (err) return reject(err)
+        resolve()
+      })
     })
-  })
+  } finally {
+    sftp.end()
+  }
 }
 
 export const uploadFile = async (
@@ -140,14 +147,17 @@ export const uploadFile = async (
   const normalizedDir = actualRemoteDir.replace(/\/+$/, '')
   const remoteTargetPath = `${normalizedDir}/${fileName}`
 
-  await new Promise<void>((resolve, reject) => {
-    sftp.fastPut(localPath, remoteTargetPath, (err: any) => {
-      if (err) return reject(err)
-      resolve()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      sftp.fastPut(localPath, remoteTargetPath, (err: any) => {
+        if (err) return reject(err)
+        resolve()
+      })
     })
-  })
-
-  return remoteTargetPath
+    return remoteTargetPath
+  } finally {
+    sftp.end()
+  }
 }
 
 export const getEditCacheDir = (): string => {
@@ -182,14 +192,17 @@ export const downloadFileToEditCache = async (
     }
   }
 
-  await new Promise<void>((resolve, reject) => {
-    sftp.fastGet(remotePath, targetPath, (err: any) => {
-      if (err) return reject(err)
-      resolve()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      sftp.fastGet(remotePath, targetPath, (err: any) => {
+        if (err) return reject(err)
+        resolve()
+      })
     })
-  })
-
-  return targetPath
+    return targetPath
+  } finally {
+    sftp.end()
+  }
 }
 
 export const deleteEditCacheFile = async (localPath: string): Promise<void> => {
