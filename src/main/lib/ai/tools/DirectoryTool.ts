@@ -1,4 +1,4 @@
-import { getSSH } from '../../SSHPool'
+import { getSSH } from '../../SSHPoolT'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
 
 /**

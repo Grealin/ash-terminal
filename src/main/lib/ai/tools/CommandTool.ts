@@ -1,4 +1,4 @@
-import { executeSSHCommand } from '../../Command'
+import { executeSSHCommand } from '../../CommandT'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
 
 /**

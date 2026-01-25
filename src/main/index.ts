@@ -1,5 +1,5 @@
 import { initConfigStore, initSessionStore } from '@/lib'
-import { initAiConfigStore } from '@/lib/AiConfigStore'
+import { initAiConfigStore } from '@/lib/AiConfigStoreT'
 import { closeDatabase, initDatabase } from '@/lib/database/core/Database'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import {

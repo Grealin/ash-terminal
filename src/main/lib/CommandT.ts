@@ -1,4 +1,4 @@
-import { getSSH } from './SSHPool'
+import { getSSH } from './SSHPoolT'
 
 export const executeSSHCommand = async (
   sessionId: string,

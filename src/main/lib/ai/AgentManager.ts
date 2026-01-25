@@ -1,5 +1,5 @@
 import { AiMode } from '@shared/models'
-import { executeSSHCommand } from '../Command'
+import { executeSSHCommand } from '../CommandT'
 import { Agent, AgentEvent } from './core/Agent'
 
 import { AgentConfig } from '@shared/models/AI'
