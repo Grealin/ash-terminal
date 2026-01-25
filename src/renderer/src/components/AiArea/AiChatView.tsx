@@ -541,7 +541,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                       <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                         查看参数
                       </summary>
-                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                         {JSON.stringify(toolExecution.params, null, 2)}
                       </pre>
                     </details>
@@ -566,7 +566,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                         <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                           查看结果
                         </summary>
-                        <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                        <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                           {typeof toolExecution.result === 'string'
                             ? toolExecution.result
                             : JSON.stringify(toolExecution.result, null, 2)}
@@ -595,7 +595,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                   <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
                     查看结果
                   </summary>
-                  <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                  <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                     {observationContent}
                   </pre>
                 </details>
@@ -612,7 +612,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           className="flex justify-end mb-4 animate-in slide-in-from-right duration-300"
         >
           <div className="max-w-[90%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm">
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+            <p className="can-select text-sm whitespace-pre-wrap leading-relaxed">
               {cleanMessageContent(msg.content)}
             </p>
           </div>
@@ -625,7 +625,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           className="flex justify-start mb-4 animate-in slide-in-from-left duration-300"
         >
           <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
-            <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+            <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
               {cleanMessageContent(msg.content)}
             </p>
           </div>
@@ -656,7 +656,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                       查看参数
                     </summary>
-                    <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                    <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                       {JSON.stringify(toolExecution.params, null, 2)}
                     </pre>
                   </details>
@@ -681,7 +681,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                       <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                         查看结果
                       </summary>
-                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                         {typeof toolExecution.result === 'string'
                           ? toolExecution.result
                           : JSON.stringify(toolExecution.result, null, 2)}
@@ -710,7 +710,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
                   查看结果
                 </summary>
-                <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                   {msg.content}
                 </pre>
               </details>
@@ -742,7 +742,9 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 />
               </svg>
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-800 dark:text-red-200">{displayError}</p>
+                <p className="can-select text-sm font-medium text-red-800 dark:text-red-200">
+                  {displayError}
+                </p>
               </div>
               <button
                 onClick={handleClearError}
@@ -796,7 +798,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                       <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
                         查看参数
                       </summary>
-                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                         {JSON.stringify(execution.params, null, 2)}
                       </pre>
                     </details>
@@ -821,7 +823,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                         <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                           查看结果
                         </summary>
-                        <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                        <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
                           {typeof execution.result === 'string'
                             ? execution.result
                             : JSON.stringify(execution.result, null, 2)}
@@ -841,7 +843,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     <span className="inline-block animate-pulse">💭</span>
                     思考中...
                   </p>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+                  <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
                     {currentThought}
                   </p>
                 </div>
@@ -877,7 +879,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {streamingMessage && (
               <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
                 <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+                  <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
                     {streamingMessage}
                     <span className="inline-block w-1 h-4 ml-1 bg-blue-500 animate-pulse"></span>
                   </p>
@@ -903,7 +905,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               </p>
               <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
                 <summary className="cursor-pointer">查看参数</summary>
-                <pre className="mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
+                <pre className="can-select mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
                   {JSON.stringify(pendingApproval.params, null, 2)}
                 </pre>
               </details>
