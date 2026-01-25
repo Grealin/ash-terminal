@@ -447,12 +447,24 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return matchingExecution
   }
 
-  // 获取所有已经与 TOOL 消息绑定的工具执行记录 ID
+  // 获取所有已经与 TOOL 消息或 observation 消息绑定的工具执行记录 ID
   const getBoundToolExecutionIds = (): Set<string> => {
     const boundIds = new Set<string>()
     messages.forEach((msg) => {
+      // TOOL 消息绑定的工具执行记录
       if (msg.role === MessageRole.TOOL) {
         const execution = findToolExecutionForMessage(msg)
+        if (execution) {
+          boundIds.add(execution.id)
+        }
+      }
+      // observation 消息绑定的工具执行记录
+      if (msg.role === MessageRole.USER && hasObservationTag(msg.content)) {
+        const execution = toolExecutions
+          .filter((exec) => exec.status === 'completed' && exec.timestamp <= msg.createdAt)
+          .sort(
+            (a, b) => Math.abs(msg.createdAt - a.timestamp) - Math.abs(msg.createdAt - b.timestamp)
+          )[0]
         if (execution) {
           boundIds.add(execution.id)
         }
@@ -467,15 +479,140 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return toolExecutions.filter((exec) => !boundIds.has(exec.id))
   }
 
+  // 清理消息内容中的特殊标签
+  const cleanMessageContent = (content: string | null): string => {
+    if (!content) return ''
+    let cleaned = content
+    // 移除 <thought> 标签但保留内容
+    cleaned = cleaned.replace(/<\/?thought>/g, '')
+    // 移除 <action>...</action> 及其内容
+    cleaned = cleaned.replace(/<action>[\s\S]*?<\/action>/g, '')
+    // 移除 <final_answer> 标签但保留内容
+    cleaned = cleaned.replace(/<\/?final_answer>/g, '')
+    return cleaned.trim()
+  }
+
+  // 检测消息是否包含 observation 标签
+  const hasObservationTag = (content: string | null): boolean => {
+    if (!content) return false
+    return /<observation>[\s\S]*?<\/observation>/i.test(content)
+  }
+
+  // 提取 observation 标签中的内容
+  const extractObservationContent = (content: string | null): string => {
+    if (!content) return ''
+    const match = content.match(/<observation>([\s\S]*?)<\/observation>/i)
+    return match ? match[1].trim() : ''
+  }
+
   const renderMessage = (msg: Message): React.JSX.Element => {
     if (msg.role === MessageRole.USER) {
+      // 检查是否包含 observation 标签
+      if (hasObservationTag(msg.content)) {
+        const observationContent = extractObservationContent(msg.content)
+        // 尝试查找对应的工具执行记录
+        const toolExecution = toolExecutions
+          .filter((exec) => exec.status === 'completed' && exec.timestamp <= msg.createdAt)
+          .sort(
+            (a, b) => Math.abs(msg.createdAt - a.timestamp) - Math.abs(msg.createdAt - b.timestamp)
+          )[0]
+
+        return (
+          <div key={msg.id}>
+            {/* 如果找到对应的工具执行记录，先显示工具调用和结果卡片 */}
+            {toolExecution && (
+              <>
+                {/* 工具调用卡片 */}
+                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                  <div className="max-w-[70%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                    <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      调用工具：{toolExecution.name}
+                    </p>
+                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                      <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                        查看参数
+                      </summary>
+                      <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                        {JSON.stringify(toolExecution.params, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                </div>
+
+                {/* 工具结果卡片 */}
+                {toolExecution.result !== undefined && (
+                  <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+                    <div className="max-w-[70%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        工具结果：{toolExecution.name}
+                      </p>
+                      <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                        <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                          查看结果
+                        </summary>
+                        <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                          {typeof toolExecution.result === 'string'
+                            ? toolExecution.result
+                            : JSON.stringify(toolExecution.result, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* OBSERVATION 消息卡片 */}
+            <div className="flex justify-start mb-4 animate-in fade-in duration-300">
+              <div className="max-w-[70%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  工具执行结果
+                </p>
+                <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                  <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+                    查看结果
+                  </summary>
+                  <pre className="mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                    {observationContent}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      // 普通用户消息
       return (
         <div
           key={msg.id}
           className="flex justify-end mb-4 animate-in slide-in-from-right duration-300"
         >
           <div className="max-w-[70%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm">
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+              {cleanMessageContent(msg.content)}
+            </p>
           </div>
         </div>
       )
@@ -487,7 +624,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         >
           <div className="max-w-[70%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
-              {msg.content}
+              {cleanMessageContent(msg.content)}
             </p>
           </div>
         </div>
