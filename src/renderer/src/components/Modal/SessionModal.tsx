@@ -87,7 +87,11 @@ export const SessionModal: React.FC = () => {
   }
 
   // 表单验证
-  const isFormValid = formData.name.trim() && formData.host.trim() && formData.username.trim()
+  const isFormValid =
+    formData.name.trim() &&
+    formData.host.trim() &&
+    formData.username.trim() &&
+    formData.password.trim()
 
   return (
     <GeneralModal
@@ -180,7 +184,7 @@ export const SessionModal: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              密码
+              密码 <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -193,7 +197,7 @@ export const SessionModal: React.FC = () => {
                 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder-slate-400 dark:placeholder-slate-500'
               )}
-              placeholder="SSH密码（可选）"
+              placeholder="SSH密码"
             />
           </div>
         </div>
