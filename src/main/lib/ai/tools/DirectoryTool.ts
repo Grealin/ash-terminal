@@ -48,6 +48,20 @@ export class DirectoryTool extends BaseTool {
     }
 
     try {
+      // 如果使用默认值 '.'，先获取当前工作目录
+      // 因为 execCommand 每次都是新会话，默认在 home 目录
+      let targetDirectory = directory
+      if (directory === '.') {
+        // 通过环境变量 PWD 或 pwd 命令获取当前目录
+        const pwdResult = await ssh.execCommand('echo $PWD || pwd')
+        if (pwdResult.code === 0 && pwdResult.stdout.trim()) {
+          targetDirectory = pwdResult.stdout.trim()
+        } else {
+          // 如果获取失败，使用 home 目录
+          targetDirectory = '~'
+        }
+      }
+
       // 构建 tree 命令（如果不存在则使用 find）
       const treeCommand = `which tree > /dev/null 2>&1 && echo "tree" || echo "find"`
       const hasTreeResult = await ssh.execCommand(treeCommand)
@@ -58,12 +72,12 @@ export class DirectoryTool extends BaseTool {
         // 使用 tree 命令
         const hiddenFlag = show_hidden ? '-a' : ''
         const fileOnlyFlag = file_only ? '-f' : ''
-        command = `tree -L ${max_depth} ${hiddenFlag} ${fileOnlyFlag} "${directory}"`
+        command = `tree -L ${max_depth} ${hiddenFlag} ${fileOnlyFlag} "${targetDirectory}"`
       } else {
         // 使用 find 命令作为备选
         const hiddenPattern = show_hidden ? '' : '-name ".*" -prune -o'
         const typeFlag = file_only ? '-type f' : ''
-        command = `find "${directory}" ${hiddenPattern} -maxdepth ${max_depth} ${typeFlag} -print 2>/dev/null | sort`
+        command = `find "${targetDirectory}" ${hiddenPattern} -maxdepth ${max_depth} ${typeFlag} -print 2>/dev/null | sort`
       }
 
       const result = await ssh.execCommand(command)
@@ -105,9 +119,9 @@ export class DirectoryTool extends BaseTool {
 
       return {
         success: true,
-        message: `成功列出目录结构: ${directory}`,
+        message: `成功列出目录结构: ${targetDirectory}`,
         data: {
-          directory,
+          directory: targetDirectory,
           structure: result.stdout,
           files,
           total_count: files.length,

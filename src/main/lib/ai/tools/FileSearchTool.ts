@@ -65,9 +65,23 @@ export class FileSearchTool extends BaseTool {
     }
 
     try {
+      // 如果使用默认值 '.'，先获取当前工作目录
+      // 因为 execCommand 每次都是新会话，默认在 home 目录
+      let targetDirectory = directory
+      if (directory === '.') {
+        // 通过环境变量 PWD 或 pwd 命令获取当前目录
+        const pwdResult = await ssh.execCommand('echo $PWD || pwd')
+        if (pwdResult.code === 0 && pwdResult.stdout.trim()) {
+          targetDirectory = pwdResult.stdout.trim()
+        } else {
+          // 如果获取失败，使用 home 目录
+          targetDirectory = '~'
+        }
+      }
+
       // 构建 grep 命令
       const caseSensitiveFlag = case_sensitive ? '' : '-i'
-      const grepCommand = `grep -rn ${caseSensitiveFlag} --include="${file_pattern}" "${keyword}" "${directory}" 2>/dev/null | head -n ${max_results}`
+      const grepCommand = `grep -rn ${caseSensitiveFlag} --include="${file_pattern}" "${keyword}" "${targetDirectory}" 2>/dev/null | head -n ${max_results}`
 
       const result = await ssh.execCommand(grepCommand)
 
