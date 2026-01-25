@@ -1,4 +1,5 @@
 import {
+  AboutModal,
   AiAgentContent,
   AiInterfaceMain,
   CentralBar,
@@ -66,6 +67,7 @@ const App: React.FC = () => {
         <LayoutModal />
         <ToolModal />
         <TerminalSettingsModal />
+        <AboutModal />
         <UploadModal />
         {/* 全局 Toast Host */}
         <ToastHost />

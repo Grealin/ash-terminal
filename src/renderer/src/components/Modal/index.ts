@@ -1,3 +1,4 @@
+export * from './AboutModal'
 export * from './GeneralModal'
 export * from './LayoutSettings'
 export * from './SessionModal'

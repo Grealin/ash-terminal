@@ -1,6 +1,6 @@
 import icon from '@/assets/images/icon.png'
 import { MenuButton, TopButton, TopDropdown } from '@/components'
-import { useDarkTheme, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
+import { useDarkTheme, useModalAbout, useModalLayout, useModalTheme, useModalTool } from '@/hooks'
 import { useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { ElectronService } from '@/services'
 import { ComponentProps, useEffect, useState } from 'react'
@@ -12,6 +12,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openLayoutModal } = useModalLayout()
   const { openModal: openToolModal } = useModalTool()
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
+  const { openModal: openAboutModal } = useModalAbout()
 
   useEffect(() => {
     // 获取初始窗口状态
@@ -38,7 +39,6 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           {/* 选项按钮 */}
           <TopButton>会话</TopButton>
           <TopButton>编辑</TopButton>
-          <TopButton>搜索</TopButton>
           <TopButton
             popoverTarget="popover-layout"
             style={{ anchorName: '--anchor-layout' } as React.CSSProperties}
@@ -64,6 +64,18 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           >
             <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
             <MenuButton onClick={() => openTerminalSettingsModal()}>终端设置</MenuButton>
+          </TopDropdown>
+          <TopButton
+            popoverTarget="popover-help"
+            style={{ anchorName: '--anchor-help' } as React.CSSProperties}
+          >
+            帮助
+          </TopButton>
+          <TopDropdown
+            id="popover-help"
+            style={{ positionAnchor: '--anchor-help' } as React.CSSProperties}
+          >
+            <MenuButton onClick={() => openAboutModal()}>关于</MenuButton>
           </TopDropdown>
         </div>
         <div className="flex items-center space-x-2">
