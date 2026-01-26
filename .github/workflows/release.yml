@@ -38,6 +38,9 @@ jobs:
           "SECRET_KEY=${{ secrets.SECRET_KEY }}" | Set-Content -Path .env -Encoding utf8
         shell: pwsh
 
+      - name: Format code
+        run: yarn format
+
       - name: Type check
         run: yarn typecheck
 
@@ -45,7 +48,7 @@ jobs:
         run: yarn lint
 
       - name: Build Windows
-        run: yarn build:win
+        run: yarn build:win -- --publish never
 
       - name: Get version from package.json
         id: package-version
