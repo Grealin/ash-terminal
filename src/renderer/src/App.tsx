@@ -19,6 +19,7 @@ import {
   SessionListContent,
   SessionListMain,
   SessionModal,
+  ShortcutModal,
   TerminalListContent,
   TerminalListMain,
   TerminalSettingsModal,
@@ -70,6 +71,7 @@ const App: React.FC = () => {
         <TerminalSettingsModal />
         <MonitorSettingsModal />
         <AboutModal />
+        <ShortcutModal />
         <UploadModal />
         {/* 全局 Toast Host */}
         <ToastHost />

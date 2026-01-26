@@ -5,6 +5,7 @@ import {
   useModalAbout,
   useModalLayout,
   useModalSession,
+  useModalShortcut,
   useModalTheme,
   useModalTool
 } from '@/hooks'
@@ -32,6 +33,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
   const { openModal: openMonitorSettingsModal } = useModalMonitorSettings()
   const { openModal: openAboutModal } = useModalAbout()
+  const { openModal: openShortcutModal } = useModalShortcut()
   const { openModal: openSessionModal } = useModalSession()
   const setEditingSession = useSetAtom(editingSessionAtom)
   const currentSessionId = useAtomValue(currentSessionIdAtom)
@@ -122,7 +124,18 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
             <MenuButton onClick={handleCreateSession}>新建SSH会话</MenuButton>
             <MenuButton onClick={handleNewTask}>新建Agent任务</MenuButton>
           </TopDropdown>
-          <TopButton>编辑</TopButton>
+          <TopButton
+            popoverTarget="popover-edit"
+            style={{ anchorName: '--anchor-edit' } as React.CSSProperties}
+          >
+            编辑
+          </TopButton>
+          <TopDropdown
+            id="popover-edit"
+            style={{ positionAnchor: '--anchor-edit' } as React.CSSProperties}
+          >
+            <MenuButton onClick={() => openShortcutModal()}>快捷键说明</MenuButton>
+          </TopDropdown>
           <TopButton
             popoverTarget="popover-layout"
             style={{ anchorName: '--anchor-layout' } as React.CSSProperties}
