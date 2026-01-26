@@ -12,11 +12,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          symlinks: true
 
-      - name: Enable symlinks for Git
-        run: git config --global core.symlinks true
+      - name: Enable Developer Mode (for symlinks)
+        run: |
+          # Enable symlinks without admin rights
+          git config --global core.symlinks true
         shell: pwsh
 
       - name: Setup Node.js
