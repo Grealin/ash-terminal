@@ -580,7 +580,6 @@ export class MyCustomTool extends BaseTool {
     return { success: true, data: 'result' }
   }
 }
-
 // src/main/lib/ai/tools/ToolManager.ts 构造函数中注册
 this.registerTool(new MyCustomTool())
 ```
