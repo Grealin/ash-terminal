@@ -2,7 +2,7 @@ import { SSHConfig } from '@shared/models'
 import { app } from 'electron'
 import { existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import './Env'
+import { getEnv } from './Env'
 import { disconnectSSH } from './SSHPool'
 
 let Store: any = null
@@ -15,7 +15,7 @@ export const initSessionStore = async (): Promise<void> => {
       Store = ElectronStore
     }
 
-    const encryptionKey = process.env.SECRET_KEY
+    const encryptionKey = getEnv('SECRET_KEY')
     if (!encryptionKey) {
       throw new Error('SECRET_KEY not found in environment variables')
     }

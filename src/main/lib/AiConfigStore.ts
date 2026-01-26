@@ -2,7 +2,7 @@ import { AiConfig, AiProviderConfig } from '@shared/models'
 import { app } from 'electron'
 import { existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import './Env'
+import { getEnv } from './Env'
 
 let Store: any = null
 let aiConfigStore: any = null
@@ -46,7 +46,7 @@ export const initAiConfigStore = async (): Promise<void> => {
       Store = ElectronStore
     }
 
-    const encryptionKey = process.env.SECRET_KEY
+    const encryptionKey = getEnv('SECRET_KEY')
     if (!encryptionKey) {
       throw new Error('SECRET_KEY not found in environment variables')
     }

@@ -74,7 +74,7 @@ export const SessionListContent: React.FC = () => {
   const handleAskDelete = (session: SSHConfig): void => {
     // 如果待删除会话为当前激活（连接中或已连接）的会话，则取消删除
     if (session.id === currentSessionId && (isConnected || isConnecting)) {
-      console.info('当前激活会话不能删除')
+      toast.simple('当前激活会话不能删除', { type: 'warning' })
       return
     }
     setPendingDeleteSession(session)
@@ -89,7 +89,7 @@ export const SessionListContent: React.FC = () => {
     if (sessionId === currentSessionId && (isConnected || isConnecting)) {
       setConfirmOpen(false)
       setPendingDeleteSession(null)
-      console.info('当前激活会话不能删除')
+      toast.simple('当前激活会话不能删除', { type: 'warning' })
       return
     }
     try {

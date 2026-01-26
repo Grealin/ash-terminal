@@ -19,7 +19,7 @@
 - 🖥️ **终端仿真** - 基于 xterm.js，完整支持 ANSI 转义序列和颜色
 - 📁 **文件管理** - 内置 SFTP 客户端，支持文件上传、下载和远程编辑
 - 📊 **系统监控** - 实时监控远程服务器的 CPU、内存、磁盘和网络状态
-- 🚀 **批量执行** - 在会话中批量执行多个命令
+- 🚀 **批量执行** - 在SSH会话中批量执行多个命令
 
 ### AI 智能助手
 
@@ -76,13 +76,31 @@ yarn install
 
 ### 配置环境变量
 
-创建 `.env` 文件（用于 AI 配置加密）：
+创建 `.env` 或 `.env.local` 文件（用于 AI 配置加密）：
 
-```env
-SECRET_KEY=your-character-secret-key
+```bash
+# 复制模板文件
+cp .env.example .env
 ```
 
-> **注意**: `SECRET_KEY` 用于加密存储 AI API Key。建议使用随机生成的字符串。
+在 `.env` 中填入实际值：
+
+```env
+SECRET_KEY=your-secret-key-here-min-32-characters
+```
+
+> **重要说明**:
+>
+> - `SECRET_KEY` 用于加密存储敏感配置（SSH 会话、AI API Key 等），建议使用至少 32 位的随机字符串
+> - **编译时注入机制**：编译时会自动将 `.env` 中的值注入到代码中，编译后的应用无需 `.env` 文件即可运行
+> - `.env.local` 优先级高于 `.env`，可用于本地覆盖配置
+> - 详细说明请参考 [环境变量编译时注入机制](docs/ENV_INJECTION_MECHANISM.md)
+>
+> **安全提示**:
+>
+> - 使用足够强的密钥（至少 32 位随机字符）
+> - 不要在公开渠道分享编译配置
+> - 每次重新编译时可以更换新的密钥
 
 ## 🚀 快速开始
 
@@ -92,7 +110,7 @@ SECRET_KEY=your-character-secret-key
 yarn dev
 ```
 
-启动后会自动打开 DevTools，支持热重载（HMR）。
+启动后支持 DevTools，支持热重载（HMR）。
 
 ### 构建生产版本
 
@@ -133,12 +151,12 @@ yarn format
    - **端口**: 默认 22
    - **用户名**: SSH 用户名
    - **密码**: 填写密码
-3. 点击 **连接** 按钮
+3. 创建成功后点击 **连接** 按钮
 
 ### 2. 配置 AI 助手
 
 1. 点击右侧 **设置** 按钮
-2. 进入 **AI 配置** 标签
+2. 进入 **AI供应商配置** 标签
 3. 添加 Provider：
    - **Base URL**: `https://api.openai.com/v1` 或其他兼容接口
    - **API Key**: 你的 API Key
@@ -151,9 +169,9 @@ yarn format
 ### 3. 使用 AI 助手
 
 1. 链接一个SSH会话
-2. Agent切换到 **聊天** 组件
+2. 切换到 **聊天** 组件
 3. 选择模式：
-   - **Agent 模式**: 可执行命令和文件操作
+   - **Agent 模式**: 可调用各种工具
    - **Ask 模式**: 仅回答问题
 4. 输入问题或任务，AI 会自动分析并执行
 
@@ -211,7 +229,6 @@ ash-terminal/
 │       ├── models/          # 数据模型
 │       ├── types/           # 类型定义
 │       └── constants.ts     # 常量
-├── docs/                    # 文档
 ├── build/                   # 构建资源
 └── resources/               # 应用资源
 ```
