@@ -40,17 +40,17 @@
 
 ### 前端
 
-- **框架**: React 19 + TypeScript 5.7
+- **框架**: React 19 + TypeScript 5.8
 - **状态管理**: Jotai - 原子化状态管理
 - **UI 库**: DaisyUI 5 + TailwindCSS 4
 - **终端**: xterm.js + react-xterm
 
-### 后端（Main Process）
+### 后端
 
-- **运行时**: Electron 31 + Node.js
+- **运行时**: Electron 37 + Node.js
 - **SSH**: ssh2 + ssh2-sftp-client
 - **PTY**: node-pty
-- **数据库**: Better-SQLite3（WAL 模式）
+- **数据库**: Better-SQLite3
 - **配置**: electron-store + dotenv
 - **AI**: OpenAI SDK（支持兼容接口）
 
@@ -141,7 +141,7 @@ yarn format
 
 ## 📖 使用指南
 
-### 1. 创建 SSH 连接
+### 1. 创建 SSH 会话
 
 1. 点击右侧 **SSH 会话** 的 **+** 按钮
 2. 填写连接信息：
