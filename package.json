@@ -6,7 +6,7 @@
   "main": "./out/main/index.js",
   "license": "MIT",
   "author": {
-    "name": "YuLin"
+    "name": "LinFeng"
   },
   "scripts": {
     "format": "prettier --write .",
