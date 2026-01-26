@@ -4,7 +4,9 @@
 
 基于 Electron + React + TypeScript 的智能 SSH 终端，支持多会话、文件传输、系统监控和 AI 助手集成。
 
-**技术栈**：ssh2、ssh2-sftp-client、node-pty、Jotai、DaisyUI、TailwindCSS 4、Better-SQLite3、OpenAI SDK
+**技术栈**：Electron 31、React 19、TypeScript 5.7、ssh2、ssh2-sftp-client、node-pty、Jotai、DaisyUI 5、TailwindCSS 4、Better-SQLite3、OpenAI SDK
+
+**构建工具**：electron-vite（基于 Vite 7），支持 HMR 和多进程构建
 
 ## 核心架构
 
@@ -333,11 +335,12 @@ yarn lint         # ESLint 检查
 yarn format       # Prettier 格式化
 ```
 
-**注意**：
+**关键配置**：
 
+- `.env` 文件：开发时必须配置 `SECRET_KEY`（用于 AI 配置加密），否则 AI 功能无法使用
 - `yarn build:*` 会先执行 `typecheck`，确保类型安全
 - 开发模式会自动开启 DevTools（`src/main/index.ts` 中 `is.dev` 判断）
-- 使用 `lint-staged` + `husky` 确保提交前代码质量
+- 使用 `lint-staged` + `husky` 确保提交前代码质量（提交前自动运行 ESLint 和 Prettier）
 
 ## 常见任务
 
@@ -426,14 +429,37 @@ console.log(`[Tool] Executing ${toolName} with params:`, params)
 
 ## 注意事项
 
-- **安全**：`contextIsolation: true`，preload 必须用 `contextBridge` 暴露 API
-- **Shell 事件清理**：监听 Shell 事件时，返回取消监听函数（`return () => ssh.off('data', callback)`）
-- **连接生命周期**：断开 SSH 时调用 `ssh.dispose()` 并从 `sshConnections` Map 中删除
-- **数据库**：必须先 `initDatabase()` 再调用 `getDB()`，app 退出时调用 `closeDatabase()`
-- **环境变量**：AI 配置加密需要 `.env` 文件中设置 `SECRET_KEY`（通过 `dotenv` 加载）
-- **EventEmitter 清理**：所有 EventEmitter 监听器必须在适当时机清理（使用 `off()` 或 `removeAllListeners()`）
+### 安全与资源管理
+
+- **安全隔离**：`contextIsolation: true` + `sandbox: true`，preload 必须用 `contextBridge` 暴露 API，禁止直接暴露 Node.js API
+- **EventEmitter 清理**：所有 EventEmitter 监听器必须在适当时机清理（使用 `off()` 或 `removeAllListeners()`），组件卸载时必须取消事件监听
 - **IPC 订阅清理**：IPC 事件订阅时要在 `event.sender.on('destroyed', cleanup)` 中清理（避免内存泄漏）
+- **Shell 事件清理**：监听 Shell 事件时，返回取消监听函数（`return () => ssh.off('data', callback)`）
+
+### 连接与数据库
+
+- **连接生命周期**：断开 SSH 时调用 `ssh.dispose()` 并从 `sshConnections` Map 中删除，确保资源正确释放
+- **数据库初始化**：必须先 `initDatabase()` 再调用 `getDB()`，app 退出时调用 `closeDatabase()` 确保数据完整性
+- **配置存储规则**：敏感配置（API Key）必须用 `AiConfigStore`（加密），非敏感配置用 `ConfigManager`（明文）
+
+### AI 与环境变量
+
+- **环境变量**：AI 配置加密需要 `.env` 文件中设置 `SECRET_KEY`（通过 `dotenv` 加载），缺失将导致 AI 功能无法使用
 - **工具批准超时**：批准请求有 5 分钟超时（`ToolManager.APPROVAL_TIMEOUT = 5 * 60 * 1000`），超时自动拒绝
+- **AI 错误处理**：Tool execution 失败不应导致整个 Agent 崩溃，应优雅降级并向用户报告错误
+
+### 类型安全与代码规范
+
+- **IPC 类型安全**：添加 IPC 功能时，必须先定义类型（`src/shared/types/`）→ 再实现逻辑 → 最后更新 Preload 类型声明
+- **原子命名**：Jotai 原子必须以 `Atom` 结尾（如 `sessionsAtom`），派生原子建议说明用途（如 `currentSessionAtom`）
+- **组件拆分**：复杂组件必须拆分为 `*Main`（布局容器）+ `*Content`（业务逻辑），可复用组件独立成目录
+
+### 常见陷阱
+
+- **路径别名**：Main 和 Renderer 使用不同的别名配置（见 `electron.vite.config.ts`），不要混用
+- **SSH 连接检查**：调用 SSH 操作前必须先 `getSSH(sessionId)` 检查连接是否存在，否则会抛出异常
+- **xterm 生命周期**：Terminal 组件卸载时必须调用 `terminal.dispose()`，否则会造成内存泄漏
+- **数据库事务**：批量写操作应使用 `db.transaction()` 包裹，提升性能并保证原子性
 
 ## 快速参考
 
@@ -451,3 +477,110 @@ console.log(`[Tool] Executing ${toolName} with params:`, params)
 - **工具批准机制**：`docs/TOOL_APPROVAL_MECHANISM.md`
 - **任务存储**：`docs/TASK_STORAGE_GUIDE.md`
 - **AI Agent 使用**：`docs/AI_AGENT_USAGE.md`
+
+## 性能优化指南
+
+### 数据库优化
+
+- 使用 WAL 模式（已配置）以提升并发性能
+- 批量操作使用 `db.transaction()` 减少磁盘 I/O
+- 索引策略：`tasks` 表的 `session_id` 已建立索引，查询时优先使用
+- 定期执行 `PRAGMA optimize` 维护查询计划
+
+### 终端性能
+
+- xterm 使用 WebGL renderer（`xterm-addon-webgl`）提升渲染性能（可选）
+- 限制终端缓冲区大小（`scrollback`），避免内存溢出
+- 大量输出时使用节流（throttle）减少 React 重渲染
+
+### SSH 连接池
+
+- 连接复用：同一 `sessionId` 只创建一个 SSH 实例
+- 及时清理：断开连接时立即从 Map 中删除，避免内存泄漏
+- 心跳检测：可在 `SSH2Wrapper` 中实现 keepalive（`setInterval` 发送空包）
+
+### React 优化
+
+- 使用 `useAtomValue`/`useSetAtom` 拆分读写，减少不必要的重渲染
+- 大列表使用虚拟滚动（如 `react-window`）
+- 终端组件使用 `React.memo` 避免无关 props 变化导致重渲染
+
+## 故障排查清单
+
+### SSH 连接失败
+
+1. 检查 `sshConnections` Map 中是否存在该 `sessionId`
+2. 查看 Main Process 终端输出的错误信息（`ssh.on('error')`）
+3. 验证 SSH 配置（密码/私钥格式、端口、超时设置）
+4. 测试网络连通性（`ping` 或 `telnet` 检查端口）
+
+### AI 功能不可用
+
+1. 确认 `.env` 文件存在且 `SECRET_KEY` 已设置
+2. 检查 AI Provider 配置是否正确（API Key、Base URL）
+3. 查看 Main Process 日志确认 `initAiConfigStore()` 是否成功
+4. 验证 OpenAI SDK 请求是否超时（网络问题或 API Key 无效）
+
+### IPC 通信异常
+
+1. 确认 IPC handler 已在 `src/main/ipc/index.ts` 中注册
+2. 检查 Preload 中是否正确暴露 API（`contextBridge.exposeInMainWorld`）
+3. 验证类型定义是否匹配（`src/shared/types/` vs `src/preload/index.d.ts`）
+4. 使用 DevTools 查看 `ipcRenderer.invoke` 返回的 Promise 状态
+
+### 数据库错误
+
+1. 检查数据库文件路径（`app.getPath('userData')/app.db`）
+2. 验证 Schema 是否正确初始化（`initializeSchema()` 执行）
+3. 查看 WAL 文件是否存在（`app.db-wal`、`app.db-shm`）
+4. 使用 SQLite CLI 工具手动检查数据库完整性（`PRAGMA integrity_check`）
+
+### 内存泄漏排查
+
+1. 检查 EventEmitter 监听器是否正确清理（使用 Chrome DevTools Memory Profiler）
+2. 验证组件卸载时是否取消 IPC 订阅（检查 `useEffect` cleanup 函数）
+3. 确认 SSH 连接断开后从 `sshConnections` Map 中删除
+4. 检查 xterm terminal 实例是否调用 `dispose()`
+
+## 扩展开发建议
+
+### 添加新的系统监控指标
+
+1. 在 `src/main/lib/Monitor.ts` 中添加数据采集逻辑
+2. 更新 `src/shared/models/Monitor.ts` 添加新的数据类型
+3. 在 `src/main/ipc/monitor.ts` 暴露 IPC 接口
+4. 在前端 `SystemMonitor` 组件中展示新指标
+
+### 自定义 AI Tool
+
+```typescript
+// src/main/lib/ai/tools/MyCustomTool.ts
+import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
+
+export class MyCustomTool extends BaseTool {
+  getDefinition(): ToolDefinition {
+    return {
+      type: 'function',
+      function: {
+        name: 'my_custom_action',
+        description: '执行自定义操作',
+        parameters: {
+          type: 'object',
+          properties: {
+            param1: { type: 'string', description: '参数说明' }
+          },
+          required: ['param1']
+        }
+      }
+    }
+  }
+
+  async execute(context: ToolContext, params: { param1: string }): Promise<ToolResult> {
+    // 实现工具逻辑
+    return { success: true, data: 'result' }
+  }
+}
+
+// src/main/lib/ai/tools/ToolManager.ts 构造函数中注册
+this.registerTool(new MyCustomTool())
+```
