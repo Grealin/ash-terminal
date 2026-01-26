@@ -21,7 +21,7 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
   return (
     <div
       className={twMerge(
-        'flex items-center justify-between h-[41px] px-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900',
+        'flex min-w-[280px] items-center justify-between h-[41px] px-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900',
         className
       )}
       {...props}
