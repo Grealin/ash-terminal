@@ -94,7 +94,6 @@ SECRET_KEY=your-secret-key-here-min-32-characters
 > - `SECRET_KEY` 用于加密存储敏感配置（SSH 会话、AI API Key 等），建议使用至少 32 位的随机字符串
 > - **编译时注入机制**：编译时会自动将 `.env` 中的值注入到代码中，编译后的应用无需 `.env` 文件即可运行
 > - `.env.local` 优先级高于 `.env`，可用于本地覆盖配置
-> - 详细说明请参考 [环境变量编译时注入机制](docs/ENV_INJECTION_MECHANISM.md)
 >
 > **安全提示**:
 >
