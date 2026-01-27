@@ -5,9 +5,9 @@
 一款现代化的智能 SSH 终端管理工具，集成 AI 助手，让服务器管理更高效、更智能。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Electron](https://img.shields.io/badge/Electron-31-47848f.svg)](https://www.electronjs.org/)
+[![Electron](https://img.shields.io/badge/Electron-37-47848f.svg)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6.svg)](https://www.typescriptlang.org/)
 
 </div>
 
@@ -272,6 +272,52 @@ ash-terminal/
 ## 📄 许可证
 
 本项目基于 [MIT License](LICENSE) 开源。
+
+## ⚠️ 免责声明
+
+### 使用风险
+
+- **风险自负**: 使用本软件即表示您同意自行承担所有风险。开发者不对因使用本软件造成的任何直接或间接损失负责。
+- **数据安全**: 虽然本软件对敏感配置（SSH 密码、API Key 等）采用 AES-256-CBC 加密存储，但请您务必：
+  - 定期备份重要数据
+  - 不要在不可信的环境中运行本软件
+
+### AI 功能声明
+
+- **工具执行**: AI Agent 模式可自动执行命令和操作文件，请务必：
+  - 仔细配置工具批准规则
+  - 审查 AI 发起的危险操作（如删除、修改系统文件）
+  - 不要在生产环境中轻易启用自动批准
+- **内容准确性**: AI 生成的内容和建议仅供参考，可能存在错误或不适用的情况，请结合实际情况判断。
+- **API 使用**: 使用第三方 AI 服务（如 OpenAI）时，您需遵守其服务条款和使用政策。
+
+### 合规使用
+
+- **授权访问**: 仅对您拥有合法访问权限的服务器使用本软件。
+- **法律责任**: 不得将本软件用于任何非法用途，包括但不限于：
+  - 未经授权访问他人系统
+  - 破坏或篡改数据
+  - 其他违反当地法律法规的行为
+- **隐私保护**: 尊重他人隐私，不得使用本软件收集、传播未经授权的敏感信息。
+
+### 无担保声明
+
+本软件"按原样"提供，不提供任何明示或暗示的担保，包括但不限于：
+
+- 适销性担保
+- 特定用途适用性担保
+- 不侵权担保
+- 持续可用性和稳定性担保
+
+开发者不保证软件无错误、无中断或满足所有用户需求。
+
+### 第三方服务
+
+本软件集成或依赖的第三方服务（SSH 服务器、AI API 提供商等）由各自的服务提供商负责，开发者不对第三方服务的可用性、安全性或内容负责。
+
+---
+
+**如您使用本软件，则默认同意以上免责条款。**
 
 ## 🙏 致谢
 
