@@ -11,6 +11,28 @@
 
 </div>
 
+## 运行效果
+
+### 主界面
+
+![主界面](README.assets/06.png)
+
+### AI 助手界面
+
+![AI 助手](README.assets/01.png)
+
+### 历史任务与配置
+
+![历史任务](README.assets/02.png)
+
+![供应商配置](README.assets/03.png)
+
+![自动批准](README.assets/04.png)
+
+![用户提示词](README.assets/05.png)
+
+---
+
 ## ✨ 特性
 
 ### 核心功能
