@@ -33,32 +33,32 @@
 
 ---
 
-## ✨ 特性
+## 特性
 
 ### 核心功能
 
-- 🔌 **多会话管理** - 同时管理多个 SSH 连接，支持密码和私钥认证
-- 🖥️ **终端仿真** - 基于 xterm.js，完整支持 ANSI 转义序列和颜色
-- 📁 **文件管理** - 内置 SFTP 客户端，支持文件上传、下载和远程编辑
-- 📊 **系统监控** - 实时监控远程服务器的 CPU、内存、磁盘和网络状态
-- 🚀 **批量执行** - 在SSH会话中批量执行多个命令
+- **多会话管理** - 同时管理多个 SSH 连接，支持密码和私钥认证
+- **终端仿真** - 基于 xterm.js，完整支持 ANSI 转义序列和颜色
+- **文件管理** - 内置 SFTP 客户端，支持文件上传、下载和远程编辑
+- **系统监控** - 实时监控远程服务器的 CPU、内存、磁盘和网络状态
+- **批量执行** - 在SSH会话中批量执行多个命令
 
 ### AI 智能助手
 
-- 🤖 **AI Agent 模式** - 支持工具调用（Function Calling），可自动执行命令和操作文件
-- 💬 **AI Ask 模式** - 纯问答模式，提供技术咨询和建议
-- 🔧 **丰富的工具集** - 命令执行、文件读写、目录浏览、文件搜索等
-- ✅ **工具批准机制** - 可配置自动批准规则，确保操作安全
-- 📝 **任务历史** - 自动记录 AI 任务和工具调用历史
+- **AI Agent 模式** - 支持工具调用（Function Calling），可自动执行命令和操作文件
+- **AI Ask 模式** - 纯问答模式，提供技术咨询和建议
+- **丰富的工具集** - 命令执行、文件读写、目录浏览、文件搜索等
+- **工具批准机制** - 可配置自动批准规则，确保操作安全
+- **任务历史** - 自动记录 AI 任务和工具调用历史
 
 ### 用户体验
 
-- 🎨 **主题切换** - 支持多种 DaisyUI 主题，明暗模式自由切换
-- 💾 **配置持久化** - 自动保存会话配置和应用设置
-- 🔒 **安全加密** - 敏感配置（API Key）采用 AES-256-CBC 加密存储
-- 🌍 **跨平台** - 支持 Windows、macOS 和 Linux
+- **主题切换** - 支持多种 DaisyUI 主题，明暗模式自由切换
+- **配置持久化** - 自动保存会话配置和应用设置
+- **安全加密** - 敏感配置（API Key）采用 AES-256-CBC 加密存储
+- **跨平台** - 支持 Windows、macOS 和 Linux
 
-## 🛠️ 技术栈
+## 技术栈
 
 ### 前端
 
@@ -76,7 +76,7 @@
 - **配置**: electron-store + dotenv
 - **AI**: OpenAI SDK（支持兼容接口）
 
-## 📦 安装
+## 安装
 
 ### 环境要求
 
@@ -123,7 +123,7 @@ SECRET_KEY=your-secret-key-here-min-32-characters
 > - 不要在公开渠道分享编译配置
 > - 每次重新编译时可以更换新的密钥
 
-## 🚀 快速开始
+## 快速开始
 
 ### 开发模式
 
@@ -161,7 +161,7 @@ yarn lint
 yarn format
 ```
 
-## 📖 使用指南
+## 使用指南
 
 ### 1. 创建 SSH 会话
 
@@ -213,7 +213,7 @@ yarn format
    - 内存使用情况
    - 运行时间
 
-## 🏗️ 项目结构
+## 项目结构
 
 ```
 ash-terminal/
@@ -254,7 +254,7 @@ ash-terminal/
 └── resources/               # 应用资源
 ```
 
-## 🔧 开发指南
+## 开发指南
 
 ### 添加新的 IPC 功能
 
@@ -272,7 +272,7 @@ ash-terminal/
 2. 实现 `getDefinition()` 和 `execute()` 方法
 3. 在 `ToolManager` 中注册工具
 
-## 🤝 贡献
+## 贡献
 
 欢迎提交 Issue 和 Pull Request！
 
@@ -291,11 +291,11 @@ ash-terminal/
 4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 创建 Pull Request
 
-## 📄 许可证
+## 许可证
 
 本项目基于 [MIT License](LICENSE) 开源。
 
-## ⚠️ 免责声明
+## 免责声明
 
 ### 使用风险
 
@@ -341,23 +341,10 @@ ash-terminal/
 
 **如您使用本软件，则默认同意以上免责条款。**
 
-## 🙏 致谢
+## 致谢
 
 - [Electron](https://www.electronjs.org/)
 - [React](https://reactjs.org/)
 - [xterm.js](https://xtermjs.org/)
 - [ssh2](https://github.com/mscdex/ssh2)
 - [OpenAI](https://openai.com/)
-
-## 📧 联系方式
-
-如有问题或建议，请通过以下方式联系：
-
-- 提交 [Issue](https://github.com/Grealin/ash-terminal/issues)
-- 作者: LinFeng
-
----
-
-<div align="center">
-Made with ❤️ by LinFeng
-</div>
