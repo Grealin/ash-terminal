@@ -17,10 +17,19 @@ export class SSH2Wrapper extends EventEmitter {
   private client: Client
   private connected: boolean = false
   private shell: Channel | null = null
+  private shellPid: number | null = null
 
   constructor() {
     super()
     this.client = new Client()
+  }
+
+  /**
+   * 获取 PTY Shell 进程的 PID
+   * 用于通过 /proc/PID/cwd 追踪终端的工作目录
+   */
+  getShellPid(): number | null {
+    return this.shellPid
   }
 
   /**
@@ -199,6 +208,9 @@ export class SSH2Wrapper extends EventEmitter {
       throw new Error('SSH connection not established')
     }
 
+    // 在创建 PTY shell 之前，记录当前用户的 shell 进程快照
+    const beforePids = await this.getShellProcessPids()
+
     return new Promise((resolve, reject) => {
       this.client.shell(
         {
@@ -208,7 +220,7 @@ export class SSH2Wrapper extends EventEmitter {
           width: 640,
           height: 480
         },
-        (err, stream) => {
+        async (err, stream) => {
           if (err) {
             reject(err)
             return
@@ -223,12 +235,20 @@ export class SSH2Wrapper extends EventEmitter {
 
           stream.on('close', () => {
             this.shell = null
+            this.shellPid = null
             this.emit('close')
           })
 
           stream.on('error', (error: Error) => {
             this.emit('error', error)
           })
+
+          try {
+            // 通过 execCommand 对比前后进程快照，静默获取 PTY Shell PID
+            await this.captureShellPidViaExec(beforePids)
+          } catch (e) {
+            console.warn('[SSH2Wrapper] 捕获 Shell PID 失败:', e)
+          }
 
           resolve()
         }
@@ -252,6 +272,53 @@ export class SSH2Wrapper extends EventEmitter {
   resizeShell(cols: number, rows: number): void {
     if (this.shell && this.shell.setWindow) {
       this.shell.setWindow(rows, cols, 0, 0)
+    }
+  }
+
+  /**
+   * 获取当前用户的所有 shell 进程 PID 集合
+   * 通过 execCommand 在后端静默执行，不在终端显示任何内容
+   */
+  private async getShellProcessPids(): Promise<Set<number>> {
+    try {
+      const userResult = await this.execCommand('whoami')
+      const user = userResult.stdout.trim()
+      if (!user) return new Set()
+
+      // 匹配 bash/sh/zsh/fish，兼容 login shell 的 - 前缀（如 -bash）
+      const result = await this.execCommand(
+        `ps -u ${user} -o pid,comm --no-headers 2>/dev/null | awk '$2 ~ /^-?(bash|sh|zsh|fish)$/ {print $1}'`
+      )
+      if (result.code !== 0) return new Set()
+
+      return new Set(result.stdout.trim().split('\n').filter(Boolean).map(Number))
+    } catch {
+      return new Set()
+    }
+  }
+
+  /**
+   * 通过 execCommand 静默捕获 PTY Shell 进程 PID
+   * 对比 shell 创建前后的进程快照，新增的 shell 进程即为 PTY shell。
+   * 完全在后端执行，终端用户不可见。
+   */
+  private async captureShellPidViaExec(beforePids: Set<number>): Promise<void> {
+    // 短暂等待确保 PTY shell 进程完全启动
+    await new Promise((r) => setTimeout(r, 300))
+
+    // 获取创建后的 shell 进程快照
+    const afterPids = await this.getShellProcessPids()
+
+    // 找出新增的 PID
+    const newPid = [...afterPids].find((p) => !beforePids.has(p))
+
+    if (newPid) {
+      this.shellPid = newPid
+    } else if (afterPids.size > 0) {
+      // 回退：取最高 PID（最新的进程）
+      this.shellPid = Math.max(...afterPids)
+    } else {
+      console.warn('[SSH2Wrapper] 未能通过进程快照对比找到 Shell PID')
     }
   }
 

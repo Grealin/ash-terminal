@@ -19,6 +19,8 @@ export interface ToolDefinition {
 export interface ToolContext {
   /** SSH 会话 ID */
   sessionId: string
+  /** PTY Shell 的当前工作目录（由 Agent 在工具执行前注入） */
+  workingDirectory?: string
   /** 其他上下文信息 */
   [key: string]: any
 }

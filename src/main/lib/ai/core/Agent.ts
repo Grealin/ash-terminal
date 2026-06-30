@@ -8,6 +8,7 @@ import {
 } from '@shared/models/OpenAICompatible'
 import { EventEmitter } from 'events'
 import OpenAI from 'openai'
+import { getPTYWorkingDirectory } from '@/lib/WorkingDirectory'
 import { taskStoreManager } from '../storage/TaskStore'
 import { ToolContext } from '../tools/BaseTool'
 import { toolManager } from '../tools/ToolManager'
@@ -85,15 +86,17 @@ export class Agent extends EventEmitter {
    * 获取系统提示词
    * @param mode 可选，指定使用的 AI 模式（优先级高于 config.mode）
    */
-  private getSystemPrompt(mode?: AiMode): string {
+  private async getSystemPrompt(mode?: AiMode): Promise<string> {
     const provider = getActiveProvider()
     const toolList = this.getToolListDescription()
     const aiConfig = getAiConfig()
     const userExtraPrompt = aiConfig.userSettings.userExtraPrompt
+    const workingDirectory = await getPTYWorkingDirectory(this.config.sessionId)
 
     const params = {
       toolList,
       operatingSystem: this.config.operatingSystem,
+      workingDirectory,
       userExtraPrompt: userExtraPrompt || undefined
     }
 
@@ -167,7 +170,7 @@ export class Agent extends EventEmitter {
           // 没有历史消息，添加系统提示（使用当前模式生成提示词）
           const systemMessage = {
             role: MessageRole.SYSTEM,
-            content: this.getSystemPrompt(currentMode)
+            content: await this.getSystemPrompt(currentMode)
           }
           this.conversationHistory.push(systemMessage)
           // 保存系统消息到数据库
@@ -176,7 +179,7 @@ export class Agent extends EventEmitter {
       }
 
       // 检查并更新系统提示词（确保与当前模式匹配）
-      this.ensureSystemPromptMatchesMode(currentMode)
+      await this.ensureSystemPromptMatchesMode(currentMode)
 
       // 添加用户消息
       const userMessage = {
@@ -465,8 +468,11 @@ export class Agent extends EventEmitter {
    * 执行工具调用
    */
   private async executeToolCalls(toolCalls: any[]): Promise<void> {
+    // 解析 PTY Shell 的当前工作目录，注入工具上下文
+    const workingDirectory = await getPTYWorkingDirectory(this.config.sessionId)
     const context: ToolContext = {
-      sessionId: this.config.sessionId
+      sessionId: this.config.sessionId,
+      workingDirectory
     }
 
     for (const toolCall of toolCalls) {
@@ -599,7 +605,7 @@ export class Agent extends EventEmitter {
    * 确保系统提示词与当前模式匹配
    * 如果不匹配，则更新系统提示词（修复问题1：模式切换时提示词不一致）
    */
-  private ensureSystemPromptMatchesMode(currentMode: AiMode): void {
+  private async ensureSystemPromptMatchesMode(currentMode: AiMode): Promise<void> {
     if (this.conversationHistory.length === 0) {
       return
     }
@@ -610,7 +616,7 @@ export class Agent extends EventEmitter {
     }
 
     // 生成当前模式应该使用的系统提示词
-    const expectedSystemPrompt = this.getSystemPrompt(currentMode)
+    const expectedSystemPrompt = await this.getSystemPrompt(currentMode)
 
     // 如果系统提示词不匹配，则更新
     if (firstMessage.content !== expectedSystemPrompt) {
@@ -768,8 +774,11 @@ export class Agent extends EventEmitter {
   private async executeXMLToolCalls(
     toolCalls: Array<{ name: string; params: any }>
   ): Promise<void> {
+    // 解析 PTY Shell 的当前工作目录，注入工具上下文
+    const workingDirectory = await getPTYWorkingDirectory(this.config.sessionId)
     const context: ToolContext = {
-      sessionId: this.config.sessionId
+      sessionId: this.config.sessionId,
+      workingDirectory
     }
 
     for (const toolCall of toolCalls) {

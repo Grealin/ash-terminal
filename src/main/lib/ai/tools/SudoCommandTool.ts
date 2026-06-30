@@ -34,7 +34,11 @@ export class SudoCommandTool extends BaseTool {
   }
 
   async execute(context: ToolContext, params: Record<string, any>): Promise<ToolResult> {
-    const { command, working_directory, auto_confirm = true } = params
+    const command: string = params.command
+    // AI 显式指定的 working_directory 优先，否则自动使用 context 中的工作目录
+    const working_directory: string | undefined =
+      params.working_directory || context.workingDirectory
+    const auto_confirm: boolean = params.auto_confirm ?? true
 
     if (!command || typeof command !== 'string') {
       return {
