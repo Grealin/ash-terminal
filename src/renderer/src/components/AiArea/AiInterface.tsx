@@ -53,6 +53,7 @@ export const AiAgentContent: React.FC = () => {
             apiConfigError={apiConfigError}
             onClearError={() => setApiConfigError('')}
             isVisible={currentView === 'chat'}
+            onNavigateToSettings={() => setCurrentView('settings')}
           />
         </div>
         <div className={currentView === 'history' ? 'h-full' : 'hidden'}>

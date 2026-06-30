@@ -1,4 +1,5 @@
 import { AiMode } from '@shared/models'
+import { AiTaskError } from '@shared/models/AiError'
 import { Task } from '@shared/models/Task'
 
 /**
@@ -152,8 +153,8 @@ export class AIService {
   /**
    * 监听任务错误
    */
-  static onTaskError(sessionId: string, callback: (data: any) => void): () => void {
-    return window.ai.onTaskError(sessionId, callback)
+  static onTaskError(sessionId: string, callback: (data: AiTaskError) => void): () => void {
+    return window.ai.onTaskError(sessionId, callback as (data: any) => void)
   }
 
   /**

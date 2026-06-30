@@ -11,6 +11,7 @@ import OpenAI from 'openai'
 import { taskStoreManager } from '../storage/TaskStore'
 import { ToolContext } from '../tools/BaseTool'
 import { toolManager } from '../tools/ToolManager'
+import { classifyApiError } from './AiErrorHandler'
 import { PromptProvider } from './Prompt'
 
 /**
@@ -44,6 +45,7 @@ export class Agent extends EventEmitter {
   private promptProvider: PromptProvider
   private isRunning: boolean = false
   private taskStore: ReturnType<typeof taskStoreManager.getStore>
+  private currentAbortController: AbortController | null = null
 
   constructor(config: AgentConfig) {
     super()
@@ -57,8 +59,9 @@ export class Agent extends EventEmitter {
    * 初始化 OpenAI 客户端
    */
   private initializeOpenAI(): void {
+    let provider: ReturnType<typeof getActiveProvider> = null
     try {
-      const provider = getActiveProvider()
+      provider = getActiveProvider()
       if (!provider) {
         throw new Error('未配置 AI Provider')
       }
@@ -69,12 +72,12 @@ export class Agent extends EventEmitter {
 
       this.openai = new OpenAI({
         apiKey: provider.apiKey,
-        baseURL: provider.baseUrl
+        baseURL: provider.baseUrl,
+        timeout: 120000,
+        maxRetries: 0
       })
     } catch (error) {
-      this.emit(AgentEvent.ERROR, {
-        message: `初始化 OpenAI 客户端失败: ${error instanceof Error ? error.message : String(error)}`
-      })
+      this.emit(AgentEvent.ERROR, classifyApiError(error, provider))
     }
   }
 
@@ -142,6 +145,9 @@ export class Agent extends EventEmitter {
     this.isRunning = true
 
     try {
+      // 创建 AbortController 用于超时和用户中止
+      this.currentAbortController = new AbortController()
+
       // 使用传入的 mode 或默认的 config.mode
       const currentMode = mode ?? this.config.mode
       // 如果没有激活的任务，创建新任务
@@ -193,10 +199,10 @@ export class Agent extends EventEmitter {
         await this.handleAgentMode(provider.model, provider.streaming ?? false)
       }
     } catch (error) {
-      this.emit(AgentEvent.ERROR, {
-        message: `处理问题失败: ${error instanceof Error ? error.message : String(error)}`
-      })
+      const provider = getActiveProvider()
+      this.emit(AgentEvent.ERROR, classifyApiError(error, provider))
     } finally {
+      this.currentAbortController = null
       this.isRunning = false
       this.emit(AgentEvent.DONE)
     }
@@ -303,9 +309,9 @@ export class Agent extends EventEmitter {
   private async handleNonStreamingResponse(request: ChatCompletionRequest): Promise<void> {
     if (!this.openai) throw new Error('OpenAI 客户端未初始化')
 
-    const response = (await this.openai.chat.completions.create(
-      request as any
-    )) as ChatCompletionResponse
+    const response = (await this.openai.chat.completions.create(request as any, {
+      signal: this.currentAbortController?.signal
+    })) as ChatCompletionResponse
 
     const choice = response.choices[0]
     if (choice && choice.message.content) {
@@ -330,7 +336,9 @@ export class Agent extends EventEmitter {
   private async handleStreamingResponse(request: ChatCompletionRequest): Promise<void> {
     if (!this.openai) throw new Error('OpenAI 客户端未初始化')
 
-    const stream = await this.openai.chat.completions.create(request as any)
+    const stream = await this.openai.chat.completions.create(request as any, {
+      signal: this.currentAbortController?.signal
+    })
 
     let fullContent = ''
     const provider = getActiveProvider()
@@ -371,7 +379,9 @@ export class Agent extends EventEmitter {
   ): Promise<ChatCompletionResponse> {
     if (!this.openai) throw new Error('OpenAI 客户端未初始化')
 
-    return (await this.openai.chat.completions.create(request as any)) as ChatCompletionResponse
+    return (await this.openai.chat.completions.create(request as any, {
+      signal: this.currentAbortController?.signal
+    })) as ChatCompletionResponse
   }
 
   /**
@@ -382,7 +392,9 @@ export class Agent extends EventEmitter {
   ): Promise<ChatCompletionResponse> {
     if (!this.openai) throw new Error('OpenAI 客户端未初始化')
 
-    const stream = await this.openai.chat.completions.create(request as any)
+    const stream = await this.openai.chat.completions.create(request as any, {
+      signal: this.currentAbortController?.signal
+    })
 
     let fullContent = ''
     const toolCalls: any[] = []
@@ -580,6 +592,7 @@ export class Agent extends EventEmitter {
    */
   stop(): void {
     this.isRunning = false
+    this.currentAbortController?.abort()
   }
 
   /**
@@ -825,7 +838,9 @@ export class Agent extends EventEmitter {
   ): Promise<ChatCompletionResponse> {
     if (!this.openai) throw new Error('OpenAI 客户端未初始化')
 
-    const stream = await this.openai.chat.completions.create(request as any)
+    const stream = await this.openai.chat.completions.create(request as any, {
+      signal: this.currentAbortController?.signal
+    })
 
     let fullContent = ''
     let buffer = '' // 缓冲区，用于处理可能被分割的标签
