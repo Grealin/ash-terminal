@@ -346,7 +346,7 @@ function parseTopOutput(output: string): SystemMonitorData {
  *   3. `cat /proc/uptime` — 获取系统运行时长（秒）
  */
 async function getBusyBoxMonitorData(
-  sessionId: string,
+  _sessionId: string,
   connection: SSH2Wrapper
 ): Promise<SystemMonitorData> {
   const command: string =

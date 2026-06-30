@@ -1,7 +1,14 @@
 import { SSHConfig } from '@shared/models'
 import { EventEmitter } from 'events'
 import * as fs from 'fs'
-import { Channel, Client, ConnectConfig } from 'ssh2'
+import {
+  Channel,
+  Client,
+  ConnectConfig,
+  type AlgorithmList,
+  type KexAlgorithm,
+  type ServerHostKeyAlgorithm
+} from 'ssh2'
 
 /**
  * SSH2 连接包装器，提供与 NodeSSH 类似的 API
@@ -34,14 +41,21 @@ export class SSH2Wrapper extends EventEmitter {
         keepaliveInterval: 30000,
         keepaliveCountMax: 3, // 允许3次心跳失败
         algorithms: {
-          // 指定支持的算法，提高兼容性
-          kex: [
-            'diffie-hellman-group-exchange-sha256',
-            'diffie-hellman-group14-sha256',
-            'diffie-hellman-group-exchange-sha1',
-            'diffie-hellman-group14-sha1',
-            'diffie-hellman-group1-sha1'
-          ]
+          // 使用 append 模式：继承 ssh2 默认的现代算法
+          // 同时追加老旧算法作为降级兼容
+          // 注意：需 as 断言，因 @types/ssh2 的 Record 类型要求所有键存在，
+          // 但 ssh2 运行时仅按实际键处理
+          kex: {
+            append: [
+              'diffie-hellman-group-exchange-sha1',
+              'diffie-hellman-group14-sha1',
+              'diffie-hellman-group1-sha1'
+            ]
+          } as AlgorithmList<KexAlgorithm>,
+          // 追加 DSA 主机密钥支持，兼容老旧嵌入式系统
+          serverHostKey: {
+            append: ['ssh-dss']
+          } as AlgorithmList<ServerHostKeyAlgorithm>
         }
       }
 
