@@ -1,4 +1,5 @@
 export * from './AI'
+export * from './AiError'
 export * from './Config'
 export * from './Monitor'
 export * from './OpenAICompatible'

@@ -1,4 +1,5 @@
 import { AiMode } from '@shared/models'
+import { AiTaskError } from '@shared/models/AiError'
 import { Task } from '@shared/models/Task'
 
 /**
@@ -109,7 +110,7 @@ export type OnTaskAnswer = OnTaskEvent
 /**
  * 监听任务错误
  */
-export type OnTaskError = OnTaskEvent
+export type OnTaskError = (sessionId: string, callback: (data: AiTaskError) => void) => () => void
 
 /**
  * 监听任务完成

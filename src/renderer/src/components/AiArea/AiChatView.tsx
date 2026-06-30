@@ -1,4 +1,5 @@
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
+import { useToast } from '@/hooks'
 import { activeProviderIdAtom } from '@/store/AiConfigAtom'
 import { currentSessionIdAtom } from '@/store/SessionStore'
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/store/TaskStore'
 import type { AiProviderConfig } from '@shared/models'
 import { AiMode, MessageRole } from '@shared/models'
+import { AiErrorSeverity, AiTaskError } from '@shared/models/AiError'
 import { Message, Task } from '@shared/models/Task'
 import { useAtom, useAtomValue } from 'jotai'
 import { useEffect, useRef, useState } from 'react'
@@ -31,12 +33,14 @@ interface AiChatViewProps {
   apiConfigError?: string
   onClearError?: () => void
   isVisible?: boolean
+  onNavigateToSettings?: () => void
 }
 
 export const AiChatView: React.FC<AiChatViewProps> = ({
   apiConfigError: externalApiConfigError,
   onClearError,
-  isVisible
+  isVisible,
+  onNavigateToSettings
 }) => {
   const [message, setMessage] = useState('')
   const [runMode, setRunMode] = useState<RunMode>('agent')
@@ -44,11 +48,15 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const [selectedProviderId, setSelectedProviderId] = useAtom(activeProviderIdAtom)
   const [toolExecutions, setToolExecutions] = useState<ToolExecutionRecord[]>([])
   const [apiConfigError, setApiConfigError] = useState<string>('')
+  const [aiErrors, setAiErrors] = useState<
+    Array<{ id: string; error: AiTaskError; timestamp: number }>
+  >([])
 
   // 合并外部和内部的错误状态
   const displayError = externalApiConfigError || apiConfigError
   const handleClearError = (): void => {
     setApiConfigError('')
+    setAiErrors([])
     onClearError?.()
   }
 
@@ -59,6 +67,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const [streamingMessage, setStreamingMessage] = useAtom(streamingMessageAtom)
   const [currentThought, setCurrentThought] = useAtom(currentThoughtAtom)
   const [pendingApproval, setPendingApproval] = useAtom(pendingToolApprovalAtom)
+  const toast = useToast()
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const eventCleanupRef = useRef<Array<() => void>>([])
@@ -256,6 +265,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   useEffect(() => {
     cleanupEventListeners()
     taskIdRef.current = null // 重置任务 ID 引用
+    setAiErrors([]) // 清空错误气泡
   }, [currentSessionId])
 
   const changeSelectedProviderId = async (providerId: string): Promise<void> => {
@@ -369,9 +379,29 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         setIsProcessing(false)
       })
 
-      const taskErrorCleanup = AIService.onTaskError(currentSessionId, (error) => {
+      const taskErrorCleanup = AIService.onTaskError(currentSessionId, (error: AiTaskError) => {
         console.error('Task error:', error)
         setIsProcessing(false)
+
+        // 1. Toast 通知
+        toast.error(error.title, {
+          position: 'top-center',
+          duration: error.severity === AiErrorSeverity.CONFIGURATION ? 0 : 5000
+        })
+
+        // 2. 错误气泡加入聊天（去重：同类型错误替换而非追加）
+        setAiErrors((prev) => {
+          const filtered = prev.filter((e) => e.error.type !== error.type)
+          return [
+            ...filtered,
+            { id: `err-${Date.now()}-${Math.random()}`, error, timestamp: Date.now() }
+          ]
+        })
+
+        // 3. 配置类错误同时设置横幅
+        if (error.severity === AiErrorSeverity.CONFIGURATION) {
+          setApiConfigError(`${error.title}: ${error.message}\n\n${error.suggestion}`)
+        }
       })
 
       eventCleanupRef.current = [
@@ -391,6 +421,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     } catch (error) {
       console.error('Failed to send message:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)
+      toast.error(`发送消息失败：${errorMessage}`)
       setApiConfigError(`发送消息失败：${errorMessage}。如若配置无误请创建新的任务重试。`)
       setIsProcessing(false)
     }
@@ -832,6 +863,61 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+            ))}
+
+            {/* AI 错误气泡 */}
+            {aiErrors.map((aiError) => (
+              <div
+                key={aiError.id}
+                className="flex justify-start mb-4 animate-in fade-in duration-300"
+              >
+                <div className="max-w-[90%] bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="flex items-start gap-2">
+                    <svg
+                      className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
+                        {aiError.error.title}
+                      </p>
+                      <p className="text-xs text-red-700 dark:text-red-300 mb-2 leading-relaxed">
+                        {aiError.error.message}
+                      </p>
+                      {aiError.error.suggestion && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 leading-relaxed">
+                          {aiError.error.suggestion}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        {aiError.error.suggestNavigateToSettings && onNavigateToSettings && (
+                          <button
+                            onClick={onNavigateToSettings}
+                            className="px-3 py-1 text-xs rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors font-medium"
+                          >
+                            前往设置
+                          </button>
+                        )}
+                        <button
+                          onClick={() =>
+                            setAiErrors((prev) => prev.filter((e) => e.id !== aiError.id))
+                          }
+                          className="px-3 py-1 text-xs rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
+                        >
+                          关闭
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
 
