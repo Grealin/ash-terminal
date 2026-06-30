@@ -1,6 +1,7 @@
 export interface PromptParameter {
   toolList: string
   operatingSystem: string
+  workingDirectory?: string
   userExtraPrompt?: string
 }
 
@@ -31,6 +32,7 @@ export class PromptProvider {
 ## 环境信息
 
 - **操作系统**: ${params.operatingSystem}
+${params.workingDirectory ? `- **终端当前工作目录**: ${params.workingDirectory}` : ''}
 
 ## 可用工具
 
@@ -39,7 +41,7 @@ ${params.toolList}
 ## 关键规则
 
 1. **参数格式**: <params> 标签内必须使用有效的 JSON 格式，例如 \`{"command": "ls -la"}\` 或 \`{"path": "/home/user"}\`
-2. **路径规范**: 始终使用绝对路径，如 \`/home/user/file.txt\`，不要使用相对路径如 \`file.txt\`
+2. **路径规范**: 始终使用绝对路径，如 \`/home/user/file.txt\`。当前工作目录即上面"环境信息"中列出的目录，如需操作其他目录请使用绝对路径
 3. **输出控制**: 每次回复必须包含 <thought> 和 (<action> 或 <final_answer>)，且只能包含这两个标签
 4. **停止时机**: 输出 <action> 后立即停止，等待系统返回 <observation>
 5. **JSON 转义**: 参数中的特殊字符需要正确转义，如 \`{"content": "line1\\nline2"}\`
@@ -116,10 +118,11 @@ ${params.userExtraPrompt}`
 ## 环境信息
 
 - **操作系统**: ${params.operatingSystem}
+${params.workingDirectory ? `- **终端当前工作目录**: ${params.workingDirectory}` : ''}
 
 ## 注意事项
 
-- 执行命令时可以指定工作目录
+- 执行命令时当前工作目录即上面"环境信息"中列出的目录，也可以显式指定其他工作目录
 - 处理大文件时可以使用行范围读取
 
 请根据用户的需求，合理调用工具完成任务。

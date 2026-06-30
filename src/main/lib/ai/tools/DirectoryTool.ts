@@ -49,16 +49,19 @@ export class DirectoryTool extends BaseTool {
 
     try {
       // 如果使用默认值 '.'，先获取当前工作目录
-      // 因为 execCommand 每次都是新会话，默认在 home 目录
+      // 优先使用 context 中由 Agent 注入的 PTY Shell 真实工作目录
       let targetDirectory = directory
       if (directory === '.') {
-        // 通过环境变量 PWD 或 pwd 命令获取当前目录
-        const pwdResult = await ssh.execCommand('echo $PWD || pwd')
-        if (pwdResult.code === 0 && pwdResult.stdout.trim()) {
-          targetDirectory = pwdResult.stdout.trim()
+        if (context.workingDirectory) {
+          targetDirectory = context.workingDirectory
         } else {
-          // 如果获取失败，使用 home 目录
-          targetDirectory = '~'
+          // 回退：通过 execCommand 获取（exec 独立会话，通常为 home 目录）
+          const pwdResult = await ssh.execCommand('echo $PWD || pwd')
+          if (pwdResult.code === 0 && pwdResult.stdout.trim()) {
+            targetDirectory = pwdResult.stdout.trim()
+          } else {
+            targetDirectory = '~'
+          }
         }
       }
 
