@@ -525,6 +525,15 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return cleaned.trim()
   }
 
+  // 格式化 tool_calls 中的 arguments JSON 字符串用于显示
+  const formatToolCallArguments = (args: string): string => {
+    try {
+      return JSON.stringify(JSON.parse(args), null, 2)
+    } catch {
+      return args
+    }
+  }
+
   // 检测消息是否包含 observation 标签
   const hasObservationTag = (content: string | null): boolean => {
     if (!content) return false
@@ -537,6 +546,32 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     const match = content.match(/<observation>([\s\S]*?)<\/observation>/i)
     return match ? match[1].trim() : ''
   }
+
+  // 渲染工具调用卡片（复用样式，用于从 msg.tool_calls 历史数据渲染）
+  const renderToolCallCard = (name: string, argumentsDisplay: string): React.JSX.Element => (
+    <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+      <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
+        <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
+          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          调用工具：{name}
+        </p>
+        <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+          <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+            查看参数
+          </summary>
+          <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+            {argumentsDisplay}
+          </pre>
+        </details>
+      </div>
+    </div>
+  )
 
   const renderMessage = (msg: Message): React.JSX.Element => {
     if (msg.role === MessageRole.USER) {
@@ -650,16 +685,46 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         </div>
       )
     } else if (msg.role === MessageRole.ASSISTANT) {
+      const cleanedContent = cleanMessageContent(msg.content)
+      const hasContent = cleanedContent.length > 0
+      const hasToolCalls = msg.tool_calls && msg.tool_calls.length > 0
+
+      // 如果既没有文本内容也没有工具调用，不渲染任何内容（防止空白气泡）
+      if (!hasContent && !hasToolCalls) {
+        return <div key={msg.id}></div>
+      }
+
+      // 过滤掉已有对应 TOOL 消息且该 TOOL 消息能找到 toolExecution 的 tool_call
+      // - 实时会话：TOOL 消息 + toolExecution 都存在 → TOOL 分支负责渲染 → ASSISTANT 跳过
+      // - 页面刷新：TOOL 消息存在但 toolExecutions 为空 → TOOL 分支不渲染 → ASSISTANT 负责渲染
+      const orphanToolCalls = hasToolCalls
+        ? msg.tool_calls!.filter((tc) => {
+            const toolMsg = messages.find(
+              (m) => m.role === MessageRole.TOOL && m.tool_call_id === tc.id
+            )
+            if (!toolMsg) return true
+            return !findToolExecutionForMessage(toolMsg)
+          })
+        : []
+
       return (
-        <div
-          key={msg.id}
-          className="flex justify-start mb-4 animate-in slide-in-from-left duration-300"
-        >
-          <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
-            <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
-              {cleanMessageContent(msg.content)}
-            </p>
-          </div>
+        <div key={msg.id}>
+          {/* 文本内容气泡（仅当有实际文本内容时显示） */}
+          {hasContent && (
+            <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
+              <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+                  {cleanedContent}
+                </p>
+              </div>
+            </div>
+          )}
+          {/* 工具调用卡片（仅渲染没有对应 TOOL 消息的"孤儿"tool_call，避免与 TOOL 分支重复） */}
+          {orphanToolCalls.map((tc) => (
+            <div key={tc.id}>
+              {renderToolCallCard(tc.function.name, formatToolCallArguments(tc.function.arguments))}
+            </div>
+          ))}
         </div>
       )
     } else if (msg.role === MessageRole.TOOL) {
