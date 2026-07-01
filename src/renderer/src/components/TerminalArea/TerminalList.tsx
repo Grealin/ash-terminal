@@ -57,7 +57,7 @@ export const TerminalListContent: React.FC = () => {
   // 用于优化尺寸调整的状态
   const resizeRequestRef = useRef<number | null>(null)
   const lastResizeTimeRef = useRef<number>(0)
-  const finalResizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const finalResizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 用于存储清理函数的 ref
   const cleanupRef = useRef<(() => void) | null>(null)
@@ -192,7 +192,7 @@ export const TerminalListContent: React.FC = () => {
       // 用于清理的标志位
       let isDisposed = false
       let rafId: number | null = null
-      let timeoutId: NodeJS.Timeout | null = null
+      let timeoutId: ReturnType<typeof setTimeout> | null = null
 
       const terminal = new Terminal({
         theme: terminalTheme,
@@ -405,7 +405,7 @@ export const TerminalListContent: React.FC = () => {
     const container = containerRef.current
     if (!container || !isTerminalReady) return
 
-    const resizeTimeoutId: NodeJS.Timeout | null = null
+    const resizeTimeoutId: ReturnType<typeof setTimeout> | null = null
     let lastWidth = 0
     let lastHeight = 0
 

@@ -31,7 +31,7 @@ export const useBatchCommand = (): {
   const [currentIndex, setCurrentIndex] = useAtom(batchCommandCurrentIndexAtom)
   const currentSessionId = useAtomValue(currentSessionIdAtom)
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const statusRef = useRef<BatchCommandStatus>('idle')
 
   // 同步状态到ref，避免闭包问题
