@@ -9,10 +9,11 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "noUnusedLocals": false,
     "baseUrl": ".",
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
