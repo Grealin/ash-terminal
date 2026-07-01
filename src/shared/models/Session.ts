@@ -5,8 +5,10 @@ export interface SSHConfig {
   host: string
   port: number
   username: string
+  authMethod: 'password' | 'key'
   password?: string
   privateKey?: string
+  privateKeySource?: 'content' | 'path'
   passphrase?: string
 }
 

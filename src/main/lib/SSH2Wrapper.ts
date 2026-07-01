@@ -69,19 +69,36 @@ export class SSH2Wrapper extends EventEmitter {
       }
 
       // 处理认证方式
-      if (config.password) {
+      if (config.authMethod === 'password' && config.password) {
         connectConfig.password = config.password
       }
 
-      if (config.privateKey) {
+      if (config.authMethod === 'key' && config.privateKey) {
         try {
-          // 如果是文件路径，读取文件内容
-          if (fs.existsSync(config.privateKey)) {
-            connectConfig.privateKey = fs.readFileSync(config.privateKey)
+          let keyContent: string | Buffer
+          if (config.privateKeySource === 'path') {
+            // 显式文件路径：以 Buffer 读取，与原始行为一致
+            keyContent = fs.readFileSync(config.privateKey)
+          } else if (config.privateKeySource === 'content') {
+            // 显式密钥内容：规范化换行符并清理首尾空白
+            keyContent = config.privateKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim()
+            // 确保 PEM 格式以换行结尾
+            if (!keyContent.endsWith('\n')) {
+              keyContent += '\n'
+            }
           } else {
-            // 直接使用私钥内容
-            connectConfig.privateKey = config.privateKey
+            // privateKeySource 缺失（旧数据兜底）：保留 fs.existsSync 试探
+            if (fs.existsSync(config.privateKey)) {
+              keyContent = fs.readFileSync(config.privateKey)
+            } else {
+              keyContent = config.privateKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim()
+              if (!keyContent.endsWith('\n')) {
+                keyContent += '\n'
+              }
+            }
           }
+
+          connectConfig.privateKey = keyContent
 
           if (config.passphrase) {
             connectConfig.passphrase = config.passphrase
