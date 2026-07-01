@@ -31,7 +31,7 @@ export const getDirectoryFiles = async (sessionId: string, p: string): Promise<F
     }
   }
 
-  const result = await ssh.execCommand(`ls -la "${actualPath}"`)
+  const result = await ssh.execCommand(`LC_ALL=C ls -la "${actualPath}"`)
   if (result.stderr) {
     throw new Error(result.stderr)
   }
@@ -41,25 +41,72 @@ export const getDirectoryFiles = async (sessionId: string, p: string): Promise<F
 const parseFileList = (output: string, basePath?: string): FileInfo[] => {
   const lines = output.split('\n').filter((line) => line.trim())
   const files: FileInfo[] = []
+
+  // 权限字段正则：匹配 ls -la 输出的权限列
+  // 支持普通文件(-)、目录(d)、符号链接(l)、字符设备(c)、块设备(b)、命名管道(p)、socket(s)
+  const permRegex = /^[-dlcbps][-rwxsStT]{9}$/
+
+  // 时间(HH:MM 可选 :SS)或年份(YYYY) token 正则
+  // ls -la 输出中时间/年份字段是最有辨识度的字段
+  const timeYearRegex = /^\d{1,2}:\d{2}(:\d{2})?$|^\d{4}$/
+
   for (const line of lines.slice(1)) {
     const parts = line.trim().split(/\s+/)
-    if (parts.length >= 9) {
-      const permissions = parts[0]
-      const size = parseInt(parts[4]) || 0
-      const name = parts.slice(8).join(' ')
-      if (name !== '.' && name !== '..') {
-        const fullPath = basePath ? `${basePath}/${name}` : name
-        files.push({
-          name,
-          type: permissions.startsWith('d') ? 'directory' : 'file',
-          size,
-          permissions,
-          modified: new Date(),
-          path: fullPath
-        })
+
+    // 至少需要权限字段再加一个字段
+    if (parts.length < 2 || !permRegex.test(parts[0])) continue
+
+    const permissions = parts[0]
+
+    // --- 定位时间/年份 token（锚点） ---
+    // 从倒数第二个元素向前扫描，时间/年份字段总是文件名之前的最后一个元数据字段。
+    // 向前扫描可以避免文件名中包含 "12:34" 或 "2025" 时误匹配。
+    let timeIdx = -1
+    for (let i = parts.length - 2; i >= 3; i--) {
+      if (timeYearRegex.test(parts[i])) {
+        timeIdx = i
+        break
       }
     }
+
+    let nameStart: number
+    let size = 0
+
+    if (timeIdx >= 5) {
+      // 找到了时间/年份 token — 文件名紧接其后
+      nameStart = timeIdx + 1
+
+      // 反向定位文件大小字段：从 timeIdx-1 向前扫描
+      // 大小字段和日期字段之间间隔至少 2 个位置，以跳过日期部分
+      for (let i = timeIdx - 1; i >= 1; i--) {
+        if (/^\d+$/.test(parts[i]) && timeIdx - i >= 2) {
+          size = parseInt(parts[i]) || 0
+          break
+        }
+      }
+    } else if (parts.length >= 9) {
+      // Fallback：未找到时间/年份 token，采用 C locale 标准布局
+      nameStart = 8
+      size = parseInt(parts[4]) || 0
+    } else {
+      // 无法确定结构，跳过该行
+      continue
+    }
+
+    const name = parts.slice(nameStart).join(' ')
+    if (!name || name === '.' || name === '..') continue
+
+    const fullPath = basePath ? `${basePath}/${name}` : name
+    files.push({
+      name,
+      type: permissions.startsWith('d') ? 'directory' : 'file',
+      size,
+      permissions,
+      modified: new Date(),
+      path: fullPath
+    })
   }
+
   return files
 }
 
