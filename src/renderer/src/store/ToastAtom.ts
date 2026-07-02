@@ -68,7 +68,7 @@ export const addToastAtom = atom(null, (get, set, opts: ToastShowOptions): Toast
     children,
     type = 'neutral',
     position = 'bottom-right',
-    duration = 3000,
+    duration = type === 'error' ? 60000 : 3000,
     size = 'sm',
     rounded = 'lg',
     showCloseButton = true,

@@ -264,6 +264,7 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
         roundedClass,
         'backdrop-blur-sm shadow-xl border border-slate-200/60 dark:border-slate-700/60',
         'bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200',
+        'can-select',
         transitionClass,
         className
       )}
