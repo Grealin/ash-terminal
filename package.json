@@ -31,6 +31,7 @@
     "better-sqlite3": "^12.5.0",
     "electron-store": "^10.1.0",
     "jotai": "^2.14.0",
+    "lucide-react": "^1.23.0",
     "node-pty": "^1.1.0-beta9",
     "openai": "^6.15.0",
     "ssh2": "^1.17.0",

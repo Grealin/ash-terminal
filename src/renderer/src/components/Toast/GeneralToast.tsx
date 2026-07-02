@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
@@ -86,86 +87,16 @@ const typeToAlert: Record<ToastType, string> = {
   error: 'alert alert-error'
 }
 
+const toastTypeToIcon: Record<ToastType, string> = {
+  success: 'check-circle',
+  warning: 'alert-triangle',
+  error: 'x-circle',
+  info: 'info',
+  neutral: 'info'
+}
+
 function DefaultIcon({ type }: { type: ToastType }): React.ReactElement {
-  // 轻量内置图标，避免额外依赖
-  switch (type) {
-    case 'success':
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            fillRule="evenodd"
-            d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-2.59a.75.75 0 1 0-1.22-.86l-3.47 4.92-1.59-1.59a.75.75 0 1 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.17-.09l3.92-5.64Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )
-    case 'warning':
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10.36 2.58a1.875 1.875 0 0 1 3.28 0l8.16 14.67c.72 1.29-.2 2.9-1.64 2.9H3.84c-1.44 0-2.36-1.61-1.64-2.9L10.36 2.58ZM12 8.25a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0V9a.75.75 0 0 0-.75-.75Zm0 8.25a.94.94 0 1 0 0 1.88.94.94 0 0 0 0-1.88Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )
-    case 'error':
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            fillRule="evenodd"
-            d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12 6.615 2.25 12 2.25Zm3.53 6.22a.75.75 0 1 0-1.06-1.06L12 9.88 9.53 7.41a.75.75 0 1 0-1.06 1.06L10.94 11l-2.47 2.47a.75.75 0 1 0 1.06 1.06L12 12.06l2.47 2.47a.75.75 0 1 0 1.06-1.06L13.06 11l2.47-2.47Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )
-    case 'info':
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
-        >
-          <path d="M11.25 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
-          <path
-            fillRule="evenodd"
-            d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12 6.615 2.25 12 2.25ZM9.75 10.5A.75.75 0 0 1 10.5 9.75h3a.75.75 0 0 1 0 1.5h-.75V15h.75a.75.75 0 0 1 0 1.5h-3A.75.75 0 0 1 10.5 15h.75v-3h-.75a.75.75 0 0 1-.75-.75Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )
-    default:
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            fillRule="evenodd"
-            d="M12 2.25c5.385 0 9.75 4.365 9.75 9.75s-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12 6.615 2.25 12 2.25Zm0 5.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM9.75 12a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H13.5v3h1.5a.75.75 0 0 1 0 1.5h-3a.75.75 0 0 1 0-1.5h.75v-3H10.5A.75.75 0 0 1 9.75 12Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      )
-  }
+  return <Icon name={toastTypeToIcon[type]} size="md" />
 }
 
 export const GeneralToast: React.FC<GeneralToastProps> = ({
@@ -304,13 +235,7 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
               'dark:text-slate-400 dark:hover:text-slate-200'
             )}
           >
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <Icon name="x" size="sm" />
           </button>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { useConfig, useModalTheme, useThemeConfig } from '@/hooks'
 import { useEffect, useState } from 'react'
 import { GeneralModal } from './GeneralModal'
@@ -46,7 +47,7 @@ export const ThemeModal: React.FC = () => {
     return (
       <GeneralModal isOpen={isModalOpen} onClose={closeModal} title="默认主题设置" width="lg">
         <div className="flex justify-center items-center h-32">
-          <div className="loading loading-spinner loading-lg"></div>
+          <Icon name="loader-2" size="lg" className="animate-spin" />
         </div>
       </GeneralModal>
     )
@@ -106,7 +107,7 @@ export const ThemeModal: React.FC = () => {
           >
             {saving ? (
               <>
-                <span className="loading loading-spinner loading-xs"></span>
+                <Icon name="loader-2" size="xs" className="animate-spin" />
                 保存中...
               </>
             ) : (

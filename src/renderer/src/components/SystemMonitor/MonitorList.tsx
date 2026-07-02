@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { useSSHConnection } from '@/hooks'
 import { useMonitorList } from '@/hooks/AreaClosed'
 import { SSHService } from '@/services'
@@ -166,19 +167,7 @@ export const MonitorListContent: React.FC = () => {
       <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
         <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
           <div className="text-center">
-            <svg
-              className="w-12 h-12 mx-auto mb-4 opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
+            <Icon name="bar-chart-3" size="xl" className="mx-auto mb-4 opacity-50" />
             <p className="text-sm">
               {!currentSessionId ? '选择 SSH 会话以查看系统监控' : '等待 SSH 连接建立...'}
             </p>
@@ -199,19 +188,7 @@ export const MonitorListContent: React.FC = () => {
             className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
             title="刷新"
           >
-            <svg
-              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
+            <Icon name="refresh-cw" size="sm" className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
         <div className="flex items-center space-x-1">
@@ -221,23 +198,17 @@ export const MonitorListContent: React.FC = () => {
             title="性能监控"
           >
             {viewMode === 'system' ? (
-              // 性能图标（已选中）
-              <svg
-                className="w-4 h-4 group-hover:scale-110 transition-transform text-blue-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-              </svg>
+              <Icon
+                name="bar-chart-3"
+                size="sm"
+                className="group-hover:scale-110 transition-transform text-blue-500"
+              />
             ) : (
-              // 性能图标（未选中）
-              <svg
-                className="w-4 h-4 group-hover:scale-110 transition-transform"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-              </svg>
+              <Icon
+                name="bar-chart-3"
+                size="sm"
+                className="group-hover:scale-110 transition-transform"
+              />
             )}
           </button>
           <button
@@ -246,31 +217,13 @@ export const MonitorListContent: React.FC = () => {
             title="进程列表"
           >
             {viewMode === 'process' ? (
-              // 进程图标（已选中）
-              <svg
-                className="w-4 h-4 group-hover:scale-110 transition-transform text-blue-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Icon
+                name="list"
+                size="sm"
+                className="group-hover:scale-110 transition-transform text-blue-500"
+              />
             ) : (
-              // 进程图标（未选中）
-              <svg
-                className="w-4 h-4 group-hover:scale-110 transition-transform"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Icon name="list" size="sm" className="group-hover:scale-110 transition-transform" />
             )}
           </button>
         </div>
@@ -283,38 +236,14 @@ export const MonitorListContent: React.FC = () => {
         {loading && !monitorData ? (
           <div className="flex items-center justify-center h-24">
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-              <svg
-                className="w-3 h-3 animate-spin"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              <Icon name="loader-2" size="xs" className="animate-spin" />
               <span className="text-xs">加载中...</span>
             </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-24">
             <div className="text-center text-red-500">
-              <svg
-                className="w-5 h-5 mx-auto mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <Icon name="alert-circle" size="md" className="mx-auto mb-1" />
               <p className="text-xs">{error}</p>
             </div>
           </div>

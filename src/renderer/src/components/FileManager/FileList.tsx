@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
 import { useFileList } from '@/hooks/AreaClosed'
@@ -346,44 +347,16 @@ export const FileListContent: React.FC = () => {
   // 获取文件图标
   const getFileIcon = (file: FileInfo): React.ReactNode => {
     if (file.type === 'directory') {
-      return (
-        <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-        </svg>
-      )
+      return <Icon name="folder" size="lg" className="text-blue-500" />
     } else {
       const extension = file.name.split('.').pop()?.toLowerCase()
 
       if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
-        return (
-          <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
+        return <Icon name="image" size="lg" className="text-green-500" />
       } else if (['txt', 'md', 'log'].includes(extension || '')) {
-        return (
-          <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
+        return <Icon name="file-text" size="lg" className="text-gray-500" />
       } else {
-        return (
-          <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )
+        return <Icon name="file" size="lg" className="text-gray-400" />
       }
     }
   }
@@ -402,19 +375,7 @@ export const FileListContent: React.FC = () => {
       <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
         <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
           <div className="text-center">
-            <svg
-              className="w-12 h-12 mx-auto mb-4 opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-              />
-            </svg>
+            <Icon name="file" size="xl" className="mx-auto mb-4 opacity-50" />
             <p className="text-sm">
               {!currentSessionId ? '选择 SSH 会话以浏览文件' : '等待 SSH 连接建立...'}
             </p>
@@ -435,14 +396,7 @@ export const FileListContent: React.FC = () => {
             className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="返回上级"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
+            <Icon name="arrow-left" size="sm" />
           </button>
           <button
             onClick={() => {
@@ -452,28 +406,14 @@ export const FileListContent: React.FC = () => {
             className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="上传"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 14V4m0 0l-4 4m4-4l4 4M20 20H4a2 2 0 01-2-2V7"
-              />
-            </svg>
+            <Icon name="upload" size="sm" />
           </button>
           <button
             onClick={() => loadFiles(realPath)}
             className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             title="刷新"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
+            <Icon name="refresh-cw" size="sm" />
           </button>
         </div>
         <div className="flex items-center space-x-2">
@@ -500,28 +440,14 @@ export const FileListContent: React.FC = () => {
               className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded transition-colors"
               title="确认"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <Icon name="check" size="sm" />
             </button>
             <button
               onMouseDown={handleCancelEditPath}
               className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
               title="取消"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <Icon name="x" size="sm" />
             </button>
           </div>
         ) : (
@@ -533,19 +459,7 @@ export const FileListContent: React.FC = () => {
             <div className="text-sm text-gray-600 dark:text-gray-400 font-mono truncate">
               {realPath}
             </div>
-            <svg
-              className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
+            <Icon name="pencil" size="sm" className="text-gray-400 flex-shrink-0 ml-2" />
           </div>
         )}
       </div>
@@ -555,57 +469,21 @@ export const FileListContent: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center h-24">
             <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-              <svg
-                className="w-3 h-3 animate-spin"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+              <Icon name="loader-2" size="xs" className="animate-spin" />
               <span className="text-xs">加载中...</span>
             </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-24">
             <div className="text-center text-red-500">
-              <svg
-                className="w-5 h-5 mx-auto mb-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <Icon name="alert-circle" size="md" className="mx-auto mb-1" />
               <p className="text-xs">{error}</p>
             </div>
           </div>
         ) : files.length === 0 ? (
           <div className="flex items-center justify-center h-24">
             <div className="text-center text-gray-500 dark:text-gray-400">
-              <svg
-                className="w-5 h-5 mx-auto mb-1 opacity-50"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+              <Icon name="file-plus" size="md" className="mx-auto mb-1 opacity-50" />
               <p className="text-xs">目录为空</p>
             </div>
           </div>
@@ -646,57 +524,21 @@ export const FileListContent: React.FC = () => {
                         title="下载"
                         onClick={() => handleDownload(file)}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
+                        <Icon name="download" size="sm" />
                       </button>
                       <button
                         className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         title="编辑"
                         onClick={() => handleEdit(file)}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+                        <Icon name="pencil" size="sm" />
                       </button>
                       <button
                         className="p-0.5 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                         title="删除"
                         onClick={() => handleAskDelete(file)}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
+                        <Icon name="trash-2" size="sm" />
                       </button>
                     </>
                   )}

@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { useToast } from '@/hooks/Toast'
 import { ElectronService, SSHService } from '@/services'
@@ -217,7 +218,8 @@ export const UploadModal: React.FC = () => {
                   {it.status === 'pending' && <span className="text-gray-400">待上传</span>}
                   {it.status === 'uploading' && (
                     <span className="text-blue-500 flex items-center">
-                      <span className="loading loading-spinner loading-xs mr-1"></span>上传中
+                      <Icon name="loader-2" size="xs" className="animate-spin mr-1" />
+                      上传中
                     </span>
                   )}
                   {it.status === 'success' && <span className="text-green-600">完成</span>}
@@ -244,7 +246,7 @@ export const UploadModal: React.FC = () => {
           >
             {isUploading ? (
               <>
-                <span className="loading loading-spinner loading-xs"></span> 上传中...
+                <Icon name="loader-2" size="xs" className="animate-spin" /> 上传中...
               </>
             ) : (
               '开始上传'

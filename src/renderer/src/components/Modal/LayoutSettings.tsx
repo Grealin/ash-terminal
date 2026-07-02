@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { useConfig, useLeftSideBar, useModalLayout, useRightSideBar } from '@/hooks'
 import { GeneralModal } from './GeneralModal'
 
@@ -11,7 +12,11 @@ export const LayoutModal: React.FC = () => {
     return (
       <GeneralModal isOpen={isModalOpen} onClose={closeModal} title="布局设置" width="lg">
         <div className="flex justify-center items-center h-32 bg-gradient-to-br from-blue-50 to-indigo-50 dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 rounded-lg">
-          <div className="loading loading-spinner loading-lg text-blue-600 dark:text-blue-400"></div>
+          <Icon
+            name="loader-2"
+            size="lg"
+            className="animate-spin text-blue-600 dark:text-blue-400"
+          />
         </div>
       </GeneralModal>
     )
@@ -31,19 +36,7 @@ export const LayoutModal: React.FC = () => {
         <div className="card bg-white/80 dark:bg-slate-800/80 shadow-lg border border-blue-100 dark:border-slate-700 backdrop-blur-sm">
           <div className="card-body">
             <h3 className="card-title text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center">
-              <svg
-                className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                />
-              </svg>
+              <Icon name="layout" size="md" className="mr-2 text-blue-600 dark:text-blue-400" />
               侧边栏显示设置
             </h3>
             <div className="space-y-4">
@@ -51,19 +44,11 @@ export const LayoutModal: React.FC = () => {
               <div className="form-control bg-blue-50/50 dark:bg-slate-700/50 p-4 rounded-xl border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all duration-200">
                 <label className="label cursor-pointer">
                   <span className="label-text text-slate-700 dark:text-slate-200 font-medium flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    <Icon
+                      name="chevron-right"
+                      size="sm"
+                      className="mr-2 text-blue-600 dark:text-blue-400"
+                    />
                     显示左侧边栏
                   </span>
                   <input
@@ -84,19 +69,11 @@ export const LayoutModal: React.FC = () => {
               <div className="form-control bg-blue-50/50 dark:bg-slate-700/50 p-4 rounded-xl border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all duration-200">
                 <label className="label cursor-pointer">
                   <span className="label-text text-slate-700 dark:text-slate-200 font-medium flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400 rotate-180"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    <Icon
+                      name="chevron-right"
+                      size="sm"
+                      className="mr-2 text-blue-600 dark:text-blue-400 rotate-180"
+                    />
                     显示右侧边栏
                   </span>
                   <input
@@ -118,19 +95,7 @@ export const LayoutModal: React.FC = () => {
 
         {/* 提示信息 */}
         <div className="alert bg-white/80 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-700 rounded-xl shadow-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            className="stroke-blue-600 dark:stroke-blue-400 shrink-0 w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
+          <Icon name="alert-circle" size="lg" className="text-blue-600 dark:text-blue-400" />
           <span className="text-blue-800 dark:text-blue-200 font-medium">
             布局设置会立即生效并自动保存
           </span>

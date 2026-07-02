@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { isModalShortcutOpenAtom } from '@/store'
 import { useAtom } from 'jotai'
 import { useCallback } from 'react'
@@ -30,14 +31,7 @@ export const ShortcutModal: React.FC = () => {
               'dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300'
             )}
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <Icon name="x" size="md" />
           </button>
         </div>
 
@@ -175,7 +169,8 @@ export const ShortcutModal: React.FC = () => {
             )}
           >
             <p className="text-xs text-blue-700 dark:text-blue-300">
-              💡 提示：这些快捷键仅在终端窗口中有效
+              <Icon name="lightbulb" size="sm" className="mr-1 inline-block text-blue-500" />
+              提示：这些快捷键仅在终端窗口中有效
             </p>
           </div>
         </div>

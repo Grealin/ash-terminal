@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useToast } from '@/hooks'
 import { AiConfigService } from '@/services'
@@ -27,14 +28,7 @@ export const AiSettingsView: React.FC = () => {
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
           )}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-            />
-          </svg>
+          <Icon name="server" size="lg" />
         </button>
         <button
           onClick={() => setActiveTab('autoApproval')}
@@ -46,14 +40,7 @@ export const AiSettingsView: React.FC = () => {
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
           )}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <Icon name="check-circle" size="lg" />
         </button>
         <button
           onClick={() => setActiveTab('prompt')}
@@ -65,14 +52,7 @@ export const AiSettingsView: React.FC = () => {
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
           )}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-            />
-          </svg>
+          <Icon name="message-square" size="lg" />
         </button>
       </div>
 
@@ -375,9 +355,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
           title="新建供应商配置"
           className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
         >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Icon name="plus" size="xs" />
         </button>
       </div>
 
@@ -412,15 +390,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
                   {provider.id === activeProviderId ? (
                     <div className="p-1 text-green-600" title="当前激活">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle cx="12" cy="12" r="9" strokeWidth="2" />
-                        <circle cx="12" cy="12" r="4" fill="currentColor" />
-                      </svg>
+                      <Icon name="circle-dot" size="sm" />
                     </div>
                   ) : (
                     <button
@@ -428,19 +398,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                       className="p-1 rounded text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 transition-colors"
                       title="激活"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <Icon name="check-circle" size="sm" />
                     </button>
                   )}
                   <button
@@ -448,28 +406,14 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                     className="p-1 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     title="编辑"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
+                    <Icon name="pencil" size="sm" />
                   </button>
                   <button
                     onClick={() => handleAskDelete(provider)}
                     className="p-1 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                     title="删除"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
+                    <Icon name="trash-2" size="sm" />
                   </button>
                 </div>
               </div>

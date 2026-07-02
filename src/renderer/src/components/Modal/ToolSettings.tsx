@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { useConfig, useModalTool } from '@/hooks'
 import {
   useAiInterface,
@@ -23,7 +24,11 @@ export const ToolModal: React.FC = () => {
     return (
       <GeneralModal isOpen={isModalOpen} onClose={closeModal} title="功能区设置" width="lg">
         <div className="flex justify-center items-center h-32 bg-gradient-to-br from-blue-50 to-indigo-50 dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 rounded-lg">
-          <div className="loading loading-spinner loading-lg text-blue-600 dark:text-blue-400"></div>
+          <Icon
+            name="loader-2"
+            size="lg"
+            className="animate-spin text-blue-600 dark:text-blue-400"
+          />
         </div>
       </GeneralModal>
     )

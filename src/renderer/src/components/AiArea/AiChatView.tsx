@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
 import { useToast } from '@/hooks'
 import { activeProviderIdAtom } from '@/store/AiConfigAtom'
@@ -552,13 +553,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
       <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
         <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <Icon name="code-2" size="sm" />
           调用工具：{name}
         </p>
         <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
@@ -619,13 +614,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                   <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
                     <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
                       <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <Icon name="check-circle" size="sm" />
                         工具结果：{toolExecution.name}
                       </p>
                       <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
@@ -648,13 +637,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             <div className="flex justify-start mb-4 animate-in fade-in duration-300">
               <div className="max-w-[90%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
                 <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <Icon name="zap" size="sm" />
                   工具执行结果
                 </p>
                 <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
@@ -825,18 +808,11 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         <div className="mx-4 mt-4 mb-2">
           <div className="alert alert-error bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <div className="flex items-start space-x-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Icon
+                name="x-circle"
+                size="md"
+                className="text-red-600 dark:text-red-400 flex-shrink-0"
+              />
               <div className="flex-1">
                 <p className="can-select text-sm font-medium text-red-800 dark:text-red-200">
                   {displayError}
@@ -846,18 +822,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 onClick={handleClearError}
                 className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Icon name="x" size="sm" />
               </button>
             </div>
           </div>
@@ -906,13 +871,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                   <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
                     <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
                       <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <Icon name="check-circle" size="sm" />
                         工具结果：{execution.name}
                       </p>
                       <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
@@ -939,17 +898,11 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               >
                 <div className="max-w-[90%] bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-2xl px-4 py-3 shadow-sm">
                   <div className="flex items-start gap-2">
-                    <svg
-                      className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Icon
+                      name="x-circle"
+                      size="md"
+                      className="text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5"
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
                         {aiError.error.title}
@@ -991,7 +944,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               <div className="flex justify-start mb-4 animate-in fade-in duration-300">
                 <div className="max-w-[90%] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-2xl px-4 py-3 shadow-sm">
                   <p className="text-xs text-purple-700 dark:text-purple-400 font-semibold mb-2 flex items-center gap-1">
-                    <span className="inline-block animate-pulse">💭</span>
+                    <Icon name="brain" size="sm" className="inline-block animate-pulse" />
                     思考中...
                   </p>
                   <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
@@ -1067,40 +1020,14 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 className="p-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
                 title="批准"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <Icon name="check" size="sm" />
               </button>
               <button
                 onClick={handleReject}
                 className="p-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
                 title="拒绝"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <Icon name="x" size="sm" />
               </button>
             </div>
           </div>
