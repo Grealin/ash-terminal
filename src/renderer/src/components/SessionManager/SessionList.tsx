@@ -66,6 +66,11 @@ export const SessionListContent: React.FC = () => {
   }
 
   const handleEditSession = (session: SSHConfig): void => {
+    // 已连接状态下禁止编辑当前激活的会话
+    if (isConnected && currentSessionId === session.id) {
+      toast.simple('当前会话已连接，请先断开再编辑', { type: 'warning' })
+      return
+    }
     setEditingSession(session)
     openModal()
   }
@@ -237,8 +242,14 @@ export const SessionListContent: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleEditSession(session)}
-                  className="p-1 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="编辑"
+                  disabled={isConnecting}
+                  className={twMerge(
+                    'p-1 rounded transition-colors',
+                    isConnecting
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  )}
+                  title={isConnecting ? '连接中，请等待...' : '编辑'}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
