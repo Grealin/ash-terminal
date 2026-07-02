@@ -529,9 +529,13 @@ export const TerminalListContent: React.FC = () => {
             terminalInstanceRef.current.writeln(`重新连接成功`)
             await createShell()
           } else {
+            setDisconnected()
+            setCurrentSessionId(null)
             terminalInstanceRef.current.writeln(`\x1b[31m重新连接失败: ${result.error}\x1b[0m`)
           }
         } catch (error) {
+          setDisconnected()
+          setCurrentSessionId(null)
           console.error('Failed to reconnect:', error)
         }
       }
