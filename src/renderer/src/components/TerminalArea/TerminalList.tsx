@@ -259,9 +259,7 @@ export const TerminalListContent: React.FC = () => {
       })
 
       // 初始化欢迎信息
-      terminal.clear()
-      terminal.writeln('ASH Terminal - SSH客户端')
-      terminal.writeln(`请选择一个会话进行连接...`)
+      showWelcomeMessage()
 
       // 存储清理函数
       cleanupRef.current = () => {
@@ -374,6 +372,22 @@ export const TerminalListContent: React.FC = () => {
       shellErrorCleanupRef.current()
       shellErrorCleanupRef.current = null
     }
+  }, [])
+
+  // 显示终端欢迎信息（未连接状态）
+  const showWelcomeMessage = useCallback((prefix?: string): void => {
+    const terminal = terminalInstanceRef.current
+    if (!terminal) return
+    terminal.clear()
+    // xterm.js 的 clear() 会保留当前光标行的内容并提升为第一行，
+    // 需通过 ANSI 转义序列清除该行并将光标移至行首
+    terminal.write('\x1b[2K\r')
+    if (prefix) {
+      terminal.writeln(prefix)
+      terminal.writeln('')
+    }
+    terminal.writeln('ASH Terminal - SSH客户端')
+    terminal.writeln('请选择一个会话进行连接...')
   }, [])
 
   // 当会话连接时创建Shell
@@ -493,13 +507,15 @@ export const TerminalListContent: React.FC = () => {
         await AIService.closeTaskSession(currentSessionId)
         // 再断开 SSH 连接
         await SSHService.disconnectSSH(currentSessionId)
+
+        // 立即清理 Shell 监听器，防止残留数据在终端重置后写入
+        cleanupShellListeners()
+        setIsShellActive(false)
+
         setDisconnected()
         setCurrentSessionId(null)
         toast.simple('连接已断开', { type: 'success' })
-        if (terminalInstanceRef.current) {
-          terminalInstanceRef.current.clear()
-          terminalInstanceRef.current.writeln(`\n请选择一个会话进行连接...`)
-        }
+        showWelcomeMessage()
       } catch (error) {
         console.error('Failed to disconnect:', error)
       }
@@ -531,11 +547,14 @@ export const TerminalListContent: React.FC = () => {
           } else {
             setDisconnected()
             setCurrentSessionId(null)
-            terminalInstanceRef.current.writeln(`\x1b[31m重新连接失败: ${result.error}\x1b[0m`)
+            toast.simple(`重新连接失败: ${result.error}`, { type: 'error' })
+            showWelcomeMessage(`\x1b[31m重新连接失败: ${result.error}\x1b[0m`)
           }
         } catch (error) {
           setDisconnected()
           setCurrentSessionId(null)
+          toast.simple('重新连接时发生未知错误', { type: 'error' })
+          showWelcomeMessage()
           console.error('Failed to reconnect:', error)
         }
       }
