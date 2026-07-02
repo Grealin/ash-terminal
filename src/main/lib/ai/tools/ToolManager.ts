@@ -35,6 +35,21 @@ export interface ApprovalResponse {
 }
 
 /**
+ * 输出截断配置
+ * 防止工具返回过大数据撑爆 Agent 上下文窗口
+ */
+const TRUNCATION_CONFIG = {
+  /** 最大输出字符数 */
+  maxChars: 8192,
+  /** 截断时保留头部的比例 */
+  headRatio: 0.6,
+  /** 截断时保留尾部的比例 */
+  tailRatio: 0.35,
+  /** 数组最大保留条目数 */
+  maxArrayItems: 200
+}
+
+/**
  * 工具管理器
  * 管理所有可用的 AI 工具，提供统一的工具注册、查找和执行接口
  */
@@ -147,7 +162,8 @@ export class ToolManager extends EventEmitter {
       }
 
       // 批准通过或不需要批准，执行工具
-      return await tool.execute(context, params)
+      const result = await tool.execute(context, params)
+      return this.truncateResult(result)
     } catch (error) {
       return {
         success: false,
@@ -314,6 +330,109 @@ export class ToolManager extends EventEmitter {
    */
   hasTool(name: string): boolean {
     return this.tools.has(name)
+  }
+
+  /**
+   * 对工具执行结果进行输出截断
+   * 递归遍历 data 中的字符串和数组，防止超大输出撑爆 Agent 上下文窗口
+   */
+  private truncateResult(result: ToolResult): ToolResult {
+    if (!result.success || result.data === undefined) {
+      return result
+    }
+
+    const truncateValue = (
+      value: unknown,
+      depth: number
+    ): { value: unknown; truncated: boolean; info?: string } => {
+      // 防止深层递归
+      if (depth > 10) {
+        return { value, truncated: false }
+      }
+
+      // 字符串：头尾保留截断
+      if (typeof value === 'string') {
+        if (value.length > TRUNCATION_CONFIG.maxChars) {
+          const headSize = Math.floor(TRUNCATION_CONFIG.maxChars * TRUNCATION_CONFIG.headRatio)
+          const tailSize = Math.floor(TRUNCATION_CONFIG.maxChars * TRUNCATION_CONFIG.tailRatio)
+          const head = value.slice(0, headSize)
+          const tail = value.slice(-tailSize)
+          const marker = [
+            '',
+            '===== 输出已截断 =====',
+            `原始大小: ${value.length} 字符`,
+            `已显示: 前 ${headSize} + 后 ${tailSize} 字符`,
+            `提示: 可使用 read_file 或 execute_command 工具分页查看完整内容`,
+            ''
+          ].join('\n')
+          return {
+            value: head + marker + tail,
+            truncated: true,
+            info: `${value.length} chars -> ${headSize + tailSize}`
+          }
+        }
+        return { value, truncated: false }
+      }
+
+      // 数组：条目数量截断 + 递归处理每个元素
+      if (Array.isArray(value)) {
+        let wasTruncated = false
+        let truncatedValue = value
+
+        if (value.length > TRUNCATION_CONFIG.maxArrayItems) {
+          truncatedValue = value.slice(0, TRUNCATION_CONFIG.maxArrayItems)
+          wasTruncated = true
+        }
+
+        const processed = truncatedValue.map((item: unknown) => {
+          const sub = truncateValue(item, depth + 1)
+          if (sub.truncated) wasTruncated = true
+          return sub.value
+        })
+
+        return {
+          value: processed,
+          truncated: wasTruncated,
+          info:
+            wasTruncated && value.length > TRUNCATION_CONFIG.maxArrayItems
+              ? `数组 ${value.length} -> ${TRUNCATION_CONFIG.maxArrayItems}`
+              : undefined
+        }
+      }
+
+      // 普通对象：递归处理每个字段
+      if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
+        const resultObj: Record<string, unknown> = {}
+        let wasTruncated = false
+
+        for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+          const sub = truncateValue(val, depth + 1)
+          resultObj[key] = sub.value
+          if (sub.truncated) wasTruncated = true
+        }
+
+        return { value: resultObj, truncated: wasTruncated }
+      }
+
+      // 其他类型（number, boolean 等）不处理
+      return { value, truncated: false }
+    }
+
+    const truncated = truncateValue(result.data, 0)
+
+    if (truncated.truncated) {
+      result.data = truncated.value
+      result.metadata = {
+        ...(result.metadata || {}),
+        truncated: true,
+        truncationInfo: truncated.info
+      }
+      if (result.message && !result.message.includes('已截断')) {
+        result.message += ' [输出已截断]'
+      }
+    }
+
+    return result
   }
 }
 

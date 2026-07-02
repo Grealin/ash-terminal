@@ -248,17 +248,12 @@ export class Agent extends EventEmitter {
    * 处理 Native JSON 工具调用模式
    */
   private async handleNativeAgentMode(model: string, streaming: boolean): Promise<void> {
-    const maxIterations = 10 // 最大迭代次数，防止死循环
-    let iteration = 0
-
-    while (iteration < maxIterations) {
+    while (true) {
       // 检查是否被停止
       if (!this.isRunning) {
         this.emit(AgentEvent.ERROR, { message: 'Agent 已被停止' })
         return
       }
-
-      iteration++
 
       const request: ChatCompletionRequest = {
         model,
@@ -299,10 +294,6 @@ export class Agent extends EventEmitter {
       if (choice.finish_reason === 'stop') {
         break
       }
-    }
-
-    if (iteration >= maxIterations) {
-      this.emit(AgentEvent.ERROR, { message: '达到最大迭代次数，可能陷入循环' })
     }
   }
 
@@ -639,17 +630,12 @@ export class Agent extends EventEmitter {
    * 处理 XML 工具调用模式
    */
   private async handleXMLAgentMode(model: string, streaming: boolean): Promise<void> {
-    const maxIterations = 10
-    let iteration = 0
-
-    while (iteration < maxIterations) {
+    while (true) {
       // 检查是否被停止
       if (!this.isRunning) {
         this.emit(AgentEvent.ERROR, { message: 'Agent 已被停止' })
         return
       }
-
-      iteration++
 
       const request: ChatCompletionRequest = {
         model,
@@ -705,10 +691,6 @@ export class Agent extends EventEmitter {
           break
         }
       }
-    }
-
-    if (iteration >= maxIterations) {
-      this.emit(AgentEvent.ERROR, { message: '达到最大迭代次数，可能陷入循环' })
     }
   }
 

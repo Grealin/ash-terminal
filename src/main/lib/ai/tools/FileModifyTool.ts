@@ -1,5 +1,6 @@
 import { getSSH } from '../../SSHPool'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
+import { escapeSedPattern, escapeSedReplacement, checkBinaryFile } from './toolHelpers'
 
 /**
  * 文件修改工具
@@ -10,7 +11,7 @@ export class FileModifyTool extends BaseTool {
     return {
       name: 'modify_file',
       description:
-        '使用 sed 命令修改远程服务器上已存在的文件。支持正则表达式匹配和替换，自动创建 .bak 备份文件。适用于配置文件修改、文本替换等操作。',
+        '修改远程服务器上已存在的文件。支持正则表达式匹配替换、删除行、插入行、块替换和追加操作。自动创建 .bak 备份文件。适用于配置文件修改、文本替换等操作。',
       parameters: {
         type: 'object',
         properties: {
@@ -20,18 +21,24 @@ export class FileModifyTool extends BaseTool {
           },
           operation: {
             type: 'string',
-            enum: ['replace', 'delete', 'insert_after', 'insert_before', 'append'],
+            enum: ['replace', 'delete', 'insert_after', 'insert_before', 'append', 'replace_block'],
             description:
-              '操作类型：replace=替换匹配行, delete=删除匹配行, insert_after=在匹配行后插入, insert_before=在匹配行前插入, append=追加到文件末尾'
+              '操作类型：replace=替换匹配行, delete=删除匹配行, insert_after=在匹配行后插入, insert_before=在匹配行前插入, append=追加到文件末尾, replace_block=替换匹配到的整个代码块（多行）'
           },
           pattern: {
             type: 'string',
-            description: '用于匹配的正则表达式模式（sed 格式）。对于 append 操作此参数可选。'
+            description:
+              '用于匹配的正则表达式模式（sed 格式）。对于 append 操作此参数可选。对于 replace_block，此参数为起始匹配模式。'
+          },
+          end_pattern: {
+            type: 'string',
+            description:
+              'replace_block 操作的结束匹配模式。如果未指定，则使用 pattern 的值。仅用于 replace_block 操作。'
           },
           replacement: {
             type: 'string',
             description:
-              '替换内容或要插入的文本。replace 操作时为替换文本，insert 操作时为要插入的行，append 操作时为要追加的内容。'
+              '替换内容或要插入的文本。replace 操作时为替换文本，insert 操作时为要插入的行，append 操作时为要追加的内容，replace_block 操作时为多行替换文本。'
           },
           global: {
             type: 'boolean',
@@ -49,7 +56,15 @@ export class FileModifyTool extends BaseTool {
   }
 
   async execute(context: ToolContext, params: Record<string, any>): Promise<ToolResult> {
-    const { file_path, operation, pattern, replacement, global = false, line_number } = params
+    const {
+      file_path,
+      operation,
+      pattern,
+      end_pattern,
+      replacement,
+      global = false,
+      line_number
+    } = params
 
     // 参数验证
     if (!file_path || typeof file_path !== 'string') {
@@ -66,7 +81,14 @@ export class FileModifyTool extends BaseTool {
       }
     }
 
-    const validOperations = ['replace', 'delete', 'insert_after', 'insert_before', 'append']
+    const validOperations = [
+      'replace',
+      'delete',
+      'insert_after',
+      'insert_before',
+      'append',
+      'replace_block'
+    ]
     if (!validOperations.includes(operation)) {
       return {
         success: false,
@@ -82,8 +104,16 @@ export class FileModifyTool extends BaseTool {
       }
     }
 
+    // replace_block 需要 pattern
+    if (operation === 'replace_block' && !pattern) {
+      return {
+        success: false,
+        error: 'replace_block 操作需要提供 pattern 参数'
+      }
+    }
+
     if (
-      ['replace', 'insert_after', 'insert_before', 'append'].includes(operation) &&
+      ['replace', 'insert_after', 'insert_before', 'append', 'replace_block'].includes(operation) &&
       replacement === undefined
     ) {
       return {
@@ -110,52 +140,80 @@ export class FileModifyTool extends BaseTool {
         }
       }
 
+      // 二进制文件检测：对二进制文件拒绝 sed 操作
+      const binaryCheck = await checkBinaryFile(ssh, file_path)
+      if (binaryCheck.isBinary) {
+        return {
+          success: false,
+          error: `目标文件可能是二进制文件 (${binaryCheck.mimeType || '未知类型'})，sed 操作可能损坏文件。请使用其他方式修改。`,
+          metadata: {
+            mimeType: binaryCheck.mimeType
+          }
+        }
+      }
+
       // 构建 sed 命令
       let sedCommand: string
-
-      // 转义特殊字符的辅助函数
-      const escapeForSed = (str: string): string => {
-        return str.replace(/\//g, '\\/').replace(/&/g, '\\&')
-      }
 
       if (line_number !== undefined) {
         // 按行号操作
         switch (operation) {
           case 'replace':
-            sedCommand = `sed -i.bak '${line_number}c\\${escapeForSed(replacement)}' "${file_path}"`
+            sedCommand = `sed -i.bak '${line_number}c\\${escapeSedReplacement(replacement)}' "${file_path}"`
             break
           case 'delete':
             sedCommand = `sed -i.bak '${line_number}d' "${file_path}"`
             break
           case 'insert_after':
-            sedCommand = `sed -i.bak '${line_number}a\\${escapeForSed(replacement)}' "${file_path}"`
+            sedCommand = `sed -i.bak '${line_number}a\\${escapeSedReplacement(replacement)}' "${file_path}"`
             break
           case 'insert_before':
-            sedCommand = `sed -i.bak '${line_number}i\\${escapeForSed(replacement)}' "${file_path}"`
+            sedCommand = `sed -i.bak '${line_number}i\\${escapeSedReplacement(replacement)}' "${file_path}"`
             break
           default:
-            return { success: false, error: `不支持的操作类型: ${operation}` }
+            return { success: false, error: `不支持的按行操作类型: ${operation}` }
         }
+      } else if (operation === 'replace_block') {
+        // 块级替换：将匹配 start_pattern 到 end_pattern 的行替换为多行内容
+        const blockEnd = end_pattern || pattern!
+        const escapedStart = escapeSedPattern(pattern!)
+        const escapedEnd = escapeSedPattern(blockEnd)
+
+        // 将多行 replacement 构建为 sed c\ 命令的续行格式
+        const lines = replacement.split('\n')
+        const sedScript = [
+          `/${escapedStart}/,/${escapedEnd}/c\\`,
+          ...lines.map((l: string) => escapeSedReplacement(l) + '\\'),
+          '' // 终止 c\ 命令的空行
+        ].join('\n')
+
+        // 通过 base64 写入临时 sed 脚本，执行后清理
+        const scriptBase64 = Buffer.from(sedScript).toString('base64')
+        const scriptPath = `/tmp/sed_blk_${Date.now()}.sed`
+        sedCommand =
+          `echo "${scriptBase64}" | base64 -d > "${scriptPath}" && ` +
+          `sed -i.bak -f "${scriptPath}" "${file_path}" && ` +
+          `rm -f "${scriptPath}" && echo "DONE"`
       } else if (operation === 'append') {
         // 追加到文件末尾
-        sedCommand = `sed -i.bak '$a\\${escapeForSed(replacement)}' "${file_path}"`
+        sedCommand = `sed -i.bak '$a\\${escapeSedReplacement(replacement)}' "${file_path}"`
       } else {
-        // 按模式操作
-        const escapedPattern = escapeForSed(pattern!)
+        // 按模式操作（address 模式或 s/// 模式）
+        const escapedPattern = escapeSedPattern(pattern!)
         const globalFlag = global ? 'g' : ''
 
         switch (operation) {
           case 'replace':
-            sedCommand = `sed -i.bak 's/${escapedPattern}/${escapeForSed(replacement)}/${globalFlag}' "${file_path}"`
+            sedCommand = `sed -i.bak 's/${escapedPattern}/${escapeSedReplacement(replacement)}/${globalFlag}' "${file_path}"`
             break
           case 'delete':
             sedCommand = `sed -i.bak '/${escapedPattern}/d' "${file_path}"`
             break
           case 'insert_after':
-            sedCommand = `sed -i.bak '/${escapedPattern}/a\\${escapeForSed(replacement)}' "${file_path}"`
+            sedCommand = `sed -i.bak '/${escapedPattern}/a\\${escapeSedReplacement(replacement)}' "${file_path}"`
             break
           case 'insert_before':
-            sedCommand = `sed -i.bak '/${escapedPattern}/i\\${escapeForSed(replacement)}' "${file_path}"`
+            sedCommand = `sed -i.bak '/${escapedPattern}/i\\${escapeSedReplacement(replacement)}' "${file_path}"`
             break
           default:
             return { success: false, error: `不支持的操作类型: ${operation}` }
@@ -169,6 +227,16 @@ export class FileModifyTool extends BaseTool {
         return {
           success: false,
           error: `文件修改失败: ${result.stderr}`
+        }
+      }
+
+      // 对 replace_block 检查 DONE 标记
+      if (operation === 'replace_block') {
+        if (!result.stdout.includes('DONE')) {
+          return {
+            success: false,
+            error: `块替换执行异常: ${result.stderr || result.stdout}`
+          }
         }
       }
 

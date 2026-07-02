@@ -34,6 +34,7 @@ export class CommandTool extends BaseTool {
 
   async execute(context: ToolContext, params: Record<string, any>): Promise<ToolResult> {
     const command: string = params.command
+    const timeout: number | undefined = params.timeout
     // AI 显式指定的 working_directory 优先，否则自动使用 context 中的工作目录
     const working_directory: string | undefined =
       params.working_directory || context.workingDirectory
@@ -49,7 +50,12 @@ export class CommandTool extends BaseTool {
       // 如果指定了工作目录，则先 cd 到该目录
       let finalCommand = command
       if (working_directory) {
-        finalCommand = `cd "${working_directory}" && ${command}`
+        finalCommand = `cd "${working_directory}" && ${finalCommand}`
+      }
+
+      // 如果指定了超时，使用 timeout 命令包裹
+      if (timeout !== undefined && typeof timeout === 'number' && timeout > 0) {
+        finalCommand = `timeout ${Math.floor(timeout)} ${finalCommand}`
       }
 
       const result = await executeSSHCommand(context.sessionId, finalCommand)

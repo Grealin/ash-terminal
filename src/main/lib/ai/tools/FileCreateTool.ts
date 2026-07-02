@@ -66,32 +66,34 @@ export class FileCreateTool extends BaseTool {
     }
 
     try {
+      // 提取父目录路径
+      const dir = file_path.substring(0, file_path.lastIndexOf('/'))
+
+      // 使用 base64 编码来避免特殊字符问题
+      const contentBase64 = Buffer.from(String(content)).toString('base64')
+
+      // 合并为单次 SSH 调用：检查文件是否存在 → 创建目录 → base64 写入 → chmod → 验证 → 获取文件信息
+      const chmodCmd = mode ? ` && chmod ${mode} "${file_path}"` : ''
+      const createCommand =
+        `if test -f "${file_path}"; then ` +
+        `echo "EXISTS"; ` +
+        `else ` +
+        (dir ? `mkdir -p "${dir}" && ` : '') +
+        `echo "${contentBase64}" | base64 -d > "${file_path}"` +
+        chmodCmd +
+        ` && test -f "${file_path}" && echo "CREATED" && ls -lh "${file_path}"; ` +
+        `fi`
+
+      const result = await ssh.execCommand(createCommand)
+      const stdout = result.stdout.trim()
+
       // 检查文件是否已存在
-      const checkResult = await ssh.execCommand(`test -e "${file_path}" && echo "exists"`)
-      if (checkResult.stdout.trim() === 'exists') {
+      if (stdout.startsWith('EXISTS')) {
         return {
           success: false,
           error: `文件已存在: ${file_path}。如需修改现有文件，请使用 modify_file 工具。`
         }
       }
-
-      // 确保目录存在
-      const dir = file_path.substring(0, file_path.lastIndexOf('/'))
-      if (dir) {
-        const mkdirResult = await ssh.execCommand(`mkdir -p "${dir}"`)
-        if (mkdirResult.code !== 0 && mkdirResult.stderr) {
-          return {
-            success: false,
-            error: `创建目录失败: ${mkdirResult.stderr}`
-          }
-        }
-      }
-
-      // 使用 base64 编码来避免特殊字符问题
-      const contentBase64 = Buffer.from(String(content)).toString('base64')
-      const createCommand = `echo "${contentBase64}" | base64 -d > "${file_path}"`
-
-      const result = await ssh.execCommand(createCommand)
 
       if (result.code !== 0 && result.stderr) {
         return {
@@ -100,33 +102,18 @@ export class FileCreateTool extends BaseTool {
         }
       }
 
-      // 设置文件权限（如果指定）
-      if (mode) {
-        const chmodResult = await ssh.execCommand(`chmod ${mode} "${file_path}"`)
-        if (chmodResult.code !== 0 && chmodResult.stderr) {
-          return {
-            success: false,
-            error: `设置文件权限失败: ${chmodResult.stderr}`,
-            metadata: {
-              file_created: true,
-              file_path
-            }
-          }
-        }
-      }
-
-      // 验证文件是否创建成功
-      const verifyResult = await ssh.execCommand(`test -f "${file_path}" && echo "success"`)
-      if (verifyResult.stdout.trim() !== 'success') {
+      // 验证是否创建成功
+      if (!stdout.includes('CREATED')) {
         return {
           success: false,
           error: '文件创建后验证失败'
         }
       }
 
-      // 获取文件信息
-      const statResult = await ssh.execCommand(`ls -lh "${file_path}"`)
-      const fileInfo = statResult.stdout.trim()
+      // 从输出中提取 ls -lh 的结果（"CREATED" 之后的内容）
+      const fileInfo = stdout.includes('CREATED')
+        ? stdout.substring(stdout.indexOf('CREATED') + 'CREATED'.length).trim()
+        : ''
 
       return {
         success: true,

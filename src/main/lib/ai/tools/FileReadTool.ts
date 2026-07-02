@@ -1,5 +1,6 @@
 import { getSSH } from '../../SSHPool'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
+import { checkBinaryFile } from './toolHelpers'
 
 /**
  * 文件读取工具
@@ -85,6 +86,10 @@ export class FileReadTool extends BaseTool {
     }
 
     try {
+      // 二进制文件检测（仅作为警告，不阻止读取）
+      const binaryCheck = await checkBinaryFile(ssh, file_path)
+      const isBinary = binaryCheck.isBinary
+
       // 构建 sed 命令
       let sedCommand: string
 
@@ -125,7 +130,9 @@ export class FileReadTool extends BaseTool {
           start_line: start_line || 1,
           end_line: end_line || 'EOF',
           lines_read: actualLines,
-          truncated: max_lines !== undefined && actualLines >= max_lines
+          truncated: max_lines !== undefined && actualLines >= max_lines,
+          is_binary: isBinary,
+          mime_type: binaryCheck.mimeType || null
         }
       }
     } catch (error) {
