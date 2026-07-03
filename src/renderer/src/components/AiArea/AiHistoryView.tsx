@@ -8,6 +8,7 @@ import {
   currentTaskAtom,
   currentThoughtAtom,
   isAiProcessingAtom,
+  selectedTaskIdAtom,
   streamingMessageAtom,
   tasksAtom
 } from '@/store/TaskStore'
@@ -30,13 +31,20 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   const setCurrentThought = useSetAtom(currentThoughtAtom)
   const isProcessing = useAtomValue(isAiProcessingAtom)
   const setIsProcessing = useSetAtom(isAiProcessingAtom)
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [selectedTaskId, setSelectedTaskId] = useAtom(selectedTaskIdAtom)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDeleteTask, setPendingDeleteTask] = useState<Task | null>(null)
+  const [searchText, setSearchText] = useState('')
+  const [clearAllConfirmOpen, setClearAllConfirmOpen] = useState(false)
   const toast = useToast()
+
+  // 根据搜索文本筛选任务列表
+  const filteredTasks = searchText.trim()
+    ? tasks.filter((task) => task.name.toLowerCase().includes(searchText.toLowerCase().trim()))
+    : tasks
 
   const handleNewTask = async (): Promise<void> => {
     // 如果当前任务正在执行，先停止它
@@ -97,6 +105,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   useEffect(() => {
     if (!currentSessionId) {
       setTasks([])
+      setSearchText('')
       return
     }
 
@@ -197,6 +206,25 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
     }
   }
 
+  const handleClearAllTasks = async (): Promise<void> => {
+    if (!currentSessionId) return
+
+    try {
+      const deletedCount = await AIService.clearAllTasks(currentSessionId)
+      setTasks([])
+      setSelectedTaskId(null)
+      setCurrentTask(null)
+      setCurrentMessages([])
+      setSearchText('')
+      toast.simple(`已清空 ${deletedCount} 个任务`, { type: 'info' })
+    } catch (error) {
+      console.error('Failed to clear all tasks:', error)
+      toast.simple('清空失败', { type: 'error' })
+    } finally {
+      setClearAllConfirmOpen(false)
+    }
+  }
+
   const handleStartEdit = (task: Task): void => {
     setEditingTaskId(task.id)
     setEditingName(task.name)
@@ -264,6 +292,17 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
           >
             <Icon name="refresh-cw" size="sm" />
           </button>
+          {/* 清空全部按钮 */}
+          {tasks.length > 0 && (
+            <button
+              onClick={() => setClearAllConfirmOpen(true)}
+              disabled={isLoading}
+              className="p-1 text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="清空全部任务"
+            >
+              <Icon name="trash-2" size="sm" />
+            </button>
+          )}
           {/* 创建新任务按钮 */}
           <button
             onClick={handleNewTask}
@@ -274,6 +313,36 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
           </button>
         </div>
       </div>
+
+      {/* 搜索筛选 */}
+      {tasks.length > 0 && (
+        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="relative">
+            <Icon
+              name="search"
+              size="sm"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+            />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="搜索任务名称..."
+              spellCheck={false}
+              className="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                title="清除筛选"
+              >
+                <Icon name="x" size="xs" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 任务列表 */}
       <div className="flex-1 overflow-y-auto relative">
@@ -295,9 +364,13 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
           <div className="flex items-center justify-center h-full">
             <p className="text-sm text-gray-500 dark:text-gray-400">暂无历史任务</p>
           </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-gray-500 dark:text-gray-400">没有匹配的任务</p>
+          </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            {tasks.map((task) => (
+            {filteredTasks.map((task) => (
               <div
                 key={task.id}
                 className={twMerge(
@@ -382,6 +455,17 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
         title="确认删除"
         message={`确定要删除任务${pendingDeleteTask ? `「${pendingDeleteTask.name}」` : ''}吗？此操作不可撤销。`}
         confirmText="删除"
+        cancelText="取消"
+      />
+
+      {/* 确认清空全部对话框 */}
+      <ConfirmModal
+        isOpen={clearAllConfirmOpen}
+        onClose={() => setClearAllConfirmOpen(false)}
+        onConfirm={handleClearAllTasks}
+        title="确认清空"
+        message={`确定要清空当前会话的全部 ${tasks.length} 个任务吗？所有任务和对话记录将被永久删除，此操作不可撤销。`}
+        confirmText="清空全部"
         cancelText="取消"
       />
     </div>

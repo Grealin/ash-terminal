@@ -155,6 +155,20 @@ export function registerAiHandlers(): void {
     }
   })
 
+  /**
+   * 清空当前会话的所有任务
+   * - 删除所有任务及其消息
+   */
+  ipcMain.handle('clearAllTasks', (_, sessionId: string) => {
+    try {
+      const deletedCount = taskManager.clearAllTasks(sessionId)
+      return { success: true, deletedCount }
+    } catch (error) {
+      console.error('Failed to clear all tasks:', error)
+      throw error
+    }
+  })
+
   // ==================== 任务事件监听 ====================
 
   /**

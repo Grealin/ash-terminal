@@ -29,6 +29,7 @@ import {
 
 import {
   AskTask,
+  ClearAllTasks,
   ClearCurrentTask,
   CloseTaskSession,
   DeleteTask,
@@ -148,6 +149,7 @@ interface AI {
   clearCurrentTask: ClearCurrentTask
   stopTask: StopTask
   closeTaskSession: CloseTaskSession
+  clearAllTasks: ClearAllTasks
 
   // ==================== 任务事件监听 ====================
   onTaskStream: OnTaskStream

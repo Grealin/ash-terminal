@@ -31,6 +31,7 @@ import {
 
 import {
   AskTask,
+  ClearAllTasks,
   ClearCurrentTask,
   CloseTaskSession,
   DeleteTask,
@@ -245,6 +246,9 @@ const ai = {
 
   closeTaskSession: (...args: Parameters<CloseTaskSession>) =>
     ipcRenderer.invoke('closeTaskSession', ...args),
+
+  clearAllTasks: (...args: Parameters<ClearAllTasks>) =>
+    ipcRenderer.invoke('clearAllTasks', ...args),
 
   // ==================== 任务事件监听 ====================
 

@@ -75,6 +75,13 @@ export type StopTask = (sessionId: string) => Promise<{ success: boolean }>
  */
 export type CloseTaskSession = (sessionId: string) => Promise<{ success: boolean }>
 
+/**
+ * 清空当前会话的所有任务
+ */
+export type ClearAllTasks = (
+  sessionId: string
+) => Promise<{ success: boolean; deletedCount: number }>
+
 // ==================== 任务事件监听 ====================
 
 /**

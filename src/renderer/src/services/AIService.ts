@@ -113,6 +113,16 @@ export class AIService {
     await window.ai.closeTaskSession(sessionId)
   }
 
+  /**
+   * 清空当前会话的所有任务
+   * - 删除所有任务及其消息
+   * - 返回被删除的任务数量
+   */
+  static async clearAllTasks(sessionId: string): Promise<number> {
+    const result = await window.ai.clearAllTasks(sessionId)
+    return result.deletedCount
+  }
+
   // ==================== 任务事件监听 ====================
 
   /**

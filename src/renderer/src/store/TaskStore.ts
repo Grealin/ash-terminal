@@ -8,6 +8,9 @@ import { atom } from 'jotai'
 // 当前会话的任务列表
 export const tasksAtom = atom<Task[]>([])
 
+// 历史列表中当前选中的任务 ID（用于高亮显示）
+export const selectedTaskIdAtom = atom<string | null>(null)
+
 // 当前激活的任务
 export const currentTaskAtom = atom<Task | null>(null)
 

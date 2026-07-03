@@ -155,6 +155,30 @@ export class TaskManager {
   }
 
   /**
+   * 清空当前会话的所有任务
+   * 同时清理 Agent 的内存状态和当前任务引用
+   */
+  clearAllTasks(sessionId: string): number {
+    const agent = agentPool.getAgent(sessionId)
+    if (agent) {
+      // 清除所有事件监听器，防止残留
+      agent.removeAllListeners(AgentEvent.STREAM)
+      agent.removeAllListeners(AgentEvent.THOUGHT)
+      agent.removeAllListeners(AgentEvent.TOOL_CALL)
+      agent.removeAllListeners(AgentEvent.TOOL_RESULT)
+      agent.removeAllListeners(AgentEvent.ANSWER)
+      agent.removeAllListeners(AgentEvent.ERROR)
+      agent.removeAllListeners(AgentEvent.DONE)
+      agent.removeAllListeners('task-switched')
+      // 清空 Agent 内存中的对话历史
+      agent.clearConversationHistory()
+    }
+
+    const taskStore = taskStoreManager.getStore(sessionId)
+    return taskStore.clearAllTasks()
+  }
+
+  /**
    * 监听任务相关事件
    * 如果 Agent 不存在，返回空清理函数
    */

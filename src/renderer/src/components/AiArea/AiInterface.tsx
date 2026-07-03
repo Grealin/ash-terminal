@@ -6,6 +6,7 @@ import {
   currentTaskAtom,
   currentThoughtAtom,
   isAiProcessingAtom,
+  selectedTaskIdAtom,
   streamingMessageAtom
 } from '@/store/TaskStore'
 import { Task } from '@shared/models/Task'
@@ -55,6 +56,7 @@ export const AiAgentContent: React.FC = () => {
   const setStreamingMessage = useSetAtom(streamingMessageAtom)
   const setCurrentThought = useSetAtom(currentThoughtAtom)
   const setIsProcessing = useSetAtom(isAiProcessingAtom)
+  const setSelectedTaskId = useSetAtom(selectedTaskIdAtom)
 
   const handleNewTask = async (): Promise<void> => {
     // 如果当前任务正在执行，先停止它
@@ -82,6 +84,7 @@ export const AiAgentContent: React.FC = () => {
     setStreamingMessage('')
     setCurrentThought('')
     setIsProcessing(false)
+    setSelectedTaskId(null) // 清空历史列表中的选中状态
 
     // 清空后端 Agent 状态
     if (currentSessionId) {
