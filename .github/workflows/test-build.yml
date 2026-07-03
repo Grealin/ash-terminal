@@ -1,0 +1,53 @@
+name: Test Build
+
+on:
+  push:
+    tags:
+      - 'test-*'
+
+jobs:
+  test-build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Developer Mode (for symlinks)
+        run: |
+          git config --global core.symlinks true
+        shell: pwsh
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Create .env file with SECRET_KEY
+        run: |
+          "SECRET_KEY=${{ secrets.SECRET_KEY }}" | Set-Content -Path .env -Encoding utf8
+        shell: pwsh
+
+      - name: Type check
+        run: yarn typecheck
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build Windows (test only, no publish)
+        run: yarn build:win -- --publish never
+
+      - name: Test build completed
+        run: Write-Host "Test build workflow executed successfully - no release was created."
+        shell: pwsh
