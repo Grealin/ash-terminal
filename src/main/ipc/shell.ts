@@ -4,6 +4,7 @@ import {
   onShellData,
   onShellError,
   resizeShell,
+  trackSubscription,
   writeToShell
 } from '@/lib'
 import { CreateInteractiveShell, ResizeShell, WriteToShell } from '@shared/types/SSH'
@@ -22,8 +23,8 @@ export function registerShellHandlers(): void {
       event.sender.send('shell-data', sessionId, data)
     })
 
-    // 在渲染进程窗口关闭时清理监听器
-    event.sender.on('destroyed', cleanup)
+    // 集中式清理注册 — 同一 channel+sessionId 重新注册时会自动替换旧的
+    trackSubscription('onShellData', sessionId, event.sender, cleanup)
 
     return { success: true }
   })
@@ -33,7 +34,7 @@ export function registerShellHandlers(): void {
       event.sender.send('shell-close', sessionId)
     })
 
-    event.sender.on('destroyed', cleanup)
+    trackSubscription('onShellClose', sessionId, event.sender, cleanup)
 
     return { success: true }
   })
@@ -43,7 +44,7 @@ export function registerShellHandlers(): void {
       event.sender.send('shell-error', sessionId, error.message)
     })
 
-    event.sender.on('destroyed', cleanup)
+    trackSubscription('onShellError', sessionId, event.sender, cleanup)
 
     return { success: true }
   })

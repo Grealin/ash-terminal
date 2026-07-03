@@ -1,5 +1,6 @@
 import type { ApprovalRequest, ApprovalResponse } from '@/lib/ai/tools/ToolManager'
 import { toolManager } from '@/lib/ai/tools/ToolManager'
+import { trackSubscription } from '@/lib'
 import { ipcMain } from 'electron'
 
 /**
@@ -18,11 +19,11 @@ export function registerToolApprovalHandlers(): void {
     // 订阅 toolManager 的 approval-request 事件
     toolManager.on('approval-request', listener)
 
-    // 在渲染进程窗口关闭时清理监听器
+    // 集中式清理注册
     const cleanup = (): void => {
       toolManager.off('approval-request', listener)
     }
-    event.sender.on('destroyed', cleanup)
+    trackSubscription('onToolApprovalRequest', sessionId, event.sender, cleanup)
 
     return { success: true }
   })

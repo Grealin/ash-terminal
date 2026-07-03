@@ -1,4 +1,4 @@
-import { initConfigStore, initSessionStore } from '@/lib'
+import { initConfigStore, initSessionStore, initSubscriptionCleanup } from '@/lib'
 import { initAiConfigStore } from '@/lib/AiConfigStore'
 import { closeDatabase, initDatabase } from '@/lib/database/core/Database'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
@@ -33,9 +33,10 @@ function createWindow(): void {
     }
   })
 
-  // 增加 WebContents 的最大监听器限制
-  // 由于多个 IPC 处理器会监听 'destroyed' 事件用于清理，需要提高上限
-  mainWindow.webContents.setMaxListeners(20)
+  // 注册全局 WebContents destroyed 清理监听器
+  // 使用集中式注册表替代分散的 event.sender.on('destroyed') 模式，
+  // 避免监听器累积导致 MaxListenersExceededWarning
+  initSubscriptionCleanup(mainWindow.webContents)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

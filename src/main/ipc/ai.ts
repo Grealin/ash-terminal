@@ -1,4 +1,4 @@
-import { AgentEvent, agentPool, taskManager } from '@/lib'
+import { AgentEvent, agentPool, cleanupSubscriptions, taskManager, trackSubscription } from '@/lib'
 import { AiMode } from '@shared/models'
 import { ipcMain } from 'electron'
 
@@ -148,6 +148,8 @@ export function registerAiHandlers(): void {
   ipcMain.handle('closeTaskSession', (_, sessionId: string) => {
     try {
       taskManager.closeSession(sessionId)
+      // 清理该会话的所有 IPC 订阅
+      cleanupSubscriptions(sessionId)
       return { success: true }
     } catch (error) {
       console.error('Failed to close task session:', error)
@@ -180,7 +182,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-stream', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskStream', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task stream:', error)
@@ -197,7 +199,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-thought', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskThought', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task thought:', error)
@@ -214,7 +216,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-tool-call', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskToolCall', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task tool call:', error)
@@ -231,7 +233,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-tool-result', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskToolResult', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task tool result:', error)
@@ -248,7 +250,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-answer', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskAnswer', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task answer:', error)
@@ -265,7 +267,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-error', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskError', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task error:', error)
@@ -282,7 +284,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-done', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskDone', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task done:', error)
@@ -299,7 +301,7 @@ export function registerAiHandlers(): void {
         event.sender.send('task-switched', sessionId, data)
       })
 
-      event.sender.on('destroyed', cleanup)
+      trackSubscription('onTaskSwitched', sessionId, event.sender, cleanup)
       return { success: true }
     } catch (error) {
       console.error('Failed to listen task switched:', error)

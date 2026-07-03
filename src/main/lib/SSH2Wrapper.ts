@@ -189,11 +189,17 @@ export class SSH2Wrapper extends EventEmitter {
   }
 
   /**
-   * 关闭连接
+   * 关闭连接，彻底清理所有监听器
    */
   dispose(): void {
+    // 先关闭交互式 Shell channel
+    this.closeShell()
+    // 移除 SSH2Wrapper 自身的所有 EventEmitter 监听器
+    this.removeAllListeners()
     if (this.client) {
       this.connected = false
+      // 移除 ssh2 Client 上的所有监听器
+      this.client.removeAllListeners()
       this.client.end()
     }
   }
@@ -340,12 +346,14 @@ export class SSH2Wrapper extends EventEmitter {
   }
 
   /**
-   * 关闭Shell
+   * 关闭Shell，清理 stream 监听器
    */
   closeShell(): void {
     if (this.shell) {
+      this.shell.removeAllListeners()
       this.shell.end()
       this.shell = null
+      this.shellPid = null
     }
   }
 
