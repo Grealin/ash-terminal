@@ -30,6 +30,10 @@ const defaultConfig: AppConfig = {
   },
   monitor: {
     refreshInterval: 3000
+  },
+  file: {
+    backupOnAiModify: true,
+    backupOnManualEdit: true
   }
 }
 

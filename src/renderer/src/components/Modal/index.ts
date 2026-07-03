@@ -1,4 +1,5 @@
 export * from './AboutModal'
+export * from './FileSettings'
 export * from './GeneralModal'
 export * from './LayoutSettings'
 export * from './MonitorSettings'

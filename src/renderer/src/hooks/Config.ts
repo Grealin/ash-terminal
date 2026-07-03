@@ -44,6 +44,10 @@ export const useConfig = (): {
         },
         monitor: {
           refreshInterval: 3000
+        },
+        file: {
+          backupOnAiModify: true,
+          backupOnManualEdit: true
         }
       }
       setConfig(defaultConfig)

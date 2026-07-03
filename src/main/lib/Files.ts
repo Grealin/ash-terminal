@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { resolveTildePath } from './PathUtils'
 import { getSSH } from './SSHPool'
+import { getConfig } from './ConfigManager'
 
 // 标记是否已打开过系统文件选择对话框（用于仅首次使用 home 目录）
 let hasOpenedFileDialog = false
@@ -259,6 +260,9 @@ export const openWithChooser = async (localPath: string): Promise<void> => {
 }
 
 export const backupRemoteFile = async (sessionId: string, remotePath: string): Promise<void> => {
+  const config = getConfig()
+  if (!config.file.backupOnManualEdit) return
+
   const ssh = getSSH(sessionId)
   if (!ssh) throw new Error('SSH connection not found')
   const target = `${remotePath}.old`

@@ -3,6 +3,7 @@ import { Icon, MenuButton, TopButton, TopDropdown } from '@/components'
 import {
   useDarkTheme,
   useModalAbout,
+  useModalFileSetting,
   useModalLayout,
   useModalSession,
   useModalShortcut,
@@ -33,6 +34,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
   const { openModal: openMonitorSettingsModal } = useModalMonitorSettings()
   const { openModal: openAboutModal } = useModalAbout()
+  const { openModal: openFileSettingModal } = useModalFileSetting()
   const { openModal: openShortcutModal } = useModalShortcut()
   const { openModal: openSessionModal } = useModalSession()
   const setEditingSession = useSetAtom(editingSessionAtom)
@@ -162,6 +164,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
             <MenuButton onClick={() => openThemeModal()}>默认主题设置</MenuButton>
             <MenuButton onClick={() => openTerminalSettingsModal()}>终端设置</MenuButton>
             <MenuButton onClick={() => openMonitorSettingsModal()}>性能监视器设置</MenuButton>
+            <MenuButton onClick={() => openFileSettingModal()}>文件管理设置</MenuButton>
           </TopDropdown>
           <TopButton
             popoverTarget="popover-help"

@@ -1,4 +1,5 @@
 import { getSSH } from '../../SSHPool'
+import { getConfig } from '../../ConfigManager'
 import { BaseTool, ToolContext, ToolDefinition, ToolResult } from './BaseTool'
 import { escapeSedPattern, escapeSedReplacement, checkBinaryFile } from './toolHelpers'
 
@@ -11,7 +12,7 @@ export class FileModifyTool extends BaseTool {
     return {
       name: 'modify_file',
       description:
-        '修改远程服务器上已存在的文件。支持正则表达式匹配替换、删除行、插入行、块替换和追加操作。自动创建 .bak 备份文件。适用于配置文件修改、文本替换等操作。',
+        '修改远程服务器上已存在的文件。支持正则表达式匹配替换、删除行、插入行、块替换和追加操作。适用于配置文件修改、文本替换等操作。',
       parameters: {
         type: 'object',
         properties: {
@@ -252,20 +253,27 @@ export class FileModifyTool extends BaseTool {
         diff = diffResult.stdout
       }
 
+      // 根据配置决定是否保留备份文件（用户关闭备份则删除 .bak，但仍可享受 diff 预览）
+      const config = getConfig()
+      if (!config.file.backupOnAiModify && backupCreated) {
+        await ssh.execCommand(`rm -f "${bakFile}"`)
+      }
+
       return {
         success: true,
         message: `成功修改文件: ${file_path}`,
         data: {
           file_path,
           operation,
-          backup_file: backupCreated ? bakFile : null,
+          backup_file: backupCreated && config.file.backupOnAiModify ? bakFile : null,
           diff_preview: diff ? diff.split('\n').slice(0, 20).join('\n') : '无差异'
         },
         metadata: {
           operation,
           pattern: pattern || null,
           line_number: line_number || null,
-          backup_created: backupCreated
+          backup_created: backupCreated,
+          backup_retained: config.file.backupOnAiModify
         }
       }
     } catch (error) {

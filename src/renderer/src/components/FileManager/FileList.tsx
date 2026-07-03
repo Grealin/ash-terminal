@@ -5,6 +5,7 @@ import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { ElectronService, SSHService } from '@/services'
 import {
+  backupOnManualEditAtom,
   currentSessionIdAtom,
   fileListRefreshPathAtom,
   fileListRefreshTokenAtom,
@@ -57,6 +58,7 @@ export const FileListContent: React.FC = () => {
   const [editingRemotePath, setEditingRemotePath] = useState<string | null>(null)
   const [isSyncingBack, setIsSyncingBack] = useState(false)
   const toast = useToast()
+  const backupOnManualEdit = useAtomValue(backupOnManualEditAtom)
   const { openModal: openUploadModal } = useModalUpload()
   const [, setUploadTargetDir] = useAtom(uploadTargetDirAtom)
   const [refreshToken] = useAtom(fileListRefreshTokenAtom)
@@ -255,7 +257,7 @@ export const FileListContent: React.FC = () => {
       toast.show({
         type: 'success',
         title: '同步完成',
-        message: '修改已上传并完成备份(.old)',
+        message: backupOnManualEdit ? '修改已上传并完成备份(.old)' : '修改已上传',
         position: 'bottom-right',
         size: 'md'
       })

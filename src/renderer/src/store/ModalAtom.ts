@@ -13,3 +13,6 @@ export const editingSessionAtom = atom<SSHConfig | null>(null)
 
 // 上传文件模态框
 export const isModalUploadOpenAtom = atom<boolean>(false)
+
+// 文件管理设置模态框
+export const isModalFileSettingOpenAtom = atom<boolean>(false)

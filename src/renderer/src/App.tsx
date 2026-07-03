@@ -8,6 +8,7 @@ import {
   DraggableTopBar,
   FileListContent,
   FileListMain,
+  FileSettingsModal,
   LayoutModal,
   LeftSideBar,
   MainContent,
@@ -71,6 +72,7 @@ const App: React.FC = () => {
         <TerminalSettingsModal />
         <MonitorSettingsModal />
         <AboutModal />
+        <FileSettingsModal />
         <ShortcutModal />
         <UploadModal />
         {/* 全局 Toast Host */}

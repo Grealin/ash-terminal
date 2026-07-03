@@ -68,10 +68,17 @@ export interface LayoutConfig {
   components: ComponentConfig // 功能组件配置
 }
 
+// 文件管理配置
+export interface FileConfig {
+  backupOnAiModify: boolean // AI 修改文件后是否保留 .bak 备份
+  backupOnManualEdit: boolean // 手动编辑文件时是否创建 .old 备份
+}
+
 // 应用配置（不包含 AI 配置，AI 配置独立加密存储）
 export interface AppConfig {
   theme: ThemeConfig
   layout: LayoutConfig
   terminal: TerminalConfig
   monitor: MonitorConfig
+  file: FileConfig
 }

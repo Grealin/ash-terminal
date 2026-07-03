@@ -1,6 +1,11 @@
 import { useConfig, useDarkTheme } from '@/hooks'
 import { AiConfigService } from '@/services'
-import { activeProviderIdAtom, monitorRefreshIntervalAtom } from '@/store'
+import {
+  activeProviderIdAtom,
+  backupOnAiModifyAtom,
+  backupOnManualEditAtom,
+  monitorRefreshIntervalAtom
+} from '@/store'
 import { useSetAtom } from 'jotai'
 import { useEffect, useRef } from 'react'
 
@@ -9,6 +14,8 @@ export const useInitializeConfig = (): { loading: boolean } => {
   const { setTheme } = useDarkTheme()
   const setActiveProviderId = useSetAtom(activeProviderIdAtom)
   const setMonitorRefreshInterval = useSetAtom(monitorRefreshIntervalAtom)
+  const setBackupOnAiModify = useSetAtom(backupOnAiModifyAtom)
+  const setBackupOnManualEdit = useSetAtom(backupOnManualEditAtom)
   const initializedRef = useRef(false)
 
   useEffect(() => {
@@ -20,6 +27,12 @@ export const useInitializeConfig = (): { loading: boolean } => {
       if (config.monitor?.refreshInterval) {
         const interval = Math.max(3000, config.monitor.refreshInterval)
         setMonitorRefreshInterval(interval)
+      }
+
+      // 从配置文件读取文件管理备份设置
+      if (config.file) {
+        setBackupOnAiModify(config.file.backupOnAiModify)
+        setBackupOnManualEdit(config.file.backupOnManualEdit)
       }
 
       // 从配置文件读取激活的 AI Provider ID（仅在首次加载时）
@@ -37,7 +50,15 @@ export const useInitializeConfig = (): { loading: boolean } => {
 
       initializedRef.current = true
     }
-  }, [config, loading, setTheme, setActiveProviderId, setMonitorRefreshInterval])
+  }, [
+    config,
+    loading,
+    setTheme,
+    setActiveProviderId,
+    setMonitorRefreshInterval,
+    setBackupOnAiModify,
+    setBackupOnManualEdit
+  ])
 
   return { loading }
 }
