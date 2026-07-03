@@ -1,4 +1,15 @@
 import { useAiInterface } from '@/hooks/AreaClosed'
+import { AIService } from '@/services'
+import { currentSessionIdAtom } from '@/store/SessionStore'
+import {
+  currentMessagesAtom,
+  currentTaskAtom,
+  currentThoughtAtom,
+  isAiProcessingAtom,
+  streamingMessageAtom
+} from '@/store/TaskStore'
+import { Task } from '@shared/models/Task'
+import { useAtomValue, useSetAtom } from 'jotai'
 import type { ComponentProps } from 'react'
 import { useState } from 'react'
 import { twMerge } from 'tailwind-merge'
@@ -37,12 +48,61 @@ export const AiAgentContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>('chat')
   const [apiConfigError, setApiConfigError] = useState<string>('')
 
+  const currentSessionId = useAtomValue(currentSessionIdAtom)
+  const isProcessing = useAtomValue(isAiProcessingAtom)
+  const setCurrentTask = useSetAtom(currentTaskAtom)
+  const setCurrentMessages = useSetAtom(currentMessagesAtom)
+  const setStreamingMessage = useSetAtom(streamingMessageAtom)
+  const setCurrentThought = useSetAtom(currentThoughtAtom)
+  const setIsProcessing = useSetAtom(isAiProcessingAtom)
+
+  const handleNewTask = async (): Promise<void> => {
+    // 如果当前任务正在执行，先停止它
+    if (isProcessing && currentSessionId) {
+      try {
+        await AIService.stopTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to stop current task:', error)
+      }
+    }
+
+    // 创建临时 Task 对象
+    const tempTask: Task = {
+      id: `temp-${Date.now()}`,
+      sessionId: currentSessionId || '',
+      name: '新任务',
+      createdAt: Date.now(),
+      messages: [],
+      messageCount: 0
+    }
+
+    // 设置临时任务并清空状态
+    setCurrentTask(tempTask)
+    setCurrentMessages([])
+    setStreamingMessage('')
+    setCurrentThought('')
+    setIsProcessing(false)
+
+    // 清空后端 Agent 状态
+    if (currentSessionId) {
+      try {
+        await AIService.prepareNewTask(currentSessionId)
+      } catch (error) {
+        console.error('Failed to prepare new task:', error)
+      }
+    }
+
+    // 切换到对话视图
+    setCurrentView('chat')
+  }
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* 顶栏 */}
       <AiTopBar
         onViewChange={setCurrentView}
         currentView={currentView}
+        onNewTask={handleNewTask}
         onApiError={setApiConfigError}
       />
 

@@ -5,12 +5,14 @@ import { twMerge } from 'tailwind-merge'
 interface AiTopBarProps extends ComponentProps<'div'> {
   onViewChange: (view: 'chat' | 'history' | 'settings') => void
   currentView: 'chat' | 'history' | 'settings'
+  onNewTask?: () => void
   onApiError?: (error: string) => void
 }
 
 export const AiTopBar: React.FC<AiTopBarProps> = ({
   onViewChange,
   currentView,
+  onNewTask,
   className,
   ...props
 }) => {
@@ -34,6 +36,15 @@ export const AiTopBar: React.FC<AiTopBarProps> = ({
 
       {/* 右侧按钮组 */}
       <div className="flex items-center space-x-1">
+        {/* 新建任务按钮 */}
+        <button
+          onClick={onNewTask}
+          className="p-1.5 rounded transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+          title="新建任务"
+        >
+          <Icon name="file-plus" size="md" />
+        </button>
+
         {/* 对话按钮 */}
         <button
           onClick={handleChatView}
