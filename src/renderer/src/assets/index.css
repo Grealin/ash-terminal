@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @plugin "daisyui";
 @import 'xterm/css/xterm.css';
+@import 'highlight.js/styles/github-dark-dimmed.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -71,5 +72,114 @@
   .xterm-text-selectable .xterm .xterm-selection-layer {
     pointer-events: none;
     user-select: none;
+  }
+}
+
+/* ========================================
+   Markdown 渲染样式 (.markdown-body)
+   命名空间隔离，避免与 DaisyUI 冲突
+   ======================================== */
+@layer components {
+  .markdown-body {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* 标题 — 基于 text-xs 的递进层级 */
+  .markdown-body h1 {
+    @apply text-sm font-bold mt-3 mb-2 text-gray-900 dark:text-gray-100;
+  }
+  .markdown-body h2 {
+    @apply text-[0.8rem] font-semibold mt-2.5 mb-1.5 text-gray-900 dark:text-gray-100;
+  }
+  .markdown-body h3 {
+    @apply text-xs font-semibold mt-2 mb-1 text-gray-800 dark:text-gray-200;
+  }
+  .markdown-body h4,
+  .markdown-body h5,
+  .markdown-body h6 {
+    @apply text-xs font-medium mt-1.5 mb-1 text-gray-700 dark:text-gray-300;
+  }
+
+  /* 段落和列表 */
+  .markdown-body p {
+    @apply text-xs leading-relaxed my-1.5 text-gray-800 dark:text-gray-200;
+  }
+  .markdown-body ul,
+  .markdown-body ol {
+    @apply text-xs my-1.5 pl-5 text-gray-800 dark:text-gray-200;
+  }
+  .markdown-body li {
+    @apply my-0.5;
+  }
+  .markdown-body ul {
+    list-style-type: disc;
+  }
+  .markdown-body ol {
+    list-style-type: decimal;
+  }
+  .markdown-body li > p {
+    @apply my-0;
+  }
+
+  /* 内联代码 */
+  .markdown-body code:not(pre code) {
+    @apply text-[0.7rem] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700
+           text-pink-600 dark:text-pink-400 font-mono break-all;
+  }
+
+  /* 代码块 */
+  .markdown-body pre {
+    @apply my-2 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700
+           bg-gray-50 dark:bg-gray-900 p-0;
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+  .markdown-body pre code {
+    @apply block text-[0.7rem] leading-relaxed p-3 bg-transparent
+           text-gray-800 dark:text-gray-200;
+    white-space: pre;
+    overflow-x: auto;
+    word-wrap: normal;
+  }
+
+  /* 引用块 */
+  .markdown-body blockquote {
+    @apply my-2 pl-3 border-l-3 border-gray-300 dark:border-gray-600
+           text-gray-600 dark:text-gray-400 italic;
+  }
+  .markdown-body blockquote p {
+    @apply text-[0.72rem] my-1;
+  }
+
+  /* 分割线 */
+  .markdown-body hr {
+    @apply my-3 border-gray-200 dark:border-gray-700;
+  }
+
+  /* 表格（基础样式，自定义 table 组件已处理溢出滚动） */
+  .markdown-body th {
+    @apply px-3 py-1.5 text-left font-semibold text-gray-800 dark:text-gray-200
+           bg-gray-50 dark:bg-gray-800 text-[0.7rem];
+  }
+  .markdown-body td {
+    @apply px-3 py-1.5 border-b border-gray-200 dark:border-gray-700
+           text-gray-700 dark:text-gray-300 text-[0.7rem];
+  }
+  .markdown-body tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* 加粗 / 斜体 */
+  .markdown-body strong {
+    @apply font-semibold;
+  }
+  .markdown-body em {
+    @apply italic;
+  }
+
+  /* GFM 任务列表 */
+  .markdown-body input[type='checkbox'] {
+    @apply mr-1.5 align-middle;
   }
 }

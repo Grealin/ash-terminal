@@ -1,4 +1,5 @@
 import { Icon } from '@/components/Icon'
+import MarkdownRenderer from './MarkdownRenderer'
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
 import { useToast } from '@/hooks'
 import { activeProviderIdAtom } from '@/store/AiConfigAtom'
@@ -660,8 +661,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           key={msg.id}
           className="flex justify-end mb-4 animate-in slide-in-from-right duration-300"
         >
-          <div className="max-w-[90%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm">
-            <p className="can-select text-sm whitespace-pre-wrap leading-relaxed">
+          <div className="max-w-[90%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm min-w-0">
+            <p className="can-select text-xs whitespace-pre-wrap leading-relaxed">
               {cleanMessageContent(msg.content)}
             </p>
           </div>
@@ -695,10 +696,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           {/* 文本内容气泡（仅当有实际文本内容时显示） */}
           {hasContent && (
             <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-              <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
-                <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
-                  {cleanedContent}
-                </p>
+              <div className="max-w-[90%] min-w-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                <MarkdownRenderer content={cleanedContent} />
               </div>
             </div>
           )}
@@ -947,7 +946,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                     <Icon name="brain" size="sm" className="inline-block animate-pulse" />
                     思考中...
                   </p>
-                  <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+                  <p className="can-select text-xs whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
                     {currentThought}
                   </p>
                 </div>
@@ -982,11 +981,9 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 流式输出 */}
             {streamingMessage && (
               <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="can-select text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
-                    {streamingMessage}
-                    <span className="inline-block w-1 h-4 ml-1 bg-blue-500 animate-pulse"></span>
-                  </p>
+                <div className="max-w-[90%] min-w-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                  <MarkdownRenderer content={streamingMessage} isStreaming={true} />
+                  <span className="inline-block w-1 h-4 ml-1 bg-blue-500 animate-pulse"></span>
                 </div>
               </div>
             )}
