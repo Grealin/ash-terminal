@@ -5,7 +5,7 @@ import { AiConfigService } from '@/services'
 import { activeProviderIdAtom } from '@/store/AiConfigAtom'
 import type { AiProviderConfig } from '@shared/models'
 import { useAtom } from 'jotai'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -456,10 +456,21 @@ const AutoApprovalSettings: React.FC = () => {
   const [newAllowedPrefix, setNewAllowedPrefix] = useState('')
   const [newDeniedPrefix, setNewDeniedPrefix] = useState('')
   const toast = useToast()
+  const loadingRef = useRef(true)
+  const lastSavedRef = useRef('')
 
   useEffect(() => {
     loadSettings()
   }, [])
+
+  // 实时自动保存 — loadingRef 阻止加载中的误触发，lastSavedRef 防止与配置一致的重复保存
+  useEffect(() => {
+    if (loadingRef.current) return
+    const current = JSON.stringify({ enabled, allowedTools, allowedPrefixes, deniedPrefixes })
+    if (current === lastSavedRef.current) return
+    handleSave()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, allowedTools, allowedPrefixes, deniedPrefixes])
 
   const loadSettings = async (): Promise<void> => {
     try {
@@ -473,12 +484,23 @@ const AutoApprovalSettings: React.FC = () => {
       // 加载可用工具列表
       const tools = await AiConfigService.getAvailableToolsWithInfo()
       setAvailableTools(tools)
+
+      // 记录已加载的基准状态，后续变更时用于去重比对
+      lastSavedRef.current = JSON.stringify({
+        enabled: autoApproval.enabled,
+        allowedTools: autoApproval.allowedTools,
+        allowedPrefixes: autoApproval.commandFilter.allowedCommandPrefixes,
+        deniedPrefixes: autoApproval.commandFilter.deniedCommandPrefixes
+      })
+      loadingRef.current = false
     } catch (error) {
       console.error('Failed to load auto approval settings:', error)
     }
   }
 
   const handleSave = async (): Promise<void> => {
+    const current = JSON.stringify({ enabled, allowedTools, allowedPrefixes, deniedPrefixes })
+    if (current === lastSavedRef.current) return
     try {
       await AiConfigService.updateAiConfigField('userSettings.autoApproval', {
         enabled,
@@ -488,7 +510,8 @@ const AutoApprovalSettings: React.FC = () => {
           deniedCommandPrefixes: deniedPrefixes
         }
       })
-      toast.simple('自动批准设置已保存', { type: 'info' })
+      lastSavedRef.current = current
+      toast.simple('已自动保存', { type: 'success', duration: 2000 })
     } catch (error) {
       console.error('Failed to save auto approval settings:', error)
       toast.simple('保存失败', { type: 'error' })
@@ -558,7 +581,7 @@ const AutoApprovalSettings: React.FC = () => {
               <select
                 value={selectedTool}
                 onChange={(e) => setSelectedTool(e.target.value)}
-                className="w-45 select px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
+                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
               >
                 <option value="">选择工具</option>
                 {availableTools
@@ -572,7 +595,7 @@ const AutoApprovalSettings: React.FC = () => {
               <button
                 onClick={addTool}
                 disabled={!selectedTool}
-                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
@@ -609,11 +632,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
+                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
               />
               <button
                 onClick={addAllowedPrefix}
-                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
@@ -646,11 +669,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
+                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
               />
               <button
                 onClick={addDeniedPrefix}
-                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
@@ -668,16 +691,6 @@ const AutoApprovalSettings: React.FC = () => {
                 </span>
               ))}
             </div>
-          </div>
-
-          {/* 保存按钮 */}
-          <div className="pt-4">
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
-            >
-              保存
-            </button>
           </div>
         </div>
       </div>
