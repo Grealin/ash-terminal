@@ -109,10 +109,13 @@ export const migrateConfig = (): void => {
 
   let migrated = false
 
+  // 拼接 electron-store 路径，避免根层级空 prefix 产生前导点
+  const toPath = (prefix: string, key: string): string => (prefix ? `${prefix}.${key}` : key)
+
   // 递归补全缺失字段
   const deepMerge = (stored: unknown, defaults: unknown, prefix: string): void => {
     if (stored === undefined || stored === null) {
-      store.set(prefix.replace(/^\./, ''), defaults)
+      store.set(prefix, defaults)
       migrated = true
       return
     }
@@ -129,14 +132,14 @@ export const migrateConfig = (): void => {
         const storedVal = (stored as Record<string, unknown>)[key]
         const defaultVal = (defaults as Record<string, unknown>)[key]
         if (storedVal === undefined) {
-          store.set(`${prefix}.${key}`, defaultVal)
+          store.set(toPath(prefix, key), defaultVal)
           migrated = true
         } else if (
           typeof defaultVal === 'object' &&
           defaultVal !== null &&
           !Array.isArray(defaultVal)
         ) {
-          deepMerge(storedVal, defaultVal, `${prefix}.${key}`)
+          deepMerge(storedVal, defaultVal, toPath(prefix, key))
         }
       }
     }
@@ -153,7 +156,7 @@ export const migrateConfig = (): void => {
   ): void => {
     for (const key of Object.keys(stored)) {
       if (!(key in defaults)) {
-        store.delete(`${prefix}.${key}`)
+        store.delete(toPath(prefix, key))
         migrated = true
       } else if (
         typeof defaults[key] === 'object' &&
@@ -166,7 +169,7 @@ export const migrateConfig = (): void => {
         deepClean(
           stored[key] as Record<string, unknown>,
           defaults[key] as Record<string, unknown>,
-          `${prefix}.${key}`
+          toPath(prefix, key)
         )
       }
     }
