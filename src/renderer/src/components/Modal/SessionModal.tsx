@@ -5,7 +5,7 @@ import { SSHConfig } from '@shared/models'
 import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { GeneralModal } from './GeneralModal'
+import { SheetModal } from '@/components/SheetModal'
 
 // 会话表单数据类型
 interface SessionFormData {
@@ -194,282 +194,19 @@ export const SessionModal: React.FC = () => {
   }
 
   return (
-    <GeneralModal
+    <SheetModal
       isOpen={isModalOpen}
       onClose={handleCancel}
       title={editingSession ? '编辑会话' : '创建新会话'}
-      width="lg"
-    >
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              名称 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-              spellCheck={false}
-              className={twMerge(
-                'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                'border-slate-300 dark:border-slate-600',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                'placeholder-slate-400 dark:placeholder-slate-500'
-              )}
-              placeholder="会话名称"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              主机地址 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.host}
-              onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
-              spellCheck={false}
-              className={twMerge(
-                'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                'border-slate-300 dark:border-slate-600',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                'placeholder-slate-400 dark:placeholder-slate-500'
-              )}
-              placeholder="服务器IP或域名"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              端口
-            </label>
-            <input
-              type="number"
-              value={formData.port}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, port: parseInt(e.target.value) || 22 }))
-              }
-              spellCheck={false}
-              className={twMerge(
-                'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                'border-slate-300 dark:border-slate-600',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                'placeholder-slate-400 dark:placeholder-slate-500'
-              )}
-              placeholder="22"
-              min="1"
-              max="65535"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              用户名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-              spellCheck={false}
-              className={twMerge(
-                'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                'border-slate-300 dark:border-slate-600',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                'placeholder-slate-400 dark:placeholder-slate-500'
-              )}
-              placeholder="SSH用户名"
-            />
-          </div>
-
-          {/* 认证方式选择（二选一） */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              认证方式
-            </label>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary checkbox-sm"
-                  checked={formData.authMode === 'password'}
-                  onChange={() => handleAuthModeChange('password')}
-                />
-                <span className="text-sm text-slate-700 dark:text-slate-300">密码认证</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary checkbox-sm"
-                  checked={formData.authMode === 'key'}
-                  onChange={() => handleAuthModeChange('key')}
-                />
-                <span className="text-sm text-slate-700 dark:text-slate-300">密钥认证</span>
-              </label>
-            </div>
-          </div>
-
-          {/* 密码认证字段 */}
-          {formData.authMode !== 'key' && (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                密码 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                spellCheck={false}
-                className={twMerge(
-                  'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                  'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                  'border-slate-300 dark:border-slate-600',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                  'placeholder-slate-400 dark:placeholder-slate-500'
-                )}
-                placeholder="SSH密码"
-              />
-            </div>
-          )}
-
-          {/* 密钥认证字段 */}
-          {formData.authMode === 'key' && (
-            <>
-              {/* 密钥来源选择（二选一） */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  密钥来源
-                </label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-primary checkbox-sm"
-                      checked={formData.privateKeySource === 'content'}
-                      onChange={() => handleKeySourceChange('content')}
-                    />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">直接输入</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-primary checkbox-sm"
-                      checked={formData.privateKeySource === 'path'}
-                      onChange={() => handleKeySourceChange('path')}
-                    />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">选择文件</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* 直接输入密钥内容 */}
-              {formData.privateKeySource === 'content' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    私钥内容 <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={formData.privateKey}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, privateKey: e.target.value }))
-                    }
-                    spellCheck={false}
-                    rows={3}
-                    style={{ maxHeight: '8rem', resize: 'vertical' }}
-                    className={twMerge(
-                      'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                      'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                      keyValidationError
-                        ? 'border-red-400 dark:border-red-500 focus:ring-red-500'
-                        : 'border-slate-300 dark:border-slate-600 focus:ring-blue-500 focus:border-blue-500',
-                      'focus:outline-none focus:ring-2',
-                      'placeholder-slate-400 dark:placeholder-slate-500',
-                      'font-mono text-xs'
-                    )}
-                    placeholder={
-                      '-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'
-                    }
-                  />
-                  {keyValidationError && (
-                    <p className="mt-2 text-xs text-red-500 dark:text-red-400 leading-relaxed">
-                      {keyValidationError}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* 选择密钥文件 */}
-              {formData.privateKeySource === 'path' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    私钥文件路径 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={formData.privateKey}
-                      readOnly
-                      spellCheck={false}
-                      className={twMerge(
-                        'flex-1 px-3 py-2 rounded-lg border transition-all duration-200',
-                        'bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100',
-                        'border-slate-300 dark:border-slate-600',
-                        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                        'placeholder-slate-400 dark:placeholder-slate-500',
-                        'font-mono text-xs cursor-default'
-                      )}
-                      placeholder="请点击右侧按钮选择私钥文件"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSelectKeyFile}
-                      className={twMerge(
-                        'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap',
-                        'text-white bg-blue-500 hover:bg-blue-600',
-                        'dark:bg-blue-600 dark:hover:bg-blue-700'
-                      )}
-                    >
-                      选择文件
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  口令短语 <span className="text-slate-400 text-xs ml-1">(可选)</span>
-                </label>
-                <input
-                  type="password"
-                  value={formData.passphrase}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, passphrase: e.target.value }))}
-                  spellCheck={false}
-                  className={twMerge(
-                    'w-full px-3 py-2 rounded-lg border transition-all duration-200',
-                    'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-                    'border-slate-300 dark:border-slate-600',
-                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                    'placeholder-slate-400 dark:placeholder-slate-500'
-                  )}
-                  placeholder="私钥口令短语（如果私钥有加密）"
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-600">
+      width="md"
+      footer={
+        <div className="flex justify-end space-x-3">
           <button
             type="button"
             onClick={handleCancel}
             className={twMerge(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-              'text-slate-600 bg-slate-100 hover:bg-slate-200',
-              'dark:text-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600'
+              'px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200',
+              'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
             )}
             disabled={saving}
           >
@@ -480,9 +217,8 @@ export const SessionModal: React.FC = () => {
             type="button"
             onClick={handleSave}
             className={twMerge(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-              'text-white bg-blue-500 hover:bg-blue-600',
-              'dark:bg-blue-600 dark:hover:bg-blue-700',
+              'px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200',
+              'text-white bg-[var(--ash-accent)] hover:opacity-90',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
             disabled={!isFormValid || saving}
@@ -513,7 +249,270 @@ export const SessionModal: React.FC = () => {
             )}
           </button>
         </div>
+      }
+    >
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+              名称 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              spellCheck={false}
+              className={twMerge(
+                'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                'border-[var(--color-border-primary)]',
+                'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                'placeholder-[var(--color-text-tertiary)]'
+              )}
+              placeholder="会话名称"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+              主机地址 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.host}
+              onChange={(e) => setFormData((prev) => ({ ...prev, host: e.target.value }))}
+              spellCheck={false}
+              className={twMerge(
+                'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                'border-[var(--color-border-primary)]',
+                'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                'placeholder-[var(--color-text-tertiary)]'
+              )}
+              placeholder="服务器IP或域名"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+              端口
+            </label>
+            <input
+              type="number"
+              value={formData.port}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, port: parseInt(e.target.value) || 22 }))
+              }
+              spellCheck={false}
+              className={twMerge(
+                'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                'border-[var(--color-border-primary)]',
+                'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                'placeholder-[var(--color-text-tertiary)]'
+              )}
+              placeholder="22"
+              min="1"
+              max="65535"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+              用户名 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.username}
+              onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+              spellCheck={false}
+              className={twMerge(
+                'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                'border-[var(--color-border-primary)]',
+                'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                'placeholder-[var(--color-text-tertiary)]'
+              )}
+              placeholder="SSH用户名"
+            />
+          </div>
+
+          {/* 认证方式选择（二选一） */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+              认证方式
+            </label>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm accent-[var(--ash-accent)]"
+                  checked={formData.authMode === 'password'}
+                  onChange={() => handleAuthModeChange('password')}
+                />
+                <span className="text-sm text-[var(--color-text-secondary)]">密码认证</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm accent-[var(--ash-accent)]"
+                  checked={formData.authMode === 'key'}
+                  onChange={() => handleAuthModeChange('key')}
+                />
+                <span className="text-sm text-[var(--color-text-secondary)]">密钥认证</span>
+              </label>
+            </div>
+          </div>
+
+          {/* 密码认证字段 */}
+          {formData.authMode !== 'key' && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                密码 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                spellCheck={false}
+                className={twMerge(
+                  'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                  'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                  'border-[var(--color-border-primary)]',
+                  'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                  'placeholder-[var(--color-text-tertiary)]'
+                )}
+                placeholder="SSH密码"
+              />
+            </div>
+          )}
+
+          {/* 密钥认证字段 */}
+          {formData.authMode === 'key' && (
+            <>
+              {/* 密钥来源选择（二选一） */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                  密钥来源
+                </label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm accent-[var(--ash-accent)]"
+                      checked={formData.privateKeySource === 'content'}
+                      onChange={() => handleKeySourceChange('content')}
+                    />
+                    <span className="text-sm text-[var(--color-text-secondary)]">直接输入</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm accent-[var(--ash-accent)]"
+                      checked={formData.privateKeySource === 'path'}
+                      onChange={() => handleKeySourceChange('path')}
+                    />
+                    <span className="text-sm text-[var(--color-text-secondary)]">选择文件</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* 直接输入密钥内容 */}
+              {formData.privateKeySource === 'content' && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    私钥内容 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={formData.privateKey}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, privateKey: e.target.value }))
+                    }
+                    spellCheck={false}
+                    rows={3}
+                    style={{ maxHeight: '8rem', resize: 'vertical' }}
+                    className={twMerge(
+                      'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                      'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                      keyValidationError
+                        ? 'border-[var(--color-error)] focus:ring-[var(--color-error)]'
+                        : 'border-[var(--color-border-primary)] focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                      'focus:outline-none',
+                      'placeholder-[var(--color-text-tertiary)]',
+                      'font-mono text-xs'
+                    )}
+                    placeholder={
+                      '-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'
+                    }
+                  />
+                  {keyValidationError && (
+                    <p className="mt-2 text-xs text-[var(--color-error)] leading-relaxed">
+                      {keyValidationError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 选择密钥文件 */}
+              {formData.privateKeySource === 'path' && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                    私钥文件路径 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={formData.privateKey}
+                      readOnly
+                      spellCheck={false}
+                      className={twMerge(
+                        'flex-1 px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                        'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]',
+                        'border-[var(--color-border-primary)]',
+                        'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                        'placeholder-[var(--color-text-tertiary)]',
+                        'font-mono text-xs cursor-default'
+                      )}
+                      placeholder="请点击右侧按钮选择私钥文件"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSelectKeyFile}
+                      className={twMerge(
+                        'px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200 whitespace-nowrap',
+                        'text-white bg-[var(--ash-accent)] hover:opacity-90'
+                      )}
+                    >
+                      选择文件
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                  口令短语{' '}
+                  <span className="text-[var(--color-text-tertiary)] text-xs ml-1">(可选)</span>
+                </label>
+                <input
+                  type="password"
+                  value={formData.passphrase}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, passphrase: e.target.value }))}
+                  spellCheck={false}
+                  className={twMerge(
+                    'w-full px-3 py-2 rounded-[var(--radius-lg)] border transition-all duration-200',
+                    'bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]',
+                    'border-[var(--color-border-primary)]',
+                    'focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)] focus:border-[var(--ash-accent)]',
+                    'placeholder-[var(--color-text-tertiary)]'
+                  )}
+                  placeholder="私钥口令短语（如果私钥有加密）"
+                />
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </GeneralModal>
+    </SheetModal>
   )
 }

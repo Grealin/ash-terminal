@@ -1,56 +1,192 @@
 @import 'tailwindcss';
-@plugin "daisyui";
+@plugin "daisyui" {
+  /* 禁用 DaisyUI 默认主题色，全部使用透明避免覆盖 */
+  themes: false;
+  root: ':root';
+  logs: false;
+}
 @import 'xterm/css/xterm.css';
 @import 'highlight.js/styles/github-dark-dimmed.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* 重置 DaisyUI 的 CSS 变量，防止其基础样式带颜色 */
+:root {
+  --p: 0 0% 0%;
+  --pf: 0 0% 0%;
+  --pc: 0 0% 100%;
+  --a: 0 0% 0%;
+  --af: 0 0% 0%;
+  --ac: 0 0% 100%;
+  --n: 0 0% 0%;
+  --nf: 0 0% 0%;
+  --nc: 0 0% 100%;
+  --b1: 0 0% 100%;
+  --b2: 0 0% 96%;
+  --b3: 0 0% 92%;
+  --bc: 0 0% 0%;
+  --s: 0 0% 0%;
+  --sf: 0 0% 0%;
+  --sc: 0 0% 100%;
+  --in: 0 0% 0%;
+  --su: 0 0% 0%;
+  --wa: 0 0% 0%;
+  --er: 0 0% 0%;
+}
+
+.dark {
+  --b1: 0 0% 11%;
+  --b2: 0 0% 14%;
+  --b3: 0 0% 18%;
+  --bc: 0 0% 95%;
+}
+
+/* ========================================
+   设计 Token 体系
+   ======================================== */
 @layer base {
+  :root {
+    /* 间距 */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-8: 48px;
+
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+
+    /* 阴影 */
+    --shadow-none: none;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+    /* 字体 */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+    /* 字号 */
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-base: 14px;
+    --text-lg: 16px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+
+    /* 亮色模式颜色 */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8f9fa;
+    --color-bg-tertiary: #f1f3f5;
+    --color-bg-elevated: #ffffff;
+    --color-border-primary: #e9ecef;
+    --color-border-secondary: #f1f3f5;
+    --color-text-primary: #1a1d23;
+    --color-text-secondary: #6c757d;
+    --color-text-tertiary: #adb5bd;
+    /* 强调色由 useAccentColor hook 动态管理，此处仅提供初始回退 */
+    --ash-accent: #5b8def;
+    --ash-accent-hover: #4a7de0;
+    --ash-accent-subtle: #eef3fd;
+    --color-success: #2da44e;
+    --color-warning: #d4a72c;
+    --color-error: #cf222e;
+    --color-info: #5b8def;
+
+    /* 终端专用 — 与主背景一致 */
+    --color-terminal-bg: #ffffff;
+  }
+
+  .dark {
+    --color-bg-primary: #1a1d23;
+    --color-bg-secondary: #212429;
+    --color-bg-tertiary: #2a2e35;
+    --color-bg-elevated: #2a2e35;
+    --color-border-primary: #343840;
+    --color-border-secondary: #2a2e35;
+    --color-text-primary: #eceef0;
+    --color-text-secondary: #9da3ae;
+    --color-text-tertiary: #5f6672;
+    /* 注意：强调色完全由 JS 动态管理，不在 CSS 中定义 .dark 回退值 */
+    --color-success: #3fb950;
+    --color-warning: #e3b341;
+    --color-error: #f85149;
+    --color-info: #79a0f0;
+
+    --color-terminal-bg: #1a1d23;
+  }
+
+  /* 全局基础样式 */
   #root {
-    @apply h-full;
+    height: 100%;
   }
 
   html,
   body {
-    @apply h-full;
-
-    @apply select-none;
-
-    @apply overflow-hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   header {
     -webkit-app-region: drag;
   }
 
-  button {
+  button,
+  input,
+  textarea,
+  select {
     -webkit-app-region: no-drag;
   }
 
+  /* 滚动条 */
   ::-webkit-scrollbar {
-    @apply w-2;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-[#555] rounded-md;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-primary);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-tertiary);
   }
 }
 
+/* 可选文本区域 */
 @layer utilities {
   .can-select,
   .can-select * {
-    @apply select-text;
+    user-select: text;
+    -webkit-user-select: text;
   }
 }
 
-/* xterm: 移除水平滚动条预留空间，避免底部空白 */
+/* xterm 终端样式 */
 @layer base {
   .xterm {
     height: 100%;
+    padding: var(--space-2);
   }
   .xterm .xterm-viewport {
     overflow-x: hidden !important;
@@ -59,16 +195,12 @@
   }
 }
 
-/* xterm: 允许文本选择 - 覆盖默认的 user-select: none */
 @layer utilities {
   .xterm-text-selectable .xterm,
   .xterm-text-selectable .xterm * {
     user-select: text !important;
     -webkit-user-select: text !important;
-    -moz-user-select: text !important;
   }
-
-  /* 确保选择层可见 */
   .xterm-text-selectable .xterm .xterm-selection-layer {
     pointer-events: none;
     user-select: none;
@@ -77,7 +209,6 @@
 
 /* ========================================
    Markdown 渲染样式 (.markdown-body)
-   命名空间隔离，避免与 DaisyUI 冲突
    ======================================== */
 @layer components {
   .markdown-body {
@@ -85,32 +216,52 @@
     overflow-wrap: break-word;
   }
 
-  /* 标题 — 基于 text-xs 的递进层级 */
   .markdown-body h1 {
-    @apply text-sm font-bold mt-3 mb-2 text-gray-900 dark:text-gray-100;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-2);
+    color: var(--color-text-primary);
   }
   .markdown-body h2 {
-    @apply text-[0.8rem] font-semibold mt-2.5 mb-1.5 text-gray-900 dark:text-gray-100;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    color: var(--color-text-primary);
   }
   .markdown-body h3 {
-    @apply text-xs font-semibold mt-2 mb-1 text-gray-800 dark:text-gray-200;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-1);
+    color: var(--color-text-secondary);
   }
   .markdown-body h4,
   .markdown-body h5,
   .markdown-body h6 {
-    @apply text-xs font-medium mt-1.5 mb-1 text-gray-700 dark:text-gray-300;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 6px;
+    margin-bottom: var(--space-1);
+    color: var(--color-text-secondary);
   }
 
-  /* 段落和列表 */
   .markdown-body p {
-    @apply text-xs leading-relaxed my-1.5 text-gray-800 dark:text-gray-200;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 6px 0;
+    color: var(--color-text-primary);
   }
   .markdown-body ul,
   .markdown-body ol {
-    @apply text-xs my-1.5 pl-5 text-gray-800 dark:text-gray-200;
+    font-size: 13px;
+    margin: 6px 0;
+    padding-left: 20px;
+    color: var(--color-text-primary);
   }
   .markdown-body li {
-    @apply my-0.5;
+    margin: 2px 0;
   }
   .markdown-body ul {
     list-style-type: disc;
@@ -119,67 +270,98 @@
     list-style-type: decimal;
   }
   .markdown-body li > p {
-    @apply my-0;
+    margin: 0;
   }
 
-  /* 内联代码 */
+  /* 行内代码 */
   .markdown-body code:not(pre code) {
-    @apply text-[0.7rem] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700
-           text-pink-600 dark:text-pink-400 font-mono break-all;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--ash-accent-subtle);
+    color: var(--ash-accent);
+    font-family: var(--font-mono);
+    word-break: break-all;
   }
 
   /* 代码块 */
   .markdown-body pre {
-    @apply my-2 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700
-           bg-gray-50 dark:bg-gray-900 p-0;
+    margin: var(--space-2) 0;
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-primary);
+    background: var(--color-bg-tertiary);
+    padding: 0;
     max-width: 100%;
-    word-wrap: break-word;
   }
   .markdown-body pre code {
-    @apply block text-[0.7rem] leading-relaxed p-3 bg-transparent
-           text-gray-800 dark:text-gray-200;
+    display: block;
+    font-size: 11px;
+    line-height: 1.6;
+    padding: var(--space-3);
+    background: transparent;
+    color: var(--color-text-primary);
     white-space: pre;
     overflow-x: auto;
-    word-wrap: normal;
   }
 
   /* 引用块 */
   .markdown-body blockquote {
-    @apply my-2 pl-3 border-l-3 border-gray-300 dark:border-gray-600
-           text-gray-600 dark:text-gray-400 italic;
+    margin: var(--space-2) 0;
+    padding-left: var(--space-3);
+    border-left: 3px solid var(--color-border-primary);
+    color: var(--color-text-secondary);
+    font-style: italic;
   }
   .markdown-body blockquote p {
-    @apply text-[0.72rem] my-1;
+    font-size: 13px;
+    margin: var(--space-1) 0;
   }
 
-  /* 分割线 */
   .markdown-body hr {
-    @apply my-3 border-gray-200 dark:border-gray-700;
+    margin: var(--space-3) 0;
+    border-color: var(--color-border-primary);
   }
 
-  /* 表格（基础样式，自定义 table 组件已处理溢出滚动） */
   .markdown-body th {
-    @apply px-3 py-1.5 text-left font-semibold text-gray-800 dark:text-gray-200
-           bg-gray-50 dark:bg-gray-800 text-[0.7rem];
+    padding: var(--space-1) var(--space-3);
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    background: var(--color-bg-secondary);
+    font-size: 11px;
   }
   .markdown-body td {
-    @apply px-3 py-1.5 border-b border-gray-200 dark:border-gray-700
-           text-gray-700 dark:text-gray-300 text-[0.7rem];
+    padding: 6px var(--space-3);
+    border-bottom: 1px solid var(--color-border-primary);
+    color: var(--color-text-primary);
+    font-size: 11px;
   }
   .markdown-body tr:last-child td {
-    @apply border-b-0;
+    border-bottom: 0;
   }
 
-  /* 加粗 / 斜体 */
   .markdown-body strong {
-    @apply font-semibold;
+    font-weight: 600;
   }
   .markdown-body em {
-    @apply italic;
+    font-style: italic;
   }
 
-  /* GFM 任务列表 */
   .markdown-body input[type='checkbox'] {
-    @apply mr-1.5 align-middle;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+}
+
+/* ========================================
+   动画
+   ======================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

@@ -1,7 +1,6 @@
 import { Icon } from '@/components/Icon'
 import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
-import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { ElectronService, SSHService } from '@/services'
 import {
@@ -22,16 +21,10 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useFileList()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(
-        'flex flex-col flex-1 min-h-0 border-b border-r border-gray-300 dark:border-gray-700',
+        'flex flex-col flex-1 min-h-0 border-b border-r border-[var(--color-border-primary)]',
         className
       )}
       {...props}
@@ -349,7 +342,7 @@ export const FileListContent: React.FC = () => {
   // 获取文件图标
   const getFileIcon = (file: FileInfo): React.ReactNode => {
     if (file.type === 'directory') {
-      return <Icon name="folder" size="lg" className="text-blue-500" />
+      return <Icon name="folder" size="lg" className="text-[var(--ash-accent)]" />
     } else {
       const extension = file.name.split('.').pop()?.toLowerCase()
 
@@ -358,7 +351,7 @@ export const FileListContent: React.FC = () => {
       } else if (['txt', 'md', 'log'].includes(extension || '')) {
         return <Icon name="file-text" size="lg" className="text-gray-500" />
       } else {
-        return <Icon name="file" size="lg" className="text-gray-400" />
+        return <Icon name="file" size="lg" className="text-[var(--color-text-tertiary)]" />
       }
     }
   }
@@ -374,8 +367,8 @@ export const FileListContent: React.FC = () => {
 
   if (!currentSessionId || !isConnected) {
     return (
-      <div className="flex flex-col h-full p-3 bg-white dark:bg-gray-900">
-        <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col h-full p-3 bg-[var(--color-bg-primary)]">
+        <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)]">
           <div className="text-center">
             <Icon name="file" size="xl" className="mx-auto mb-4 opacity-50" />
             <p className="text-sm">
@@ -388,14 +381,14 @@ export const FileListContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-[var(--color-bg-primary)]">
       {/* 头部工具栏 */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-2 border-b border-[var(--color-border-primary)]">
         <div className="flex items-center space-x-2">
           <button
             onClick={handleGoBack}
             disabled={realPath === '/'}
-            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="p-1 rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="返回上级"
           >
             <Icon name="arrow-left" size="sm" />
@@ -405,26 +398,26 @@ export const FileListContent: React.FC = () => {
               setUploadTargetDir(realPath)
               openUploadModal()
             }}
-            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1 rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             title="上传"
           >
             <Icon name="upload" size="sm" />
           </button>
           <button
             onClick={() => loadFiles(realPath)}
-            className="p-1 rounded text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1 rounded-[var(--radius-md)] text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
             title="刷新"
           >
             <Icon name="refresh-cw" size="sm" />
           </button>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400">{files.length} 个项目</span>
+          <span className="text-xs text-[var(--color-text-tertiary)]">{files.length} 个项目</span>
         </div>
       </div>
 
       {/* 路径栏 */}
-      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-3 py-2 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border-primary)]">
         {isEditingPath ? (
           <div className="flex items-center space-x-2">
             <input
@@ -434,19 +427,19 @@ export const FileListContent: React.FC = () => {
               onKeyDown={handlePathKeyDown}
               onBlur={handlePathBlur}
               spellCheck={false}
-              className="flex-1 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 font-mono focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+              className="flex-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-primary)] dark:bg-[var(--color-bg-tertiary)] border border-gray-300 dark:border-[var(--color-border-primary)] rounded-[var(--radius-md)] px-2 py-1 font-mono focus:outline-none focus:border-[var(--ash-accent)]"
               autoFocus
             />
             <button
               onMouseDown={handleConfirmEditPath}
-              className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded transition-colors"
+              className="p-1 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded-[var(--radius-md)] transition-colors"
               title="确认"
             >
               <Icon name="check" size="sm" />
             </button>
             <button
               onMouseDown={handleCancelEditPath}
-              className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors"
+              className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-[var(--radius-md)] transition-colors"
               title="取消"
             >
               <Icon name="x" size="sm" />
@@ -454,14 +447,18 @@ export const FileListContent: React.FC = () => {
           </div>
         ) : (
           <div
-            className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+            className="flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--color-bg-secondary)] rounded-[var(--radius-md)] px-2 py-1 -mx-2 -my-1 transition-colors"
             onClick={handleStartEditPath}
             title="点击编辑路径"
           >
-            <div className="text-sm text-gray-600 dark:text-gray-400 font-mono truncate">
+            <div className="text-sm text-[var(--color-text-secondary)] font-mono truncate">
               {realPath}
             </div>
-            <Icon name="pencil" size="sm" className="text-gray-400 flex-shrink-0 ml-2" />
+            <Icon
+              name="pencil"
+              size="sm"
+              className="text-[var(--color-text-tertiary)] flex-shrink-0 ml-2"
+            />
           </div>
         )}
       </div>
@@ -470,21 +467,21 @@ export const FileListContent: React.FC = () => {
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-24">
-            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-[var(--color-text-tertiary)]">
               <Icon name="loader-2" size="xs" className="animate-spin" />
               <span className="text-xs">加载中...</span>
             </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-24">
-            <div className="text-center text-red-500">
+            <div className="text-center text-[var(--color-error)]">
               <Icon name="alert-circle" size="md" className="mx-auto mb-1" />
               <p className="text-xs">{error}</p>
             </div>
           </div>
         ) : files.length === 0 ? (
           <div className="flex items-center justify-center h-24">
-            <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="text-center text-[var(--color-text-tertiary)]">
               <Icon name="file-plus" size="md" className="mx-auto mb-1 opacity-50" />
               <p className="text-xs">目录为空</p>
             </div>
@@ -494,7 +491,7 @@ export const FileListContent: React.FC = () => {
             {files.map((file) => (
               <div
                 key={file.name}
-                className="flex items-center w-full px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                className="flex items-center w-full px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-[var(--color-bg-tertiary)] cursor-pointer transition-colors"
                 onDoubleClick={() => {
                   if (file.type === 'directory') {
                     handleDirectoryEnter(file.name)
@@ -504,10 +501,10 @@ export const FileListContent: React.FC = () => {
                 <div className="flex items-center min-w-0 flex-1">
                   <div className="flex-shrink-0 mr-2">{getFileIcon(file)}</div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs text-gray-900 dark:text-gray-100 truncate">
+                    <div className="text-xs text-[var(--color-text-primary)] truncate">
                       {file.name}
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-0.5">
+                    <div className="text-[10px] text-[var(--color-text-tertiary)] flex items-center space-x-1 mt-0.5">
                       <span className="truncate max-w-16">{file.permissions}</span>
                       {file.type === 'file' && (
                         <>
@@ -522,21 +519,21 @@ export const FileListContent: React.FC = () => {
                   {file.type === 'file' && (
                     <>
                       <button
-                        className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-0.5 rounded-[var(--radius-md)] text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--color-bg-secondary)] transition-colors"
                         title="下载"
                         onClick={() => handleDownload(file)}
                       >
                         <Icon name="download" size="sm" />
                       </button>
                       <button
-                        className="p-0.5 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-0.5 rounded-[var(--radius-md)] text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--color-bg-secondary)] transition-colors"
                         title="编辑"
                         onClick={() => handleEdit(file)}
                       >
                         <Icon name="pencil" size="sm" />
                       </button>
                       <button
-                        className="p-0.5 rounded text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                        className="p-0.5 rounded-[var(--radius-md)] text-[var(--color-error)] hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                         title="删除"
                         onClick={() => handleAskDelete(file)}
                       >
@@ -552,8 +549,8 @@ export const FileListContent: React.FC = () => {
       </div>
       {/* 操作提示/错误信息（保留其它操作使用 opMessage/error 的能力；下载提示改为 Toast） */}
       {error && (
-        <div className="px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
-          <div className="text-red-500">{error}</div>
+        <div className="px-3 py-2 text-xs text-gray-600 dark:text-[var(--color-text-secondary)]">
+          <div className="text-[var(--color-error)]">{error}</div>
         </div>
       )}
 
@@ -584,12 +581,12 @@ export const FileListContent: React.FC = () => {
         closeOnBackdropClick
       >
         <div className="space-y-4">
-          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-slate-600 dark:text-[var(--color-text-secondary)] leading-relaxed">
             请确认是否已在外部编辑器中完成修改并保存。选择“是”将备份远程原文件并上传修改后的文件；选择“否”将再次进行编辑，保持此对话框不关闭；取消则放弃本次编辑。
           </p>
           <div className="flex justify-end space-x-2">
             <button
-              className="px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-gray-100 dark:bg-[var(--color-bg-tertiary)] text-gray-700 dark:text-[var(--color-text-primary)]"
               onClick={async () => {
                 // 取消：删除本地缓存并关闭
                 await cleanupEditCache()
@@ -599,7 +596,7 @@ export const FileListContent: React.FC = () => {
               取消
             </button>
             <button
-              className="px-3 py-1.5 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
               onClick={reopenChooser}
               disabled={!editingLocalPath}
               title="再次选择用哪个程序打开此文件"
@@ -607,7 +604,7 @@ export const FileListContent: React.FC = () => {
               否，继续编辑
             </button>
             <button
-              className="px-3 py-1.5 rounded bg-blue-600 text-white disabled:opacity-60"
+              className="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--ash-accent)] text-white disabled:opacity-60"
               onClick={confirmEditedAndSyncBack}
               disabled={isSyncingBack || !editingLocalPath || !editingRemotePath}
             >

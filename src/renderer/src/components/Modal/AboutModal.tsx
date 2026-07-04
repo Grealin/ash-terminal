@@ -17,18 +17,16 @@ export const AboutModal: React.FC = () => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
       <div
         className={twMerge(
-          'relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl',
-          'dark:bg-slate-800 dark:shadow-slate-900/50'
+          'relative w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--color-bg-primary)] p-6 shadow-[var(--shadow-md)]'
         )}
       >
         {/* 标题和关闭按钮 */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">关于</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">关于</h3>
           <button
             onClick={handleClose}
             className={twMerge(
-              'rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600',
-              'dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              'rounded-full p-1 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-secondary)]'
             )}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,15 +45,15 @@ export const AboutModal: React.FC = () => {
           {/* 应用图标和名称 */}
           <div className="flex flex-col items-center justify-center space-y-3">
             <img src={icon} alt="ASH Terminal" className="h-20 w-20" />
-            <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100">ASH Terminal</h4>
-            <p className="text-sm text-slate-600 dark:text-slate-400">版本 1.1.0</p>
+            <h4 className="text-xl font-bold text-[var(--color-text-primary)]">ASH Terminal</h4>
+            <p className="text-sm text-[var(--color-text-tertiary)]">版本 1.1.0</p>
           </div>
 
           {/* 分隔线 */}
-          <div className="border-t border-slate-200 dark:border-slate-700" />
+          <div className="border-t border-[var(--color-border-primary)]" />
 
           {/* 描述信息 */}
-          <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+          <div className="space-y-3 text-sm text-[var(--color-text-secondary)]">
             <p>
               <span className="font-semibold">ASH Terminal</span> 是一款基于 Electron 的智能 SSH
               终端，支持多会话管理、文件传输、系统监控和 AI 助手集成。
@@ -67,10 +65,10 @@ export const AboutModal: React.FC = () => {
           </div>
 
           {/* 分隔线 */}
-          <div className="border-t border-slate-200 dark:border-slate-700" />
+          <div className="border-t border-[var(--color-border-primary)]" />
 
           {/* 技术信息 */}
-          <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <div className="space-y-2 text-sm text-[var(--color-text-tertiary)]">
             <div className="flex justify-between">
               <span>作者：</span>
               <span className="font-medium">LinFeng</span>
@@ -91,9 +89,8 @@ export const AboutModal: React.FC = () => {
           <button
             onClick={handleClose}
             className={twMerge(
-              'rounded-lg px-4 py-2 text-sm font-medium text-white',
-              'bg-blue-500 hover:bg-blue-600 transition-colors',
-              'dark:bg-blue-600 dark:hover:bg-blue-700'
+              'rounded-[var(--radius-lg)] px-4 py-2 text-sm font-medium text-white',
+              'bg-[var(--ash-accent)] hover:opacity-90 transition-colors'
             )}
           >
             确定

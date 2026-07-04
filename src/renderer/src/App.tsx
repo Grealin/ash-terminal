@@ -25,24 +25,26 @@ import {
   TerminalListMain,
   TerminalSettingsModal,
   ThemeModal,
-  ToolModal,
-  UploadModal
+  UploadModal,
+  ConfigContext
 } from '@/components'
 import { ToastHost } from '@/components/Toast'
+import { StatusBar } from '@/components/StatusBar'
+import { useConfig } from '@/hooks'
 
 const App: React.FC = () => {
+  const { updateConfigField } = useConfig()
+
   return (
-    <>
+    <ConfigContext.Provider value={{ updateConfigField }}>
       <RootLayout>
         <DraggableTopBar />
         <MainContent>
-          {/* 左侧区域 */}
           <LeftSideBar>
             <AiInterfaceMain>
               <AiAgentContent />
             </AiInterfaceMain>
           </LeftSideBar>
-          {/* 中央区域 */}
           <CentralBar>
             <TerminalListMain>
               <TerminalListContent />
@@ -51,7 +53,6 @@ const App: React.FC = () => {
               <CommandListContent />
             </CommandListMain>
           </CentralBar>
-          {/* 右侧区域 */}
           <RightSideBar>
             <SessionListMain>
               <SessionListContent />
@@ -64,21 +65,19 @@ const App: React.FC = () => {
             </MonitorListMain>
           </RightSideBar>
         </MainContent>
-        {/* 模态框 */}
+        <StatusBar />
         <SessionModal />
         <ThemeModal />
         <LayoutModal />
-        <ToolModal />
         <TerminalSettingsModal />
         <MonitorSettingsModal />
         <AboutModal />
         <FileSettingsModal />
         <ShortcutModal />
         <UploadModal />
-        {/* 全局 Toast Host */}
         <ToastHost />
       </RootLayout>
-    </>
+    </ConfigContext.Provider>
   )
 }
 

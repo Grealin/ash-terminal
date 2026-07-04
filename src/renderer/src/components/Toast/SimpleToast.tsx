@@ -45,7 +45,7 @@ export const SimpleToast: React.FC<SimpleToastProps> = ({
       onClose={onClose}
       type={type}
       position={position}
-      size={'wf'}
+      size={'md'}
       rounded={rounded}
       duration={duration}
       showCloseButton={showCloseButton}
@@ -55,7 +55,7 @@ export const SimpleToast: React.FC<SimpleToastProps> = ({
     >
       {/* 只渲染消息内容，无标题 */}
       {children ?? (
-        <div className="text-sm leading-6 text-slate-700 dark:text-slate-300 break-words">
+        <div className="text-sm leading-6 text-[var(--color-text-secondary)] break-words">
           {message}
         </div>
       )}

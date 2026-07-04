@@ -12,7 +12,7 @@ import { getPTYWorkingDirectory } from '@/lib/WorkingDirectory'
 import { taskStoreManager } from '../storage/TaskStore'
 import { ToolContext } from '../tools/BaseTool'
 import { toolManager } from '../tools/ToolManager'
-import { classifyApiError } from './AiErrorHandler'
+import { classifyApiError, createUserStopError } from './AiErrorHandler'
 import { PromptProvider } from './Prompt'
 
 /**
@@ -251,7 +251,8 @@ export class Agent extends EventEmitter {
     while (true) {
       // 检查是否被停止
       if (!this.isRunning) {
-        this.emit(AgentEvent.ERROR, { message: 'Agent 已被停止' })
+        const provider = getActiveProvider()
+        this.emit(AgentEvent.ERROR, createUserStopError(provider))
         return
       }
 
@@ -633,7 +634,8 @@ export class Agent extends EventEmitter {
     while (true) {
       // 检查是否被停止
       if (!this.isRunning) {
-        this.emit(AgentEvent.ERROR, { message: 'Agent 已被停止' })
+        const provider = getActiveProvider()
+        this.emit(AgentEvent.ERROR, createUserStopError(provider))
         return
       }
 

@@ -9,21 +9,12 @@ let store: any = null
 
 const defaultConfig: AppConfig = {
   theme: {
-    defaultDarkMode: false
+    defaultDarkMode: false,
+    accentColor: 'blue'
   },
   layout: {
     leftSideBarVisible: true,
-    rightSideBarVisible: true,
-    components: {
-      // 左侧栏功能组件
-      aiInterfaceVisible: true,
-      // 右侧栏功能组件
-      sessionListVisible: true,
-      fileListVisible: true,
-      monitorListVisible: true,
-      // 中央区域功能组件
-      commandListVisible: true
-    }
+    rightSideBarVisible: true
   },
   terminal: {
     fontSize: 14
@@ -32,8 +23,8 @@ const defaultConfig: AppConfig = {
     refreshInterval: 3000
   },
   file: {
-    backupOnAiModify: true,
-    backupOnManualEdit: true
+    backupOnAiModify: false,
+    backupOnManualEdit: false
   }
 }
 
@@ -79,6 +70,9 @@ export const initConfigStore = async (): Promise<void> => {
       }
     }
   }
+
+  // 启动配置迁移，补全旧版配置文件缺失的字段
+  migrateConfig()
 }
 
 // 获取配置
@@ -105,4 +99,86 @@ export const updateConfigField = (path: string, value: any): void => {
 
   // 直接在 electron-store 实例上设置值，避免完整对象替换
   store.set(path, value)
+}
+
+// 配置迁移：深度比对 defaultConfig 与现有配置，缺失字段自动补全（仅首次加载时调用）
+export const migrateConfig = (): void => {
+  if (!store) {
+    throw new Error('Config store not initialized')
+  }
+
+  let migrated = false
+
+  // 拼接 electron-store 路径，避免根层级空 prefix 产生前导点
+  const toPath = (prefix: string, key: string): string => (prefix ? `${prefix}.${key}` : key)
+
+  // 递归补全缺失字段
+  const deepMerge = (stored: unknown, defaults: unknown, prefix: string): void => {
+    if (stored === undefined || stored === null) {
+      store.set(prefix, defaults)
+      migrated = true
+      return
+    }
+
+    if (
+      typeof defaults === 'object' &&
+      defaults !== null &&
+      !Array.isArray(defaults) &&
+      typeof stored === 'object' &&
+      stored !== null &&
+      !Array.isArray(stored)
+    ) {
+      for (const key of Object.keys(defaults as Record<string, unknown>)) {
+        const storedVal = (stored as Record<string, unknown>)[key]
+        const defaultVal = (defaults as Record<string, unknown>)[key]
+        if (storedVal === undefined) {
+          store.set(toPath(prefix, key), defaultVal)
+          migrated = true
+        } else if (
+          typeof defaultVal === 'object' &&
+          defaultVal !== null &&
+          !Array.isArray(defaultVal)
+        ) {
+          deepMerge(storedVal, defaultVal, toPath(prefix, key))
+        }
+      }
+    }
+  }
+
+  const current = store.store as AppConfig
+  deepMerge(current, defaultConfig, '')
+
+  // 第二次遍历：删除存储中存在但 defaultConfig 中不存在的键
+  const deepClean = (
+    stored: Record<string, unknown>,
+    defaults: Record<string, unknown>,
+    prefix: string
+  ): void => {
+    for (const key of Object.keys(stored)) {
+      if (!(key in defaults)) {
+        store.delete(toPath(prefix, key))
+        migrated = true
+      } else if (
+        typeof defaults[key] === 'object' &&
+        defaults[key] !== null &&
+        !Array.isArray(defaults[key]) &&
+        typeof stored[key] === 'object' &&
+        stored[key] !== null &&
+        !Array.isArray(stored[key])
+      ) {
+        deepClean(
+          stored[key] as Record<string, unknown>,
+          defaults[key] as Record<string, unknown>,
+          toPath(prefix, key)
+        )
+      }
+    }
+  }
+
+  const currentAfterMerge = store.store as Record<string, unknown>
+  deepClean(currentAfterMerge, defaultConfig as unknown as Record<string, unknown>, '')
+
+  if (migrated) {
+    console.log('[Config] Migrated: config synced with defaults')
+  }
 }

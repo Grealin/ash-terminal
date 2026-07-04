@@ -9,9 +9,9 @@ export const TopButton: React.FC<ComponentProps<'button'>> = ({
   return (
     <button
       className={twMerge(
-        'px-3 py-2 text-sm text-slate-700',
-        'hover:bg-slate-200 rounded transition-all duration-150',
-        'dark:text-slate-300 dark:hover:bg-slate-800/50',
+        'text-[var(--color-text-secondary)] text-[13px] px-3 py-2',
+        'border-b-2 border-transparent hover:border-[var(--ash-accent)]',
+        'hover:text-[var(--color-text-primary)] transition-all duration-150',
         className
       )}
       {...props}

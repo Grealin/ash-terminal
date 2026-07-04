@@ -6,15 +6,15 @@ import type { ToastPosition } from './GeneralToast'
 import { GeneralToast } from './GeneralToast'
 
 const positionToContainer: Record<ToastPosition, string> = {
-  'top-left': 'toast toast-top toast-start',
-  'top-center': 'toast toast-top toast-center',
-  'top-right': 'toast toast-top toast-end',
-  'middle-left': 'toast toast-middle toast-start',
-  'middle-center': 'toast toast-middle toast-center',
-  'middle-right': 'toast toast-middle toast-end',
-  'bottom-left': 'toast toast-bottom toast-start',
-  'bottom-center': 'toast toast-bottom toast-center',
-  'bottom-right': 'toast toast-bottom toast-end'
+  'top-left': 'fixed top-4 left-4',
+  'top-center': 'fixed top-4 left-1/2 -translate-x-1/2',
+  'top-right': 'fixed top-4 right-4',
+  'middle-left': 'fixed top-1/2 -translate-y-1/2 left-4',
+  'middle-center': 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+  'middle-right': 'fixed top-1/2 -translate-y-1/2 right-4',
+  'bottom-left': 'fixed bottom-4 left-4',
+  'bottom-center': 'fixed bottom-4 left-1/2 -translate-x-1/2',
+  'bottom-right': 'fixed bottom-4 right-4'
 }
 
 export const ToastHost: React.FC = () => {

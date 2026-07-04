@@ -45,9 +45,8 @@ export const GeneralModal: React.FC<GeneralModalProps> = ({
       {/* 对话框内容 */}
       <div
         className={twMerge(
-          'relative w-full rounded-xl shadow-2xl transition-all duration-200',
-          'bg-white/95 backdrop-blur-sm border border-slate-200/60',
-          'dark:bg-slate-900/95 dark:border-slate-700/60',
+          'relative w-full rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] transition-all duration-200',
+          'bg-[var(--color-bg-primary)] backdrop-blur-sm border border-[var(--color-border-primary)]',
           widthClasses[width],
           className
         )}
@@ -55,9 +54,9 @@ export const GeneralModal: React.FC<GeneralModalProps> = ({
       >
         {/* 标题栏 */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-2 border-b border-slate-200/60 dark:border-slate-700/60">
+          <div className="flex items-center justify-between px-6 py-2 border-b border-[var(--color-border-primary)]">
             {title && (
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
+              <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h3>
             )}
             {!title && <div />}
 
@@ -65,9 +64,8 @@ export const GeneralModal: React.FC<GeneralModalProps> = ({
               <button
                 onClick={onClose}
                 className={twMerge(
-                  'w-8 h-8 rounded-md transition-all duration-200',
-                  'text-slate-500 hover:text-slate-700 hover:bg-slate-200/60',
-                  'dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700/60',
+                  'w-8 h-8 rounded-[var(--radius-md)] transition-all duration-200',
+                  'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]',
                   'flex items-center justify-center group'
                 )}
                 title="关闭"
@@ -111,15 +109,14 @@ export const ConfirmModal: React.FC<{
   return (
     <GeneralModal isOpen={isOpen} onClose={onClose} title={title} width="sm" closeOnBackdropClick>
       <div className="space-y-4">
-        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{message}</p>
+        <p className="text-[var(--color-text-secondary)] leading-relaxed">{message}</p>
 
         <div className="flex justify-end space-x-3 pt-2">
           <button
             onClick={onClose}
             className={twMerge(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-              'text-slate-600 bg-slate-100 hover:bg-slate-200',
-              'dark:text-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600'
+              'px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200',
+              'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
             )}
           >
             {cancelText}
@@ -128,9 +125,8 @@ export const ConfirmModal: React.FC<{
           <button
             onClick={handleConfirm}
             className={twMerge(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-              'text-white bg-blue-500 hover:bg-blue-600',
-              'dark:bg-blue-600 dark:hover:bg-blue-700'
+              'px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200',
+              'text-white bg-[var(--ash-accent)] hover:opacity-90'
             )}
           >
             {confirmText}

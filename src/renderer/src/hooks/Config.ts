@@ -23,21 +23,12 @@ export const useConfig = (): {
       // 如果加载失败，使用默认配置
       const defaultConfig: AppConfig = {
         theme: {
-          defaultDarkMode: false
+          defaultDarkMode: false,
+          accentColor: 'blue'
         },
         layout: {
           leftSideBarVisible: true,
-          rightSideBarVisible: true,
-          components: {
-            // 左侧栏功能组件
-            aiInterfaceVisible: true,
-            // 右侧栏功能组件
-            sessionListVisible: true,
-            fileListVisible: true,
-            monitorListVisible: true,
-            // 中央区域功能组件
-            commandListVisible: true
-          }
+          rightSideBarVisible: true
         },
         terminal: {
           fontSize: 14
@@ -46,8 +37,8 @@ export const useConfig = (): {
           refreshInterval: 3000
         },
         file: {
-          backupOnAiModify: true,
-          backupOnManualEdit: true
+          backupOnAiModify: false,
+          backupOnManualEdit: false
         }
       }
       setConfig(defaultConfig)
