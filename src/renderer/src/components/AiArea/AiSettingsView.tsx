@@ -112,7 +112,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
       model: '',
       streaming: true,
       temperature: 0.7,
-      maxContextTokens: 10240,
+      maxContextTokens: 200000,
       toolCallProtocol: 'Native JSON'
     }
     setEditingProvider(newProvider)

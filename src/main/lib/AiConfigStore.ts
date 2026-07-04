@@ -15,10 +15,10 @@ const defaultAiConfig = {
       providerType: 'OpenAI Compatible',
       baseUrl: 'https://api.openai.com/v1',
       apiKey: '',
-      model: 'gpt-4',
+      model: 'gpt-5',
       streaming: true,
       temperature: 0.7,
-      maxContextTokens: 409600,
+      maxContextTokens: 200000,
       toolCallProtocol: 'Native JSON'
     }
   ],
