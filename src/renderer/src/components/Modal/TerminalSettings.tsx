@@ -49,18 +49,16 @@ export const TerminalSettingsModal: React.FC = () => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
       <div
         className={twMerge(
-          'relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl',
-          'dark:bg-slate-800 dark:shadow-slate-900/50'
+          'relative w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--color-bg-primary)] p-6 shadow-[var(--shadow-md)]'
         )}
       >
         {/* 标题 */}
         <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">终端设置</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">终端设置</h3>
           <button
             onClick={handleClose}
             className={twMerge(
-              'rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600',
-              'dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              'rounded-full p-1 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-secondary)]'
             )}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +76,7 @@ export const TerminalSettingsModal: React.FC = () => {
         <div className="space-y-6">
           {/* 字体大小 */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
               字体大小
             </label>
             <div className="flex items-center space-x-3">
@@ -89,8 +87,8 @@ export const TerminalSettingsModal: React.FC = () => {
                 value={localSettings.fontSize}
                 onChange={handleFontSizeChange}
                 className={twMerge(
-                  'h-2 w-full appearance-none rounded-lg bg-slate-200 dark:bg-slate-600',
-                  'slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-blue-500'
+                  'h-2 w-full appearance-none rounded-[var(--radius-lg)] bg-[var(--color-bg-tertiary)]',
+                  'slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-[var(--ash-accent)]'
                 )}
               />
               <input
@@ -101,17 +99,14 @@ export const TerminalSettingsModal: React.FC = () => {
                 onChange={handleFontSizeChange}
                 spellCheck={false}
                 className={twMerge(
-                  'w-16 rounded border border-slate-300 px-2 py-1 text-center text-sm',
-                  'dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200'
+                  'w-16 rounded border border-[var(--color-border-primary)] px-2 py-1 text-center text-sm bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]'
                 )}
               />
             </div>
           </div>
 
           {/* 提示：需重启后生效 */}
-          <p className={twMerge('text-xs text-slate-500', 'dark:text-slate-400')}>
-            修改设置后重启后生效
-          </p>
+          <p className="text-xs text-[var(--color-text-tertiary)]">修改设置后重启后生效</p>
 
           {/* 其它配置项（字体族、时间戳、行号）已取消 */}
         </div>
@@ -121,9 +116,8 @@ export const TerminalSettingsModal: React.FC = () => {
           <button
             onClick={handleClose}
             className={twMerge(
-              'rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700',
-              'hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500',
-              'dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700'
+              'rounded-[var(--radius-md)] border border-[var(--color-border-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)]',
+              'hover:bg-[var(--color-bg-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)]'
             )}
           >
             取消
@@ -131,9 +125,8 @@ export const TerminalSettingsModal: React.FC = () => {
           <button
             onClick={handleSave}
             className={twMerge(
-              'rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white',
-              'hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500',
-              'dark:bg-blue-500 dark:hover:bg-blue-600'
+              'rounded-[var(--radius-md)] bg-[var(--ash-accent)] px-4 py-2 text-sm font-medium text-white',
+              'hover:opacity-90 focus:outline-none focus:ring-1 focus:ring-[var(--ash-accent)]'
             )}
           >
             保存

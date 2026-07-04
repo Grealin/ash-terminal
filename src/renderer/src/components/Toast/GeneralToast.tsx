@@ -65,10 +65,10 @@ const positionToClasses: Record<ToastPosition, string> = {
 }
 
 const sizeToWidth: Record<NonNullable<GeneralToastProps['size']>, string> = {
-  sm: 'w-64',
-  md: 'w-80',
-  lg: 'w-96',
-  xl: 'w-[28rem]',
+  sm: 'w-80',
+  md: 'w-[26rem]',
+  lg: 'w-[32rem]',
+  xl: 'w-[38rem]',
   wf: 'w-full'
 }
 
@@ -79,12 +79,12 @@ const roundedToClass: Record<NonNullable<GeneralToastProps['rounded']>, string> 
   xl: 'rounded-2xl'
 }
 
-const typeToAlert: Record<ToastType, string> = {
-  neutral: 'alert',
-  info: 'alert alert-info',
-  success: 'alert alert-success',
-  warning: 'alert alert-warning',
-  error: 'alert alert-error'
+const typeToBorderColor: Record<ToastType, string> = {
+  neutral: 'border-l-[var(--color-text-tertiary)]',
+  info: 'border-l-[var(--color-info)]',
+  success: 'border-l-[var(--color-success)]',
+  warning: 'border-l-[var(--color-warning)]',
+  error: 'border-l-[var(--color-error)]'
 }
 
 const toastTypeToIcon: Record<ToastType, string> = {
@@ -182,20 +182,19 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
   const containerClasses = positionToClasses[position]
   const widthClass = sizeToWidth[size]
   const roundedClass = roundedToClass[rounded]
-  const alertClass = typeToAlert[type]
+  const borderColorClass = typeToBorderColor[type]
 
   if (!rendered) return null
 
   const AlertContent = (
     <div
-      role="alert"
       className={twMerge(
-        alertClass,
         widthClass,
         roundedClass,
-        'backdrop-blur-sm shadow-xl border border-slate-200/60 dark:border-slate-700/60',
-        'bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200',
-        'can-select',
+        'shadow-[var(--shadow-md)] border border-[var(--color-border-primary)] border-l-[3px]',
+        borderColorClass,
+        'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]',
+        'can-select p-3',
         transitionClass,
         className
       )}
@@ -211,14 +210,14 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
           {children ? (
             children
           ) : (
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {title && (
-                <div className="font-semibold leading-6 truncate text-slate-900 dark:text-slate-100">
+                <div className="font-semibold leading-6 truncate text-[var(--color-text-primary)]">
                   {title}
                 </div>
               )}
               {message && (
-                <div className="text-sm leading-6 text-slate-700 dark:text-slate-300 break-words">
+                <div className="text-sm leading-6 text-[var(--color-text-secondary)] break-words">
                   {message}
                 </div>
               )}
@@ -232,7 +231,7 @@ export const GeneralToast: React.FC<GeneralToastProps> = ({
             onClick={handleClose}
             className={twMerge(
               'btn btn-ghost btn-xs text-slate-500 hover:text-slate-700',
-              'dark:text-slate-400 dark:hover:text-slate-200'
+              'dark:text-[var(--color-text-tertiary)] dark:hover:text-slate-200'
             )}
           >
             <Icon name="x" size="sm" />

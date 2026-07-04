@@ -1,4 +1,5 @@
 import { Icon } from '@/components/Icon'
+import { ToolCallCard } from './ToolCallCard'
 import MarkdownRenderer from './MarkdownRenderer'
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
 import { useToast } from '@/hooks'
@@ -49,6 +50,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const [providers, setProviders] = useState<AiProviderConfig[]>([])
   const [selectedProviderId, setSelectedProviderId] = useAtom(activeProviderIdAtom)
   const [toolExecutions, setToolExecutions] = useState<ToolExecutionRecord[]>([])
+  const [providerDropdownOpen, setProviderDropdownOpen] = useState(false)
+  const providerDropdownRef = useRef<HTMLDivElement>(null)
   const [apiConfigError, setApiConfigError] = useState<string>('')
   const [aiErrors, setAiErrors] = useState<
     Array<{ id: string; error: AiTaskError; timestamp: number }>
@@ -244,6 +247,18 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       cleanupEventListeners()
     }
   }, [])
+
+  // 点击外部关闭下拉
+  useEffect(() => {
+    if (!providerDropdownOpen) return
+    const handler = (e: MouseEvent): void => {
+      if (providerDropdownRef.current && !providerDropdownRef.current.contains(e.target as Node)) {
+        setProviderDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [providerDropdownOpen])
 
   // 监听工具审批请求
   useEffect(() => {
@@ -527,15 +542,6 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return cleaned.trim()
   }
 
-  // 格式化 tool_calls 中的 arguments JSON 字符串用于显示
-  const formatToolCallArguments = (args: string): string => {
-    try {
-      return JSON.stringify(JSON.parse(args), null, 2)
-    } catch {
-      return args
-    }
-  }
-
   // 检测消息是否包含 observation 标签
   const hasObservationTag = (content: string | null): boolean => {
     if (!content) return false
@@ -549,25 +555,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return match ? match[1].trim() : ''
   }
 
-  // 渲染工具调用卡片（复用样式，用于从 msg.tool_calls 历史数据渲染）
-  const renderToolCallCard = (name: string, argumentsDisplay: string): React.JSX.Element => (
-    <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-      <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
-        <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-          <Icon name="code-2" size="sm" />
-          调用工具：{name}
-        </p>
-        <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-          <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-            查看参数
-          </summary>
-          <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-            {argumentsDisplay}
-          </pre>
-        </details>
-      </div>
-    </div>
-  )
+  // ToolCallCard 已替代内联渲染，见 ./ToolCallCard.tsx
 
   const renderMessage = (msg: Message): React.JSX.Element => {
     if (msg.role === MessageRole.USER) {
@@ -583,86 +571,30 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
         return (
           <div key={msg.id}>
-            {/* 如果找到对应的工具执行记录，先显示工具调用和结果卡片 */}
-            {toolExecution && (
-              <>
-                {/* 工具调用卡片 */}
-                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                    <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      调用工具：{toolExecution.name}
-                    </p>
-                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                      <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                        查看参数
-                      </summary>
-                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                        {JSON.stringify(toolExecution.params, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                </div>
-
-                {/* 工具结果卡片 */}
-                {toolExecution.result !== undefined && (
-                  <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                    <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                        <Icon name="check-circle" size="sm" />
-                        工具结果：{toolExecution.name}
-                      </p>
-                      <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                        <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                          查看结果
-                        </summary>
-                        <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                          {typeof toolExecution.result === 'string'
-                            ? toolExecution.result
-                            : JSON.stringify(toolExecution.result, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
-                  </div>
-                )}
-              </>
+            {toolExecution ? (
+              <ToolCallCard
+                toolName={toolExecution.name}
+                params={toolExecution.params}
+                result={toolExecution.result}
+                status="completed"
+              />
+            ) : (
+              <ToolCallCard
+                toolName="unknown"
+                params={{}}
+                result={observationContent}
+                status="completed"
+              />
             )}
-
-            {/* OBSERVATION 消息卡片 */}
-            <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-              <div className="max-w-[90%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
-                  <Icon name="zap" size="sm" />
-                  工具执行结果
-                </p>
-                <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                  <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-                    查看结果
-                  </summary>
-                  <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                    {observationContent}
-                  </pre>
-                </details>
-              </div>
-            </div>
           </div>
         )
       }
 
       // 普通用户消息
       return (
-        <div
-          key={msg.id}
-          className="flex justify-end mb-4 animate-in slide-in-from-right duration-300"
-        >
-          <div className="max-w-[90%] bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-2xl px-4 py-3 shadow-sm min-w-0">
-            <p className="can-select text-xs whitespace-pre-wrap leading-relaxed">
+        <div key={msg.id} className="flex justify-end mb-4 animate-[fadeIn_200ms_ease-out]">
+          <div className="max-w-[85%] bg-[var(--color-bg-secondary)] rounded-[var(--radius-md)] p-3 min-w-0">
+            <p className="can-select text-[13px] text-[var(--color-text-primary)] whitespace-pre-wrap leading-relaxed">
               {cleanMessageContent(msg.content)}
             </p>
           </div>
@@ -695,18 +627,29 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         <div key={msg.id}>
           {/* 文本内容气泡（仅当有实际文本内容时显示） */}
           {hasContent && (
-            <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-              <div className="max-w-[90%] min-w-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+            <div className="mb-4 animate-[fadeIn_200ms_ease-out]">
+              <div className="w-full bg-[var(--color-bg-secondary)] rounded-[var(--radius-md)] p-3 text-[13px] text-[var(--color-text-primary)]">
                 <MarkdownRenderer content={cleanedContent} />
               </div>
             </div>
           )}
-          {/* 工具调用卡片（仅渲染没有对应 TOOL 消息的"孤儿"tool_call，避免与 TOOL 分支重复） */}
-          {orphanToolCalls.map((tc) => (
-            <div key={tc.id}>
-              {renderToolCallCard(tc.function.name, formatToolCallArguments(tc.function.arguments))}
-            </div>
-          ))}
+          {/* 历史孤儿 tool_call（无对应 TOOL 消息） */}
+          {orphanToolCalls.map((tc) => {
+            let params: Record<string, unknown> = {}
+            try {
+              params = JSON.parse(tc.function.arguments)
+            } catch {
+              /* keep empty */
+            }
+            return (
+              <ToolCallCard
+                key={tc.id}
+                toolName={tc.function.name}
+                params={params}
+                status="completed"
+              />
+            )
+          })}
         </div>
       )
     } else if (msg.role === MessageRole.TOOL) {
@@ -718,23 +661,16 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           {toolExecution && (
             <>
               {/* 工具调用卡片 */}
-              <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+              <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
+                <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
+                  <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
                     调用工具：{toolExecution.name}
                   </p>
-                  <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                    <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+                  <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
+                    <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
                       查看参数
                     </summary>
-                    <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                    <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-60 border border-[var(--color-border-primary)] whitespace-pre">
                       {JSON.stringify(toolExecution.params, null, 2)}
                     </pre>
                   </details>
@@ -743,23 +679,16 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
               {/* 工具结果卡片 */}
               {toolExecution.result !== undefined && (
-                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
+                  <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
+                    <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
                       工具结果：{toolExecution.name}
                     </p>
-                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                      <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                    <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
+                      <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
                         查看结果
                       </summary>
-                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                      <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-40 border border-[var(--color-border-primary)] whitespace-pre">
                         {typeof toolExecution.result === 'string'
                           ? toolExecution.result
                           : JSON.stringify(toolExecution.result, null, 2)}
@@ -772,23 +701,16 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           )}
 
           {/* TOOL 消息卡片 */}
-          <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-            <div className="max-w-[90%] bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-4 py-3 shadow-sm">
-              <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mb-2 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+          <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
+            <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
+              <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
                 工具执行结果
               </p>
-              <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                <summary className="cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
+              <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
+                <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
                   查看结果
                 </summary>
-                <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
+                <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-40 border border-[var(--color-border-primary)] whitespace-pre">
                   {msg.content}
                 </pre>
               </details>
@@ -801,7 +723,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-[var(--color-bg-primary)]">
       {/* API 配置错误提示卡片 */}
       {displayError && (
         <div className="mx-4 mt-4 mb-2">
@@ -831,7 +753,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       {/* 对话记录显示区域 */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 && !streamingMessage && !currentThought ? (
-          <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-sm">
+          <div className="flex items-center justify-center h-full text-gray-500 dark:text-[var(--color-text-tertiary)] text-sm">
             {currentSessionId ? '请输入您的任务开始对话' : '请先连接 SSH 会话'}
           </div>
         ) : (
@@ -840,53 +762,13 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
             {/* 未绑定的工具执行记录（实时显示） */}
             {getUnboundToolExecutions().map((execution) => (
-              <div key={execution.id}>
-                {/* 工具调用卡片 */}
-                <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                  <div className="max-w-[90%] bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                    <p className="text-xs text-sky-700 dark:text-sky-400 font-semibold mb-2 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      调用工具：{execution.name}
-                    </p>
-                    <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                      <summary className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                        查看参数
-                      </summary>
-                      <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                        {JSON.stringify(execution.params, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                </div>
-
-                {/* 工具结果卡片 */}
-                {execution.status === 'completed' && execution.result !== undefined && (
-                  <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                    <div className="max-w-[90%] bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mb-2 flex items-center gap-1">
-                        <Icon name="check-circle" size="sm" />
-                        工具结果：{execution.name}
-                      </p>
-                      <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
-                        <summary className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                          查看结果
-                        </summary>
-                        <pre className="can-select mt-2 p-2 bg-white dark:bg-gray-800 rounded-lg text-xs overflow-x-auto overflow-y-auto max-h-40 max-w-[210px] border border-gray-200 dark:border-gray-700 whitespace-pre">
-                          {typeof execution.result === 'string'
-                            ? execution.result
-                            : JSON.stringify(execution.result, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ToolCallCard
+                key={execution.id}
+                toolName={execution.name}
+                params={execution.params}
+                result={execution.result}
+                status={execution.status}
+              />
             ))}
 
             {/* AI 错误气泡 */}
@@ -910,7 +792,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                         {aiError.error.message}
                       </p>
                       {aiError.error.suggestion && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 leading-relaxed">
+                        <p className="text-xs text-gray-600 dark:text-[var(--color-text-tertiary)] mb-2 leading-relaxed">
                           {aiError.error.suggestion}
                         </p>
                       )}
@@ -927,7 +809,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                           onClick={() =>
                             setAiErrors((prev) => prev.filter((e) => e.id !== aiError.id))
                           }
-                          className="px-3 py-1 text-xs rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 transition-colors"
+                          className="px-3 py-1 text-xs rounded-md bg-gray-200 dark:bg-[var(--color-bg-tertiary)] hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-[var(--color-text-secondary)] transition-colors"
                         >
                           关闭
                         </button>
@@ -940,39 +822,40 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
             {/* 思考过程 */}
             {currentThought && (
-              <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-                <div className="max-w-[90%] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-xs text-purple-700 dark:text-purple-400 font-semibold mb-2 flex items-center gap-1">
-                    <Icon name="brain" size="sm" className="inline-block animate-pulse" />
-                    思考中...
-                  </p>
-                  <p className="can-select text-xs whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+              <div className="mb-4 animate-[fadeIn_200ms_ease-out]">
+                <details className="text-[11px] text-[var(--color-text-tertiary)]">
+                  <summary className="cursor-pointer hover:text-[var(--color-text-secondary)] transition-colors select-none">
+                    思考过程
+                  </summary>
+                  <p className="can-select mt-1 whitespace-pre-wrap leading-relaxed">
                     {currentThought}
                   </p>
-                </div>
+                </details>
               </div>
             )}
 
             {/* 加载动画 */}
             {isProcessing && !streamingMessage && !currentThought && (
               <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-                <div className="max-w-[90%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+                <div className="max-w-[90%] bg-[var(--color-bg-primary)] border border-gray-200 dark:border-[var(--color-border-primary)] rounded-2xl px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       <span
-                        className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-[var(--ash-accent)] rounded-full animate-bounce"
                         style={{ animationDelay: '0ms' }}
                       ></span>
                       <span
-                        className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-[var(--ash-accent)] rounded-full animate-bounce"
                         style={{ animationDelay: '150ms' }}
                       ></span>
                       <span
-                        className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-[var(--ash-accent)] rounded-full animate-bounce"
                         style={{ animationDelay: '300ms' }}
                       ></span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">AI 正在思考...</span>
+                    <span className="text-xs text-gray-500 dark:text-[var(--color-text-tertiary)]">
+                      AI 正在思考...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -980,10 +863,10 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
             {/* 流式输出 */}
             {streamingMessage && (
-              <div className="flex justify-start mb-4 animate-in slide-in-from-left duration-300">
-                <div className="max-w-[90%] min-w-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 shadow-sm">
+              <div className="mb-4 animate-[fadeIn_200ms_ease-out]">
+                <div className="w-full text-[13px] text-[var(--color-text-primary)]">
                   <MarkdownRenderer content={streamingMessage} isStreaming={true} />
-                  <span className="inline-block w-1 h-4 ml-1 bg-blue-500 animate-pulse"></span>
+                  <span className="inline-block w-1 h-4 ml-1 bg-[var(--ash-accent)] animate-pulse"></span>
                 </div>
               </div>
             )}
@@ -995,18 +878,18 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
       {/* 工具审批对话框 */}
       {pendingApproval && (
-        <div className="border-t border-gray-200 dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20 p-3">
+        <div className="border-t border-gray-200 dark:border-[var(--color-border-primary)] bg-yellow-50 dark:bg-yellow-900/20 p-3">
           <div className="flex items-start space-x-3">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+              <p className="text-sm font-medium text-gray-900 dark:text-[var(--color-text-primary)] mb-1">
                 工具调用请求：{pendingApproval.toolName}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-xs text-gray-600 dark:text-[var(--color-text-tertiary)] mb-2">
                 {pendingApproval.reason}
               </p>
-              <details className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+              <details className="text-xs text-gray-600 dark:text-[var(--color-text-tertiary)] min-w-0">
                 <summary className="cursor-pointer">查看参数</summary>
-                <pre className="can-select mt-1 p-2 bg-white dark:bg-gray-800 rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
+                <pre className="can-select mt-1 p-2 bg-[var(--color-bg-primary)] rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
                   {JSON.stringify(pendingApproval.params, null, 2)}
                 </pre>
               </details>
@@ -1032,7 +915,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
       )}
 
       {/* 输入框区域 */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-3">
+      <div className="border-t border-gray-200 dark:border-[var(--color-border-primary)] p-3">
         {/* 输入框 */}
         <div className="relative">
           <textarea
@@ -1042,7 +925,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             placeholder={currentSessionId ? '在此处输入您的任务...' : '请先连接 SSH 会话'}
             disabled={!currentSessionId || isProcessing}
             spellCheck={false}
-            className="w-full min-h-[80px] max-h-[200px] px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[80px] max-h-[200px] px-3 py-2 text-[13px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none focus:border-[var(--ash-accent)] focus:ring-1 focus:ring-[var(--ash-accent)] resize-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -1051,16 +934,31 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           {/* 左侧选择器 */}
           <div className="flex items-center space-x-3">
             {/* 运行模式选择 */}
-            <div className="flex items-center space-x-2">
-              <select
-                value={runMode}
-                onChange={(e) => setRunMode(e.target.value as RunMode)}
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => setRunMode('agent')}
                 disabled={!currentSessionId || isProcessing}
-                className="select select-info h-7 w-18 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={twMerge(
+                  'px-3 py-0.5 text-[11px] rounded-[var(--radius-full)] transition-colors',
+                  runMode === 'agent'
+                    ? 'bg-[var(--ash-accent)] text-white'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
+                )}
               >
-                <option value="ask">Ask</option>
-                <option value="agent">Agent</option>
-              </select>
+                Agent
+              </button>
+              <button
+                onClick={() => setRunMode('ask')}
+                disabled={!currentSessionId || isProcessing}
+                className={twMerge(
+                  'px-3 py-0.5 text-[11px] rounded-[var(--radius-full)] transition-colors',
+                  runMode === 'ask'
+                    ? 'bg-[var(--ash-accent)] text-white'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
+                )}
+              >
+                Ask
+              </button>
             </div>
           </div>
 
@@ -1068,22 +966,46 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           <div className="flex items-center space-x-3">
             {/* 供应商选择 */}
             <div className="flex items-center space-x-2">
-              <select
-                value={selectedProviderId}
-                onChange={(e) => changeSelectedProviderId(e.target.value)}
-                disabled={providers.length === 0 || isProcessing}
-                className="select select-info h-7 w-24 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {providers.length === 0 ? (
-                  <option value="">暂无配置</option>
-                ) : (
-                  providers.map((provider) => (
-                    <option key={provider.id} value={provider.id}>
-                      {provider.configName}
-                    </option>
-                  ))
+              <div className="relative" ref={providerDropdownRef}>
+                <button
+                  type="button"
+                  disabled={providers.length === 0 || isProcessing}
+                  onClick={() => setProviderDropdownOpen(!providerDropdownOpen)}
+                  className="flex items-center h-7 w-24 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="truncate">
+                    {providers.find((p) => p.id === selectedProviderId)?.configName || '暂无配置'}
+                  </span>
+                  <Icon
+                    name="chevron-up"
+                    size="xs"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-tertiary)]"
+                  />
+                </button>
+                {providerDropdownOpen && (
+                  <ul className="absolute bottom-full mb-1 left-0 w-24 max-h-40 overflow-y-auto bg-[var(--color-bg-elevated)] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] z-50">
+                    {providers.map((provider) => (
+                      <li key={provider.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            changeSelectedProviderId(provider.id)
+                            setProviderDropdownOpen(false)
+                          }}
+                          className={[
+                            'w-full text-left px-2 py-1 text-[11px] transition-colors',
+                            provider.id === selectedProviderId
+                              ? 'bg-[var(--ash-accent-subtle)] text-[var(--ash-accent)]'
+                              : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
+                          ].join(' ')}
+                        >
+                          {provider.configName}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-              </select>
+              </div>
             </div>
 
             {/* 发送/停止按钮 */}
@@ -1099,10 +1021,10 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                 onClick={handleSend}
                 disabled={!message.trim() || providers.length === 0 || !currentSessionId}
                 className={twMerge(
-                  'px-4 py-1.5 text-xs rounded-lg transition-colors font-medium',
+                  'px-4 py-1.5 text-xs rounded-[var(--radius-md)] transition-colors font-medium',
                   message.trim() && providers.length > 0 && currentSessionId
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                    ? 'bg-[var(--ash-accent)] hover:bg-[var(--ash-accent)]-hover text-white'
+                    : 'opacity-50 bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
                 )}
               >
                 发送

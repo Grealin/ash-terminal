@@ -15,17 +15,17 @@ export const AiSettingsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('providers')
 
   return (
-    <div className="flex h-full min-w-[248px] bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="flex h-full min-w-[248px] bg-[var(--color-bg-primary)] overflow-hidden">
       {/* 左侧导航 */}
-      <div className="flex-[1] flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center pb-4">
+      <div className="flex-[1] flex-shrink-0 border-r border-gray-200 dark:border-[var(--color-border-primary)] flex flex-col items-center pb-4">
         <button
           onClick={() => setActiveTab('providers')}
           title="供应商"
           className={twMerge(
             'w-full py-3 flex items-center justify-center transition-colors border-l-2',
             activeTab === 'providers'
-              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-500'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
+              ? 'bg-[var(--ash-accent)]-subtle text-[var(--ash-accent)] border-[var(--ash-accent)]'
+              : 'text-gray-700 dark:text-[var(--color-text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--color-bg-tertiary)] border-transparent'
           )}
         >
           <Icon name="server" size="lg" />
@@ -36,8 +36,8 @@ export const AiSettingsView: React.FC = () => {
           className={twMerge(
             'w-full py-3 flex items-center justify-center transition-colors border-l-2',
             activeTab === 'autoApproval'
-              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-500'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
+              ? 'bg-[var(--ash-accent)]-subtle text-[var(--ash-accent)] border-[var(--ash-accent)]'
+              : 'text-gray-700 dark:text-[var(--color-text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--color-bg-tertiary)] border-transparent'
           )}
         >
           <Icon name="check-circle" size="lg" />
@@ -48,8 +48,8 @@ export const AiSettingsView: React.FC = () => {
           className={twMerge(
             'w-full py-3 flex items-center justify-center transition-colors border-l-2',
             activeTab === 'prompt'
-              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-500'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'
+              ? 'bg-[var(--ash-accent)]-subtle text-[var(--ash-accent)] border-[var(--ash-accent)]'
+              : 'text-gray-700 dark:text-[var(--color-text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--color-bg-tertiary)] border-transparent'
           )}
         >
           <Icon name="message-square" size="lg" />
@@ -184,14 +184,14 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
     return (
       <div className="p-6 min-w-0">
         <div className="max-w-2xl">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text-primary)] mb-4">
             {isCreating ? '创建供应商' : '编辑供应商'}
           </h3>
 
           <div className="space-y-4">
             {/* 配置名称 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 配置名称
               </label>
               <input
@@ -201,13 +201,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                   setEditingProvider({ ...editingProvider, configName: e.target.value })
                 }
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* API 基础 URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 API 基础 URL
               </label>
               <input
@@ -217,13 +217,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                   setEditingProvider({ ...editingProvider, baseUrl: e.target.value })
                 }
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* API 密钥 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 API 密钥
               </label>
               <input
@@ -231,13 +231,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 value={editingProvider.apiKey}
                 onChange={(e) => setEditingProvider({ ...editingProvider, apiKey: e.target.value })}
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* 模型 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 模型
               </label>
               <input
@@ -245,13 +245,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 value={editingProvider.model}
                 onChange={(e) => setEditingProvider({ ...editingProvider, model: e.target.value })}
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* 温度 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 温度 (0-2)
               </label>
               <input
@@ -267,13 +267,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                   })
                 }
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* 最大上下文 Token */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 最大上下文 Token
               </label>
               <input
@@ -288,13 +288,13 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                   })
                 }
                 spellCheck={false}
-                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
             </div>
 
             {/* 工具调用协议 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-1">
                 工具调用协议
               </label>
               <select
@@ -305,7 +305,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                     toolCallProtocol: e.target.value as 'XML' | 'Native JSON'
                   })
                 }
-                className="select select-info w-full min-w-0 px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="select w-full min-w-0 px-3 py-2 text-xs border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               >
                 <option value="Native JSON">Native JSON</option>
                 <option value="XML">XML</option>
@@ -320,22 +320,24 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                 onChange={(e) =>
                   setEditingProvider({ ...editingProvider, streaming: e.target.checked })
                 }
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-[var(--ash-accent)] border-gray-300 rounded focus:ring-[var(--ash-accent)]"
               />
-              <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">启用流式响应</label>
+              <label className="ml-2 text-sm text-gray-700 dark:text-[var(--color-text-secondary)]">
+                启用流式响应
+              </label>
             </div>
 
             {/* 按钮组 */}
             <div className="flex space-x-3 pt-4">
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                className="px-4 py-2 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
               >
                 保存
               </button>
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-xs bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors"
+                className="px-4 py-2 text-xs bg-gray-300 hover:bg-gray-400 dark:bg-[var(--color-bg-tertiary)] dark:hover:bg-gray-600 text-gray-700 dark:text-[var(--color-text-secondary)] rounded transition-colors"
               >
                 取消
               </button>
@@ -349,18 +351,20 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
   return (
     <div className="p-6 min-w-0">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">供应商配置</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text-primary)]">
+          供应商配置
+        </h3>
         <button
           onClick={handleCreateNew}
           title="新建供应商配置"
-          className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+          className="p-2 bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
         >
           <Icon name="plus" size="xs" />
         </button>
       </div>
 
       {providers.length === 0 ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
+        <div className="text-center py-12 text-gray-500 dark:text-[var(--color-text-tertiary)] text-sm">
           暂无供应商配置
         </div>
       ) : (
@@ -371,18 +375,18 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
               className={twMerge(
                 'p-2 rounded-lg border transition-all min-w-0',
                 provider.id === activeProviderId
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-[var(--ash-accent)] bg-[var(--ash-accent)]-subtle'
+                  : 'border-gray-200 dark:border-[var(--color-border-primary)] hover:border-gray-300 dark:hover:border-gray-600'
               )}
             >
               <div className="flex items-center justify-between min-w-0">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                    <div className="font-medium text-sm text-gray-900 dark:text-[var(--color-text-primary)] truncate">
                       {provider.configName}
                     </div>
                   </div>
-                  <div className="text-xs w-24 text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                  <div className="text-xs w-24 text-gray-500 dark:text-[var(--color-text-tertiary)] mt-0.5 truncate">
                     {provider.model}
                   </div>
                 </div>
@@ -403,7 +407,7 @@ const ProvidersSettings: React.FC<ProvidersSettingsProps> = ({ isVisible }) => {
                   )}
                   <button
                     onClick={() => handleEdit(provider)}
-                    className="p-1 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="p-1 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--color-bg-tertiary)] transition-colors"
                     title="编辑"
                   >
                     <Icon name="pencil" size="sm" />
@@ -527,7 +531,9 @@ const AutoApprovalSettings: React.FC = () => {
   return (
     <div className="p-6 min-w-0">
       <div className="max-w-2xl min-w-0">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">自动批准</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text-primary)] mb-4">
+          自动批准
+        </h3>
 
         <div className="space-y-6 min-w-0">
           {/* 启用开关 */}
@@ -536,21 +542,23 @@ const AutoApprovalSettings: React.FC = () => {
               type="checkbox"
               checked={enabled}
               onChange={(e) => setEnabled(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-[var(--ash-accent)] border-gray-300 rounded focus:ring-[var(--ash-accent)]"
             />
-            <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">启用自动批准</label>
+            <label className="ml-2 text-sm text-gray-700 dark:text-[var(--color-text-secondary)]">
+              启用自动批准
+            </label>
           </div>
 
           {/* 允许的工具 */}
           <div className="min-w-0">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               允许的工具
             </label>
             <div className="mb-2 min-w-0">
               <select
                 value={selectedTool}
                 onChange={(e) => setSelectedTool(e.target.value)}
-                className="w-45 select select-info px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-45 select px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               >
                 <option value="">选择工具</option>
                 {availableTools
@@ -564,7 +572,7 @@ const AutoApprovalSettings: React.FC = () => {
               <button
                 onClick={addTool}
                 disabled={!selectedTool}
-                className="mt-2 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded transition-colors"
               >
                 添加
               </button>
@@ -576,7 +584,7 @@ const AutoApprovalSettings: React.FC = () => {
                   <span
                     key={tool}
                     title={toolInfo?.description || tool}
-                    className="inline-flex items-center px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                    className="inline-flex items-center px-3 py-1 text-sm bg-gray-200 dark:bg-[var(--color-bg-tertiary)] text-gray-700 dark:text-[var(--color-text-secondary)] rounded"
                   >
                     {tool}
                     <button onClick={() => removeTool(tool)} className="ml-2 text-red-500">
@@ -590,7 +598,7 @@ const AutoApprovalSettings: React.FC = () => {
 
           {/* 允许的命令前缀 */}
           <div className="min-w-0">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               允许的命令前缀
             </label>
             <div className="mb-2 min-w-0">
@@ -601,11 +609,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
               <button
                 onClick={addAllowedPrefix}
-                className="mt-2 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
               >
                 添加
               </button>
@@ -627,7 +635,7 @@ const AutoApprovalSettings: React.FC = () => {
 
           {/* 禁止的命令前缀 */}
           <div className="min-w-0">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               禁止的命令前缀
             </label>
             <div className="mb-2 min-w-0">
@@ -638,11 +646,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-45 px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)]"
               />
               <button
                 onClick={addDeniedPrefix}
-                className="mt-2 px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                className="mt-2 px-3 py-1.5 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
               >
                 添加
               </button>
@@ -666,7 +674,7 @@ const AutoApprovalSettings: React.FC = () => {
           <div className="pt-4">
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+              className="px-4 py-2 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
             >
               保存
             </button>
@@ -708,13 +716,13 @@ const PromptSettings: React.FC = () => {
   return (
     <div className="p-6 min-w-0">
       <div className="max-w-2xl">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text-primary)] mb-4">
           用户额外提示词
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               自定义提示词
             </label>
             <textarea
@@ -723,7 +731,7 @@ const PromptSettings: React.FC = () => {
               placeholder="在此输入您的自定义提示词，这些内容将被添加到系统提示词中..."
               rows={10}
               spellCheck={false}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)] resize-none"
             />
           </div>
 
@@ -731,7 +739,7 @@ const PromptSettings: React.FC = () => {
           <div className="pt-2">
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+              className="px-4 py-2 text-xs bg-[var(--ash-accent)] hover:opacity-90 text-white rounded transition-colors"
             >
               保存
             </button>

@@ -18,7 +18,7 @@ export const CommandListMain: React.FC<ComponentProps<'div'>> = ({
   return (
     <div
       className={twMerge(
-        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-gray-700',
+        'flex flex-col flex-1 min-h-0 border-b border-gray-300 dark:border-[var(--color-border-primary)]',
         className
       )}
       {...props}
@@ -53,9 +53,8 @@ export const CommandListContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
-      {/* 工具栏 */}
-      <div className="flex items-center justify-between h-[41px] px-2 border-b border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full bg-[var(--color-bg-primary)]">
+      <div className="flex items-center justify-between h-[41px] px-2 border-b border-[var(--color-border-primary)]">
         {/* 左侧按钮组 */}
         <div className="flex items-center space-x-2">
           <button
@@ -64,8 +63,8 @@ export const CommandListContent: React.FC = () => {
             className={twMerge(
               'px-3 py-1 text-xs rounded transition-colors',
               canStart && status !== 'running'
-                ? 'bg-green-500 hover:bg-green-600 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                ? 'bg-[var(--ash-accent)] hover:opacity-90 text-white'
+                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
             )}
             title="开始执行批量命令"
           >
@@ -77,8 +76,8 @@ export const CommandListContent: React.FC = () => {
             className={twMerge(
               'px-3 py-1 text-xs rounded transition-colors',
               canPause
-                ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                ? 'bg-[var(--color-warning)] hover:opacity-90 text-white'
+                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
             )}
             title="暂停执行"
           >
@@ -90,8 +89,8 @@ export const CommandListContent: React.FC = () => {
             className={twMerge(
               'px-3 py-1 text-xs rounded transition-colors',
               canClear
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                ? 'bg-[var(--color-error)] hover:opacity-90 text-white'
+                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
             )}
             title="清除所有命令"
           >
@@ -100,12 +99,12 @@ export const CommandListContent: React.FC = () => {
 
           {/* 状态指示 */}
           {status !== 'idle' && (
-            <div className="flex items-center space-x-2 ml-2 pl-2 border-l border-gray-300 dark:border-gray-600">
-              <span className="text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 ml-2 pl-2 border-l border-[var(--color-border-primary)]">
+              <span className="text-xs text-[var(--color-text-secondary)]">
                 {currentIndex} / {totalCommands}
               </span>
               {status === 'running' && (
-                <Icon name="loader-2" size="xs" className="animate-spin text-green-500" />
+                <Icon name="loader-2" size="xs" className="animate-spin text-[var(--ash-accent)]" />
               )}
             </div>
           )}
@@ -113,7 +112,7 @@ export const CommandListContent: React.FC = () => {
 
         {/* 右侧间隔设置 */}
         <div className="flex items-center space-x-2">
-          <label className="text-xs text-gray-600 dark:text-gray-400">间隔</label>
+          <label className="text-xs text-[var(--color-text-secondary)]">间隔</label>
           <input
             type="number"
             min="0.1"
@@ -122,9 +121,9 @@ export const CommandListContent: React.FC = () => {
             onChange={handleIntervalChange}
             disabled={status === 'running'}
             spellCheck={false}
-            className="w-16 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-16 px-2 py-1 text-xs border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-400">秒</span>
+          <span className="text-xs text-[var(--color-text-secondary)]">秒</span>
         </div>
       </div>
 
@@ -136,7 +135,7 @@ export const CommandListContent: React.FC = () => {
           placeholder="在此输入批量命令，每行一个命令..."
           disabled={status === 'running'}
           spellCheck={false}
-          className="w-full h-full px-3 py-2 text-sm font-mono bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none resize-none overflow-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-full px-3 py-2 text-sm font-mono bg-[var(--color-bg-primary)] text-gray-900 dark:text-[var(--color-text-primary)] placeholder-gray-400 dark:placeholder-[var(--color-text-tertiary)] focus:outline-none resize-none overflow-auto disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             whiteSpace: 'pre',
             overflowWrap: 'normal',

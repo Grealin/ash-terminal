@@ -10,7 +10,7 @@ import {
 } from '@/store'
 import { useAtom, useAtomValue } from 'jotai'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { GeneralModal } from './GeneralModal'
+import { SheetModal } from '@/components/SheetModal'
 
 interface UploadItem {
   name: string
@@ -164,12 +164,38 @@ export const UploadModal: React.FC = () => {
   }
 
   return (
-    <GeneralModal isOpen={isModalOpen} onClose={onClose} title="上传文件" width="lg">
+    <SheetModal
+      isOpen={isModalOpen}
+      onClose={onClose}
+      title="上传文件"
+      width="lg"
+      footer={
+        <>
+          <button type="button" className="btn" onClick={onClose} disabled={isUploading}>
+            取消
+          </button>
+          <button
+            type="button"
+            className="px-4 py-2 text-sm rounded-[var(--radius-md)] bg-[var(--ash-accent)] hover:opacity-90 text-white transition-colors"
+            onClick={handleUpload}
+            disabled={!canSubmit}
+          >
+            {isUploading ? (
+              <>
+                <Icon name="loader-2" size="xs" className="animate-spin" /> 上传中...
+              </>
+            ) : (
+              '开始上传'
+            )}
+          </button>
+        </>
+      }
+    >
       <div className="space-y-4">
         <div className="flex items-center space-x-2">
-          <label className="text-sm text-gray-600 dark:text-gray-300">目标目录</label>
+          <label className="text-sm text-[var(--color-text-secondary)]">目标目录</label>
           <input
-            className="flex-1 input input-bordered input-sm dark:bg-gray-700 dark:text-gray-100"
+            className="flex-1 input input-bordered input-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
             value={targetDir}
             onChange={(e) => setTargetDir(e.target.value)}
             placeholder="/home/user"
@@ -180,14 +206,14 @@ export const UploadModal: React.FC = () => {
           className={
             'border-2 border-dashed rounded-md p-6 text-center select-none transition-colors min-h-32 flex flex-col justify-center ' +
             (dragOver
-              ? 'border-blue-500 bg-blue-50/50 dark:border-blue-400 dark:bg-blue-900/20'
-              : 'border-gray-300 dark:border-gray-600')
+              ? 'border-[var(--ash-accent)] bg-[var(--ash-accent)]-subtle'
+              : 'border-[var(--color-border-primary)]')
           }
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-[var(--color-text-secondary)]">
             拖放文件到此处，或
             {/* <button type="button" className="ml-1 link link-primary" onClick={handleBrowse}>
               浏览选择
@@ -207,24 +233,28 @@ export const UploadModal: React.FC = () => {
         </div>
 
         {items.length > 0 && (
-          <div className="max-h-48 overflow-y-auto border rounded-md dark:border-gray-600">
+          <div className="max-h-48 overflow-y-auto border rounded-md border-[var(--color-border-primary)]">
             {items.map((it) => (
               <div
                 key={it.path}
-                className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0 dark:border-gray-600"
+                className="flex items-center justify-between px-3 py-2 text-sm border-b last:border-b-0 border-[var(--color-border-primary)]"
               >
-                <div className="truncate mr-2 dark:text-gray-100">{it.name}</div>
+                <div className="truncate mr-2 text-[var(--color-text-primary)]">{it.name}</div>
                 <div className="flex items-center space-x-2">
-                  {it.status === 'pending' && <span className="text-gray-400">待上传</span>}
+                  {it.status === 'pending' && (
+                    <span className="text-[var(--color-text-tertiary)]">待上传</span>
+                  )}
                   {it.status === 'uploading' && (
-                    <span className="text-blue-500 flex items-center">
+                    <span className="text-[var(--ash-accent)] flex items-center">
                       <Icon name="loader-2" size="xs" className="animate-spin mr-1" />
                       上传中
                     </span>
                   )}
-                  {it.status === 'success' && <span className="text-green-600">完成</span>}
+                  {it.status === 'success' && (
+                    <span className="text-[var(--color-success)]">完成</span>
+                  )}
                   {it.status === 'error' && (
-                    <span className="text-red-500" title={it.error}>
+                    <span className="text-[var(--color-error)]" title={it.error}>
                       失败
                     </span>
                   )}
@@ -233,27 +263,7 @@ export const UploadModal: React.FC = () => {
             ))}
           </div>
         )}
-
-        <div className="flex justify-end space-x-3 pt-2">
-          <button type="button" className="btn" onClick={onClose} disabled={isUploading}>
-            取消
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary dark:btn-primary-dark"
-            onClick={handleUpload}
-            disabled={!canSubmit}
-          >
-            {isUploading ? (
-              <>
-                <Icon name="loader-2" size="xs" className="animate-spin" /> 上传中...
-              </>
-            ) : (
-              '开始上传'
-            )}
-          </button>
-        </div>
       </div>
-    </GeneralModal>
+    </SheetModal>
   )
 }

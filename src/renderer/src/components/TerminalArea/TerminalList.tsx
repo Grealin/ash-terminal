@@ -17,7 +17,7 @@ export const TerminalListMain: React.FC<ComponentProps<'div'>> = ({
   return (
     <div
       className={twMerge(
-        'flex-[2] min-h-0 overflow-hidden border-b border-gray-300 dark:border-gray-700',
+        'flex-[2] min-h-0 overflow-hidden border-b border-[var(--color-border-primary)]',
         className
       )}
       {...props}
@@ -72,10 +72,10 @@ export const TerminalListContent: React.FC = () => {
     () =>
       isDark
         ? {
-            background: '#0f172a', // slate-900
-            foreground: '#e2e8f0', // slate-200
-            cursor: '#f1f5f9', // slate-100
-            selectionBackground: '#3b82f680', // blue-500 with opacity
+            background: '#16181D',
+            foreground: '#ECEEF0',
+            cursor: '#ECEEF0',
+            selectionBackground: 'rgba(255, 138, 120, 0.2)',
             selectionForeground: '#ffffff', // white
             black: '#1e293b', // slate-800
             red: '#ef4444', // red-500
@@ -95,10 +95,10 @@ export const TerminalListContent: React.FC = () => {
             brightWhite: '#f1f5f9' // slate-100
           }
         : {
-            background: '#ffffff',
-            foreground: '#1e293b', // slate-800
-            cursor: '#475569', // slate-600
-            selectionBackground: '#3b82f6', // blue-500 - 明显的蓝色选择背景
+            background: '#FFFFFF',
+            foreground: '#1A1D23',
+            cursor: '#1A1D23',
+            selectionBackground: 'rgba(255, 127, 107, 0.2)',
             selectionForeground: '#ffffff', // white - 白色选择前景
             black: '#1e293b',
             red: '#dc2626', // red-600
@@ -565,17 +565,17 @@ export const TerminalListContent: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* 终端工具栏 */}
-      <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between h-9 px-3 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border-primary)]">
         <div className="flex items-center space-x-2">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">终端</h3>
+          <h3 className="text-[13px] font-medium text-[var(--color-text-primary)]">终端</h3>
           <span
             className={twMerge(
-              'text-xs px-2 py-1 rounded-full',
+              'text-[11px] px-2 py-0.5 rounded-[var(--radius-full)]',
               sshConnected
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
                 : isConnecting
-                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  ? 'bg-[var(--color-warning)]/15 text-[var(--color-warning)]'
+                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
             )}
           >
             {sshConnected ? `已连接：${currentSessionName}` : isConnecting ? '连接中...' : '未连接'}
@@ -586,14 +586,14 @@ export const TerminalListContent: React.FC = () => {
             <>
               <button
                 onClick={handleReconnect}
-                className="px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                className="px-2 py-0.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
                 title="重新连接"
               >
                 重连
               </button>
               <button
                 onClick={handleDisconnect}
-                className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                className="px-2 py-0.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
                 title="断开连接"
               >
                 断开
@@ -602,19 +602,18 @@ export const TerminalListContent: React.FC = () => {
           )}
           {isConnecting && (
             <div className="flex items-center space-x-2">
-              <Icon
-                name="loader-2"
-                size="sm"
-                className="animate-spin text-blue-500 dark:text-blue-400"
-              />
-              <span className="text-xs text-blue-600 dark:text-blue-400">正在连接...</span>
+              <Icon name="loader-2" size="sm" className="animate-spin text-[var(--ash-accent)]" />
+              <span className="text-[11px] text-[var(--color-text-secondary)]">正在连接...</span>
             </div>
           )}
         </div>
       </div>
 
       {/* 终端区域 */}
-      <div className="flex-1 relative min-h-0 xterm-text-selectable" ref={containerRef}>
+      <div
+        className="flex-1 relative min-h-0 xterm-text-selectable bg-[var(--color-terminal-bg)]"
+        ref={containerRef}
+      >
         <div
           ref={terminalRef}
           className="h-full w-full"

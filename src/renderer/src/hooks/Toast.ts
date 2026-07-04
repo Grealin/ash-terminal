@@ -46,7 +46,7 @@ export const useToast = (): UseToastApi => {
         ...(opts || {}),
         message,
         title: undefined,
-        size: 'wf',
+        size: opts?.size || 'md',
         position: opts?.position || 'top-center'
       }),
     [show]

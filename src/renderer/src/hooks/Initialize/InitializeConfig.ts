@@ -1,6 +1,7 @@
 import { useConfig, useDarkTheme } from '@/hooks'
 import { AiConfigService } from '@/services'
 import {
+  accentColorAtom,
   activeProviderIdAtom,
   backupOnAiModifyAtom,
   backupOnManualEditAtom,
@@ -8,6 +9,7 @@ import {
 } from '@/store'
 import { useSetAtom } from 'jotai'
 import { useEffect, useRef } from 'react'
+import { applyAccentCss } from '../useAccentColor'
 
 export const useInitializeConfig = (): { loading: boolean } => {
   const { config, loading } = useConfig()
@@ -16,12 +18,19 @@ export const useInitializeConfig = (): { loading: boolean } => {
   const setMonitorRefreshInterval = useSetAtom(monitorRefreshIntervalAtom)
   const setBackupOnAiModify = useSetAtom(backupOnAiModifyAtom)
   const setBackupOnManualEdit = useSetAtom(backupOnManualEditAtom)
+  const setAccentColorAtom = useSetAtom(accentColorAtom)
   const initializedRef = useRef(false)
 
   useEffect(() => {
     if (!loading && config && !initializedRef.current) {
       // 从配置文件读取默认主题设置（仅在首次加载时）
       setTheme(config.theme.defaultDarkMode)
+
+      // 从配置文件读取强调色（仅在首次加载时）
+      const savedAccent = config.theme.accentColor || 'blue'
+      setAccentColorAtom(savedAccent)
+      // 立即应用，不等待 useAccentColor hook 渲染
+      applyAccentCss(savedAccent, config.theme.defaultDarkMode)
 
       // 从配置文件读取监控刷新间隔
       if (config.monitor?.refreshInterval) {
@@ -57,7 +66,8 @@ export const useInitializeConfig = (): { loading: boolean } => {
     setActiveProviderId,
     setMonitorRefreshInterval,
     setBackupOnAiModify,
-    setBackupOnManualEdit
+    setBackupOnManualEdit,
+    setAccentColorAtom
   ])
 
   return { loading }

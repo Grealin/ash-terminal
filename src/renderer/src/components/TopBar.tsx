@@ -104,7 +104,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   }
 
   return (
-    <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm p-0 dark:bg-slate-900/80 dark:border-slate-700/60">
+    <header className="bg-[var(--color-bg-primary)] border-b border-[var(--color-border-primary)] p-0">
       <div className="flex items-center justify-between h-12">
         <div className="flex items-center space-x-1">
           {/* 应用图标 */}
@@ -182,7 +182,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
         <div className="flex items-center space-x-2">
           {/* 主题切换按钮 */}
           <button
-            className="w-8 h-8 rounded-md text-slate-600 hover:text-slate-700 hover:bg-gray-200  transition-all duration-200 flex items-center justify-center group dark:text-slate-400 dark:hover:text-slate-300 dark:hover:bg-gray-700"
+            className="w-8 h-8 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--ash-accent-subtle)] transition-all duration-200 flex items-center justify-center group"
             onClick={toggleTheme}
             title={isDark ? '切换到亮色模式' : '切换到暗色模式'}
           >
@@ -194,7 +194,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           </button>
 
           <button
-            className="w-8 h-8 rounded-md text-yellow-600 hover:text-yellow-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => ElectronService.minimizeFocusedWindow()}
             title="最小化窗口"
           >
@@ -202,7 +202,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           </button>
 
           <button
-            className="w-8 h-8 rounded-md text-green-600 hover:text-green-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => ElectronService.toggleMaximizeFocusedWindow()}
             title={isMaximized ? '恢复窗口' : '最大化窗口'}
           >
@@ -222,7 +222,7 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
           </button>
 
           <button
-            className="w-8 h-8 mr-3 rounded-md text-red-600 hover:text-red-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
+            className="w-8 h-8 mr-3 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-error)] hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center group"
             onClick={() => ElectronService.closeFocusedWindow()}
             title="关闭窗口"
           >

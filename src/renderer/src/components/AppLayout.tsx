@@ -1,36 +1,34 @@
 import { Icon } from '@/components/Icon'
-import {
-  useAiInterface,
-  useFileList,
-  useInitializeConfig,
-  useLeftSideBar,
-  useMonitorList,
-  useRightSideBar,
-  useSessionList
-} from '@/hooks'
+import { Splitter } from '@/components/Splitter'
+import { useInitializeConfig, useLeftSideBar, useRightSideBar } from '@/hooks'
+import { useAccentColor } from '@/hooks/useAccentColor'
+import { useSplitter } from '@/hooks/useSplitter'
 import { darkStateAtom } from '@/store'
 import { useAtomValue } from 'jotai'
-import type { ComponentProps } from 'react'
+import { type ComponentProps, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 
+// ===== RootLayout =====
 export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, className, ...props }) => {
   const { loading } = useInitializeConfig()
   const isDark = useAtomValue(darkStateAtom)
+  useAccentColor() // 应用强调色到全局 CSS 变量
 
-  // 如果正在加载，显示加载状态防止闪烁
   if (loading) {
     return (
       <main
         className={twMerge(
-          'flex h-screen flex-col m-0 p-0 bg-slate-400 min-h-screen overflow-hidden',
+          'flex h-screen flex-col m-0 p-0 overflow-hidden bg-[var(--color-bg-primary)]',
           className
         )}
         {...props}
       >
         <div className="flex items-center justify-center h-full">
-          <div className="flex items-center justify-center">
-            <Icon name="loader-2" size="xl" className="animate-spin text-slate-300" />
-          </div>
+          <Icon
+            name="loader-2"
+            size="xl"
+            className="animate-spin text-[var(--color-text-tertiary)]"
+          />
         </div>
       </main>
     )
@@ -39,9 +37,8 @@ export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, classNa
   return (
     <main
       className={twMerge(
-        'flex h-screen flex-col m-0 p-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen overflow-hidden',
-        isDark && 'dark', // 主题切换关键
-        'dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900', // 暗色背景渐变
+        'flex h-screen flex-col m-0 p-0 overflow-hidden bg-[var(--color-bg-primary)]',
+        isDark && 'dark',
         className
       )}
       {...props}
@@ -51,81 +48,85 @@ export const RootLayout: React.FC<ComponentProps<'main'>> = ({ children, classNa
   )
 }
 
+// ===== MainContent (三栏 + 可拖拽分隔条) =====
 export const MainContent: React.FC<ComponentProps<'div'>> = ({ children, className, ...props }) => {
+  const { visible: leftVisible } = useLeftSideBar()
+  const { visible: rightVisible } = useRightSideBar()
+
+  const [leftWidth, setLeftWidth] = useState(320)
+  const [rightWidth, setRightWidth] = useState(320)
+
+  const leftSplitter = useSplitter({
+    direction: 'horizontal',
+    minSize: 240,
+    maxSize: 480,
+    currentSize: leftWidth,
+    onResize: setLeftWidth,
+    defaultSize: 320
+  })
+
+  const rightSplitter = useSplitter({
+    direction: 'horizontal',
+    minSize: 240,
+    maxSize: 480,
+    currentSize: rightWidth,
+    onResize: setRightWidth,
+    defaultSize: 320
+  })
+
+  const childArray = Array.isArray(children) ? children : [children]
+
   return (
-    <div
-      className={twMerge('flex flex-row flex-1 m-0 p-0 min-h-0 overflow-hidden', className)}
-      {...props}
-    >
-      {children}
+    <div className={twMerge('flex flex-row flex-1 min-h-0 overflow-hidden', className)} {...props}>
+      {leftVisible && (
+        <>
+          <div
+            className="flex flex-col h-full shrink-0 overflow-hidden border-r border-[var(--color-border-primary)]"
+            style={{ width: leftWidth + 'px' }}
+          >
+            {childArray[0]}
+          </div>
+          <Splitter {...leftSplitter} />
+        </>
+      )}
+      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">{childArray[1]}</div>
+      {rightVisible && (
+        <>
+          <Splitter {...rightSplitter} />
+          <div
+            className="flex flex-col h-full shrink-0 overflow-hidden border-l border-[var(--color-border-primary)]"
+            style={{ width: rightWidth + 'px' }}
+          >
+            {childArray[2]}
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-export const LeftSideBar: React.FC<ComponentProps<'aside'>> = ({
+// ===== 子布局容器 =====
+export const LeftSideBar: React.FC<ComponentProps<'div'>> = ({ children, className, ...props }) => (
+  <div className={twMerge('flex flex-col h-full overflow-hidden', className)} {...props}>
+    {children}
+  </div>
+)
+
+export const CentralBar: React.FC<ComponentProps<'div'>> = ({ children, className, ...props }) => (
+  <div
+    className={twMerge('flex flex-col flex-1 h-full min-h-0 overflow-hidden', className)}
+    {...props}
+  >
+    {children}
+  </div>
+)
+
+export const RightSideBar: React.FC<ComponentProps<'div'>> = ({
   children,
   className,
   ...props
-}) => {
-  const { visible } = useLeftSideBar()
-  const { visible: aiInterfaceVisible } = useAiInterface()
-
-  // 如果不可见，返回null
-  if (!visible || !aiInterfaceVisible) return null
-
-  return (
-    <aside
-      className={twMerge(
-        'flex flex-col flex-[1] h-full m-0 p-0 bg-gradient-to-b from-sky-50 via-cyan-50 to-blue-50 border-r  border-emerald-200/60  dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </aside>
-  )
-}
-
-export const CentralBar: React.FC<ComponentProps<'section'>> = ({
-  children,
-  className,
-  ...props
-}) => {
-  return (
-    <section
-      className={twMerge(
-        'flex flex-col flex-[3] h-full min-h-0 m-0 p-0 overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/30 shadow-inner dark:bg-gradient-to-br dark:from-slate-700 dark:via-slate-600 dark:to-slate-700',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </section>
-  )
-}
-
-export const RightSideBar: React.FC<ComponentProps<'aside'>> = ({
-  children,
-  className,
-  ...props
-}) => {
-  const { visible } = useRightSideBar()
-  const { visible: sessionListVisible } = useSessionList()
-  const { visible: fileListVisible } = useFileList()
-  const { visible: monitorListVisible } = useMonitorList()
-
-  // 如果不可见，返回null
-  if (!visible || (!sessionListVisible && !fileListVisible && !monitorListVisible)) return null
-
-  return (
-    <aside
-      className={twMerge(
-        'flex flex-col flex-[1] h-full min-h-0 m-0 p-0 overflow-hidden bg-gradient-to-b from-emerald-50 via-teal-50 to-cyan-50 border-l border-emerald-200/60 dark:bg-gradient-to-b dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 dark:border-slate-700/50',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </aside>
-  )
-}
+}) => (
+  <div className={twMerge('flex flex-col h-full min-h-0 overflow-hidden', className)} {...props}>
+    {children}
+  </div>
+)

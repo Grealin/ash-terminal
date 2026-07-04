@@ -30,7 +30,7 @@ const components: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-500 dark:text-blue-400 underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-300 transition-colors break-all"
+      className="text-[var(--ash-accent)] underline underline-offset-2 hover:opacity-80 transition-colors break-all"
       {...props}
     >
       {children}
@@ -44,7 +44,7 @@ const components: Components = {
           type="checkbox"
           checked={checked}
           readOnly
-          className="mr-1.5 align-middle accent-blue-500"
+          className="mr-1.5 align-middle accent-[var(--ash-accent)]"
           {...props}
         />
       )
@@ -61,14 +61,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, isStreamin
   // 流式输出：纯文本渲染，避免不完整 Markdown 导致的断裂闪烁
   if (isStreaming) {
     return (
-      <p className="can-select text-xs whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
+      <p className="can-select text-xs whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-[var(--color-text-primary)]">
         {content}
       </p>
     )
   }
 
   return (
-    <div className="markdown-body can-select text-xs leading-relaxed text-gray-800 dark:text-gray-200">
+    <div className="markdown-body can-select text-xs leading-relaxed text-gray-800 dark:text-[var(--color-text-primary)]">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeSanitize]}

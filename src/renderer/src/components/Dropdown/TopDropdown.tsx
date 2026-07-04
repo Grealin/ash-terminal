@@ -17,9 +17,8 @@ export const TopDropdown: React.FC<ComponentProps<'ul'>> = ({ children, classNam
     <ul
       ref={dropdownRef}
       className={twMerge(
-        'w-50 dropdown rounded-md shadow-lg',
-        'border border-slate-200 bg-white',
-        'dark:bg-slate-800 dark:border-slate-700',
+        'w-50 dropdown',
+        'bg-[var(--color-bg-elevated)] shadow-[var(--shadow-md)] rounded-[var(--radius-lg)] border border-[var(--color-border-primary)]',
         className
       )}
       popover="auto"

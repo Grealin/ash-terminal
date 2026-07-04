@@ -9,7 +9,8 @@ let store: any = null
 
 const defaultConfig: AppConfig = {
   theme: {
-    defaultDarkMode: false
+    defaultDarkMode: false,
+    accentColor: 'blue'
   },
   layout: {
     leftSideBarVisible: true,
@@ -79,6 +80,9 @@ export const initConfigStore = async (): Promise<void> => {
       }
     }
   }
+
+  // 启动配置迁移，补全旧版配置文件缺失的字段
+  migrateConfig()
 }
 
 // 获取配置
@@ -105,4 +109,53 @@ export const updateConfigField = (path: string, value: any): void => {
 
   // 直接在 electron-store 实例上设置值，避免完整对象替换
   store.set(path, value)
+}
+
+// 配置迁移：深度比对 defaultConfig 与现有配置，缺失字段自动补全（仅首次加载时调用）
+export const migrateConfig = (): void => {
+  if (!store) {
+    throw new Error('Config store not initialized')
+  }
+
+  let migrated = false
+
+  // 递归补全缺失字段
+  const deepMerge = (stored: unknown, defaults: unknown, prefix: string): void => {
+    if (stored === undefined || stored === null) {
+      store.set(prefix.replace(/^\./, ''), defaults)
+      migrated = true
+      return
+    }
+
+    if (
+      typeof defaults === 'object' &&
+      defaults !== null &&
+      !Array.isArray(defaults) &&
+      typeof stored === 'object' &&
+      stored !== null &&
+      !Array.isArray(stored)
+    ) {
+      for (const key of Object.keys(defaults as Record<string, unknown>)) {
+        const storedVal = (stored as Record<string, unknown>)[key]
+        const defaultVal = (defaults as Record<string, unknown>)[key]
+        if (storedVal === undefined) {
+          store.set(`${prefix}.${key}`, defaultVal)
+          migrated = true
+        } else if (
+          typeof defaultVal === 'object' &&
+          defaultVal !== null &&
+          !Array.isArray(defaultVal)
+        ) {
+          deepMerge(storedVal, defaultVal, `${prefix}.${key}`)
+        }
+      }
+    }
+  }
+
+  const current = store.store as AppConfig
+  deepMerge(current, defaultConfig, '')
+
+  if (migrated) {
+    console.log('[Config] Migrated: missing fields filled with defaults')
+  }
 }

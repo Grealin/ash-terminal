@@ -35,7 +35,7 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
   return (
     <div
       className={twMerge(
-        'flex flex-col flex-1 min-h-0 border-b border-l border-gray-300 dark:border-gray-700',
+        'flex flex-col flex-1 min-h-0 border-b border-l border-gray-300 dark:border-[var(--color-border-primary)]',
         className
       )}
       {...props}
@@ -100,7 +100,7 @@ export const AiAgentContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-[var(--color-bg-primary)]">
       {/* 顶栏 */}
       <AiTopBar
         onViewChange={setCurrentView}

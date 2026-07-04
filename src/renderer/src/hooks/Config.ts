@@ -23,7 +23,8 @@ export const useConfig = (): {
       // 如果加载失败，使用默认配置
       const defaultConfig: AppConfig = {
         theme: {
-          defaultDarkMode: false
+          defaultDarkMode: false,
+          accentColor: 'blue'
         },
         layout: {
           leftSideBarVisible: true,

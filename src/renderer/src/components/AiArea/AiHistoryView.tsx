@@ -277,17 +277,17 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
   }
 
   return (
-    <div className="flex flex-col h-full min-w-[248px] bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full min-w-[248px] bg-[var(--color-bg-primary)]">
       {/* 标题栏 */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">历史任务</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border-primary)]">
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">历史任务</h3>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400">{tasks.length} 个任务</span>
+          <span className="text-xs text-[var(--color-text-tertiary)]">{tasks.length} 个任务</span>
           {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
             disabled={isLoading}
-            className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1 text-[var(--color-text-secondary)] hover:text-gray-900 dark:hover:text-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="刷新任务列表"
           >
             <Icon name="refresh-cw" size="sm" />
@@ -297,7 +297,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
             <button
               onClick={() => setClearAllConfirmOpen(true)}
               disabled={isLoading}
-              className="p-1 text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-error)] dark:hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="清空全部任务"
             >
               <Icon name="trash-2" size="sm" />
@@ -306,7 +306,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
           {/* 创建新任务按钮 */}
           <button
             onClick={handleNewTask}
-            className="px-2 py-1 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded border border-blue-600 dark:border-blue-700 transition-colors shadow-sm hover:shadow-md"
+            className="px-2 py-1 bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] border border-[var(--ash-accent)] transition-colors shadow-sm hover:shadow-md"
             title="创建新任务"
           >
             <Icon name="plus" size="sm" />
@@ -316,12 +316,12 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
 
       {/* 搜索筛选 */}
       {tasks.length > 0 && (
-        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-2 border-b border-[var(--color-border-primary)]">
           <div className="relative">
             <Icon
               name="search"
               size="sm"
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] dark:text-[var(--color-text-tertiary)]"
             />
             <input
               type="text"
@@ -329,12 +329,12 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="搜索任务名称..."
               spellCheck={false}
-              className="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-8 pr-8 py-1.5 text-sm border border-gray-300 dark:border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] placeholder-gray-400 dark:placeholder-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--ash-accent)] focus:border-transparent"
             />
             {searchText && (
               <button
                 onClick={() => setSearchText('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-[var(--color-text-tertiary)] hover:text-gray-600 dark:text-[var(--color-text-tertiary)] dark:hover:text-gray-300 transition-colors"
                 title="清除筛选"
               >
                 <Icon name="x" size="xs" />
@@ -348,25 +348,25 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
       <div className="flex-1 overflow-y-auto relative">
         {/* 加载遮罩 */}
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white/50 dark:bg-[var(--color-bg-primary)]/50 flex items-center justify-center z-10">
             <div className="flex flex-col items-center space-y-2">
-              <Icon name="loader-2" size="md" className="animate-spin text-blue-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">加载任务中...</span>
+              <Icon name="loader-2" size="md" className="animate-spin text-[var(--ash-accent)]" />
+              <span className="text-sm text-[var(--color-text-secondary)]">加载任务中...</span>
             </div>
           </div>
         )}
 
         {!currentSessionId ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-gray-500 dark:text-gray-400">请先连接 SSH 会话</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">请先连接 SSH 会话</p>
           </div>
         ) : tasks.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-gray-500 dark:text-gray-400">暂无历史任务</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">暂无历史任务</p>
           </div>
         ) : filteredTasks.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-gray-500 dark:text-gray-400">没有匹配的任务</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">没有匹配的任务</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -374,8 +374,8 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
               <div
                 key={task.id}
                 className={twMerge(
-                  'p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                  selectedTaskId === task.id && 'bg-blue-50 dark:bg-blue-900/20',
+                  'p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-[var(--color-bg-tertiary)]',
+                  selectedTaskId === task.id && 'bg-[var(--ash-accent)]-subtle',
                   isLoading && 'pointer-events-none opacity-60'
                 )}
                 onClick={() => {
@@ -402,18 +402,18 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
                         }}
                         onClick={(e) => e.stopPropagation()}
                         spellCheck={false}
-                        className="w-full px-2 py-1 text-sm border border-blue-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none"
+                        className="w-full px-2 py-1 text-sm border border-[var(--ash-accent)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none"
                         autoFocus
                       />
                     ) : (
                       <h4
-                        className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[180px]"
+                        className="text-sm font-medium text-[var(--color-text-primary)] truncate max-w-[180px]"
                         title={task.name}
                       >
                         {task.name}
                       </h4>
                     )}
-                    <div className="flex items-center mt-1 space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center mt-1 space-x-2 text-xs text-[var(--color-text-tertiary)]">
                       <span>{formatDate(task.createdAt)}</span>
                       <span>•</span>
                       <span>{getMessageCount(task)} 条消息</span>
@@ -423,7 +423,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
                     {/* 编辑按钮 */}
                     <button
                       onClick={() => handleStartEdit(task)}
-                      className="p-1 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                      className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--ash-accent)] transition-colors"
                       title="重命名"
                     >
                       <Icon name="pencil" size="sm" />
@@ -431,7 +431,7 @@ export const AiHistoryView: React.FC<AiHistoryViewProps> = ({ onViewChange, isVi
                     {/* 删除按钮 */}
                     <button
                       onClick={() => handleAskDelete(task)}
-                      className="p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-error)] dark:hover:text-red-400 transition-colors"
                       title="删除"
                     >
                       <Icon name="trash-2" size="sm" />
