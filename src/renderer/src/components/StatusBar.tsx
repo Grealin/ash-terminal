@@ -32,7 +32,7 @@ export const StatusBar: React.FC<ComponentProps<'footer'>> = ({ className, ...pr
         </span>
       </div>
       <span className="text-[11px] leading-none" style={{ color: 'var(--color-text-tertiary)' }}>
-        ASH Terminal v1.1.0
+        ASH Terminal v2.0.0
       </span>
     </footer>
   )

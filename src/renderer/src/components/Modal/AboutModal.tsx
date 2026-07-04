@@ -46,7 +46,7 @@ export const AboutModal: React.FC = () => {
           <div className="flex flex-col items-center justify-center space-y-3">
             <img src={icon} alt="ASH Terminal" className="h-20 w-20" />
             <h4 className="text-xl font-bold text-[var(--color-text-primary)]">ASH Terminal</h4>
-            <p className="text-sm text-[var(--color-text-tertiary)]">版本 1.1.0</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">版本 2.0.0</p>
           </div>
 
           {/* 分隔线 */}
