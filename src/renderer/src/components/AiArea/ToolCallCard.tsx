@@ -126,7 +126,8 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     }
   }
 
-  const meta = TOOL_META[toolName] ?? { icon: 'zap', label: toolName }
+  const displayLabel = toolName === 'unknown' ? '工具调用' : toolName
+  const meta = TOOL_META[toolName] ?? { icon: 'zap', label: displayLabel }
   const keyParam = extractKeyParam(toolName, params)
   const success = status === 'completed' ? isResultSuccess(result) : null
   const resultText = result !== undefined ? getResultText(result) : null

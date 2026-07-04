@@ -50,7 +50,8 @@ export const ToolApprovalCard: React.FC<ToolApprovalCardProps> = ({
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const meta = TOOL_META[toolName] ?? { icon: 'zap', label: toolName }
+  const displayLabel = toolName === 'unknown' ? '工具调用' : toolName
+  const meta = TOOL_META[toolName] ?? { icon: 'zap', label: displayLabel }
   const keyParam = extractKeyParam(toolName, params)
   const paramsJson = JSON.stringify(params, null, 2)
 
