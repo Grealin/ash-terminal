@@ -75,8 +75,8 @@ export const TerminalListContent: React.FC = () => {
             background: '#16181D',
             foreground: '#ECEEF0',
             cursor: '#ECEEF0',
-            selectionBackground: 'rgba(255, 138, 120, 0.2)',
-            selectionForeground: '#ffffff', // white
+            selectionBackground: 'rgba(236, 238, 240, 0.25)',
+            selectionForeground: '#16181D',
             black: '#1e293b', // slate-800
             red: '#ef4444', // red-500
             green: '#22c55e', // green-500
@@ -98,8 +98,8 @@ export const TerminalListContent: React.FC = () => {
             background: '#FFFFFF',
             foreground: '#1A1D23',
             cursor: '#1A1D23',
-            selectionBackground: 'rgba(255, 127, 107, 0.2)',
-            selectionForeground: '#ffffff', // white - 白色选择前景
+            selectionBackground: 'rgba(26, 29, 35, 0.2)',
+            selectionForeground: '#ffffff',
             black: '#1e293b',
             red: '#dc2626', // red-600
             green: '#16a34a', // green-600

@@ -1,5 +1,6 @@
 import { Icon } from '@/components/Icon'
 import { ToolCallCard } from './ToolCallCard'
+import { ToolCallGroup } from './ToolCallGroup'
 import MarkdownRenderer from './MarkdownRenderer'
 import { AIService, AiConfigService, ToolApprovalService } from '@/services'
 import { useToast } from '@/hooks'
@@ -30,6 +31,7 @@ interface ToolExecutionRecord {
   result?: any
   timestamp: number
   status: 'calling' | 'completed'
+  roundId: number
 }
 
 interface AiChatViewProps {
@@ -78,6 +80,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const eventCleanupRef = useRef<Array<() => void>>([])
   const listenersSetupRef = useRef(false)
   const taskIdRef = useRef<string | null>(null) // 跟踪上一个任务 ID
+  const currentRoundIdRef = useRef(0) // 追踪当前 Agent 推理轮次，每次 handleSend 递增
 
   // 自动滚动到底部
   const scrollToBottom = (): void => {
@@ -297,6 +300,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
   const handleSend = async (): Promise<void> => {
     if (!message.trim() || !currentSessionId) return
 
+    currentRoundIdRef.current += 1
+
     const userMessage = message.trim()
     setMessage('')
     setIsProcessing(true)
@@ -332,6 +337,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         try {
           const task = await AIService.getCurrentTask(currentSessionId)
           if (task && task.messages) {
+            setToolExecutions([])
             setMessages(task.messages)
             // 如果当前是临时任务（ID 以 temp- 开头），替换为真实任务
             if (currentTask?.id.startsWith('temp-')) {
@@ -347,6 +353,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
       const toolCallCleanup = AIService.onTaskToolCall(currentSessionId, (data) => {
         const recordId = `tool-${Date.now()}-${Math.random()}`
+        const roundId = currentRoundIdRef.current
         setToolExecutions((prev) => [
           ...prev,
           {
@@ -354,7 +361,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             name: data.name,
             params: data.params,
             timestamp: Date.now(),
-            status: 'calling'
+            status: 'calling',
+            roundId
           }
         ])
       })
@@ -386,7 +394,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
               params: {},
               result: data.result,
               timestamp: Date.now(),
-              status: 'completed'
+              status: 'completed',
+              roundId: currentRoundIdRef.current
             }
           ]
         })
@@ -529,6 +538,19 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     return toolExecutions.filter((exec) => !boundIds.has(exec.id))
   }
 
+  // 将 unbound 工具执行记录按 roundId 分组
+  const groupExecutionsByRound = (
+    executions: ToolExecutionRecord[]
+  ): Map<number, ToolExecutionRecord[]> => {
+    const groups = new Map<number, ToolExecutionRecord[]>()
+    executions.forEach((exec) => {
+      const round = exec.roundId ?? 0
+      if (!groups.has(round)) groups.set(round, [])
+      groups.get(round)!.push(exec)
+    })
+    return groups
+  }
+
   // 清理消息内容中的特殊标签
   const cleanMessageContent = (content: string | null): string => {
     if (!content) return ''
@@ -610,16 +632,18 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         return <div key={msg.id}></div>
       }
 
-      // 过滤掉已有对应 TOOL 消息且该 TOOL 消息能找到 toolExecution 的 tool_call
-      // - 实时会话：TOOL 消息 + toolExecution 都存在 → TOOL 分支负责渲染 → ASSISTANT 跳过
-      // - 页面刷新：TOOL 消息存在但 toolExecutions 为空 → TOOL 分支不渲染 → ASSISTANT 负责渲染
+      // 过滤出真正的孤儿 tool_call：
+      // - 有对应 TOOL 消息 → TOOL 分支负责渲染 → 不是孤儿
+      // - 没有 TOOL 消息但有 toolExecutions 记录 → unbound 路径负责 → 不是孤儿
+      // - 没有 TOOL 消息且没有 toolExecutions → 真正孤儿（如页面刷新后不完整数据）
       const orphanToolCalls = hasToolCalls
         ? msg.tool_calls!.filter((tc) => {
-            const toolMsg = messages.find(
+            const hasToolMsg = messages.some(
               (m) => m.role === MessageRole.TOOL && m.tool_call_id === tc.id
             )
-            if (!toolMsg) return true
-            return !findToolExecutionForMessage(toolMsg)
+            if (hasToolMsg) return false
+            const hasExec = toolExecutions.some((e) => e.name === tc.function.name)
+            return !hasExec
           })
         : []
 
@@ -655,67 +679,44 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
     } else if (msg.role === MessageRole.TOOL) {
       const toolExecution = findToolExecutionForMessage(msg)
 
+      // 从 assistant 消息的 tool_calls 中获取工具名和参数（历史回退数据源）
+      const assistantMsg = messages.find(
+        (m) =>
+          m.role === MessageRole.ASSISTANT &&
+          msg.tool_call_id &&
+          m.tool_calls?.some((tc) => tc.id === msg.tool_call_id)
+      )
+      const matchingToolCall =
+        msg.tool_call_id && assistantMsg
+          ? assistantMsg.tool_calls?.find((tc) => tc.id === msg.tool_call_id)
+          : undefined
+
+      let assistantParams: Record<string, unknown> = {}
+      try {
+        if (matchingToolCall?.function.arguments) {
+          assistantParams = JSON.parse(matchingToolCall.function.arguments)
+        }
+      } catch {
+        /* keep empty */
+      }
+
+      // 数据优先级：toolExecution > matchingToolCall > fallback
+      const displayName = toolExecution?.name || matchingToolCall?.function.name || 'unknown'
+      const displayParams =
+        toolExecution?.params && Object.keys(toolExecution.params).length > 0
+          ? toolExecution.params
+          : assistantParams
+      const displayResult = toolExecution?.result
+
       return (
         <div key={msg.id}>
-          {/* 如果找到对应的工具执行记录，先显示工具调用和结果卡片 */}
-          {toolExecution && (
-            <>
-              {/* 工具调用卡片 */}
-              <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
-                <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
-                  <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
-                    调用工具：{toolExecution.name}
-                  </p>
-                  <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
-                    <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
-                      查看参数
-                    </summary>
-                    <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-60 border border-[var(--color-border-primary)] whitespace-pre">
-                      {JSON.stringify(toolExecution.params, null, 2)}
-                    </pre>
-                  </details>
-                </div>
-              </div>
-
-              {/* 工具结果卡片 */}
-              {toolExecution.result !== undefined && (
-                <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
-                  <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
-                    <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
-                      工具结果：{toolExecution.name}
-                    </p>
-                    <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
-                      <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
-                        查看结果
-                      </summary>
-                      <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-40 border border-[var(--color-border-primary)] whitespace-pre">
-                        {typeof toolExecution.result === 'string'
-                          ? toolExecution.result
-                          : JSON.stringify(toolExecution.result, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* TOOL 消息卡片 */}
-          <div className="flex justify-start mb-2 animate-[fadeIn_200ms_ease-out]">
-            <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] p-2 border-l-[2px] border-l-[var(--ash-accent)]">
-              <p className="text-[11px] text-[var(--color-text-primary)] font-semibold mb-1">
-                工具执行结果
-              </p>
-              <details className="text-[11px] text-[var(--color-text-secondary)] min-w-0">
-                <summary className="cursor-pointer hover:text-[var(--color-text-primary)] transition-colors">
-                  查看结果
-                </summary>
-                <pre className="can-select mt-2 p-2 bg-[var(--color-bg-primary)] rounded-[var(--radius-sm)] text-[11px] overflow-x-auto overflow-y-auto max-h-40 border border-[var(--color-border-primary)] whitespace-pre">
-                  {msg.content}
-                </pre>
-              </details>
-            </div>
-          </div>
+          <ToolCallCard
+            toolName={displayName}
+            params={displayParams}
+            result={displayResult}
+            toolMessageContent={msg.content}
+            status="completed"
+          />
         </div>
       )
     }
@@ -760,16 +761,23 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
           <div className="space-y-2">
             {messages.sort((a, b) => a.index - b.index).map((msg) => renderMessage(msg))}
 
-            {/* 未绑定的工具执行记录（实时显示） */}
-            {getUnboundToolExecutions().map((execution) => (
-              <ToolCallCard
-                key={execution.id}
-                toolName={execution.name}
-                params={execution.params}
-                result={execution.result}
-                status={execution.status}
-              />
-            ))}
+            {/* 未绑定的工具执行记录（按轮次分组显示） */}
+            {Array.from(groupExecutionsByRound(getUnboundToolExecutions()).entries()).map(
+              ([roundId, execs]) => (
+                <ToolCallGroup key={roundId} executions={execs} roundId={roundId} />
+              )
+            )}
+
+            {/* 工具调用组与 AI 文本回答之间的视觉分隔 */}
+            {getUnboundToolExecutions().length > 0 && streamingMessage && (
+              <div className="flex items-center gap-3 my-3 animate-[fadeIn_200ms_ease-out]">
+                <div className="flex-1 h-px bg-[var(--color-border-primary)]" />
+                <span className="text-[13px] text-[var(--color-text-tertiary)] font-medium whitespace-nowrap">
+                  Response
+                </span>
+                <div className="flex-1 h-px bg-[var(--color-border-primary)]" />
+              </div>
+            )}
 
             {/* AI 错误气泡 */}
             {aiErrors.map((aiError) => (
@@ -823,7 +831,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 思考过程 */}
             {currentThought && (
               <div className="mb-4 animate-[fadeIn_200ms_ease-out]">
-                <details className="text-[11px] text-[var(--color-text-tertiary)]">
+                <details className="text-[13px] text-[var(--color-text-tertiary)]">
                   <summary className="cursor-pointer hover:text-[var(--color-text-secondary)] transition-colors select-none">
                     思考过程
                   </summary>
@@ -864,7 +872,7 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
             {/* 流式输出 */}
             {streamingMessage && (
               <div className="mb-4 animate-[fadeIn_200ms_ease-out]">
-                <div className="w-full text-[13px] text-[var(--color-text-primary)]">
+                <div className="w-full bg-[var(--color-bg-secondary)] rounded-[var(--radius-md)] p-3 text-[13px] text-[var(--color-text-primary)]">
                   <MarkdownRenderer content={streamingMessage} isStreaming={true} />
                   <span className="inline-block w-1 h-4 ml-1 bg-[var(--ash-accent)] animate-pulse"></span>
                 </div>
