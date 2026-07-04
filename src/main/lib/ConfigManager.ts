@@ -14,17 +14,7 @@ const defaultConfig: AppConfig = {
   },
   layout: {
     leftSideBarVisible: true,
-    rightSideBarVisible: true,
-    components: {
-      // 左侧栏功能组件
-      aiInterfaceVisible: true,
-      // 右侧栏功能组件
-      sessionListVisible: true,
-      fileListVisible: true,
-      monitorListVisible: true,
-      // 中央区域功能组件
-      commandListVisible: true
-    }
+    rightSideBarVisible: true
   },
   terminal: {
     fontSize: 14
@@ -155,7 +145,37 @@ export const migrateConfig = (): void => {
   const current = store.store as AppConfig
   deepMerge(current, defaultConfig, '')
 
+  // 第二次遍历：删除存储中存在但 defaultConfig 中不存在的键
+  const deepClean = (
+    stored: Record<string, unknown>,
+    defaults: Record<string, unknown>,
+    prefix: string
+  ): void => {
+    for (const key of Object.keys(stored)) {
+      if (!(key in defaults)) {
+        store.delete(`${prefix}.${key}`)
+        migrated = true
+      } else if (
+        typeof defaults[key] === 'object' &&
+        defaults[key] !== null &&
+        !Array.isArray(defaults[key]) &&
+        typeof stored[key] === 'object' &&
+        stored[key] !== null &&
+        !Array.isArray(stored[key])
+      ) {
+        deepClean(
+          stored[key] as Record<string, unknown>,
+          defaults[key] as Record<string, unknown>,
+          `${prefix}.${key}`
+        )
+      }
+    }
+  }
+
+  const currentAfterMerge = store.store as Record<string, unknown>
+  deepClean(currentAfterMerge, defaultConfig as unknown as Record<string, unknown>, '')
+
   if (migrated) {
-    console.log('[Config] Migrated: missing fields filled with defaults')
+    console.log('[Config] Migrated: config synced with defaults')
   }
 }

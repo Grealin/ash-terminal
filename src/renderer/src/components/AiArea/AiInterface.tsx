@@ -1,4 +1,3 @@
-import { useAiInterface } from '@/hooks/AreaClosed'
 import { AIService } from '@/services'
 import { currentSessionIdAtom } from '@/store/SessionStore'
 import {
@@ -26,12 +25,6 @@ export const AiInterfaceMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useAiInterface()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(

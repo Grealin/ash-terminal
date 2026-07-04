@@ -1,6 +1,5 @@
 import { Icon } from '@/components/Icon'
 import { useBatchCommand } from '@/hooks'
-import { useCommandList } from '@/hooks/AreaClosed'
 import type { ComponentProps } from 'react'
 import { twMerge } from 'tailwind-merge'
 
@@ -9,12 +8,6 @@ export const CommandListMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useCommandList()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(

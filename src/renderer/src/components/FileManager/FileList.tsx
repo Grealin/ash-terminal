@@ -1,7 +1,6 @@
 import { Icon } from '@/components/Icon'
 import { ConfirmModal, GeneralModal } from '@/components/Modal/GeneralModal'
 import { useSSHConnection, useToast } from '@/hooks'
-import { useFileList } from '@/hooks/AreaClosed'
 import { useModalUpload } from '@/hooks/ModalOpen'
 import { ElectronService, SSHService } from '@/services'
 import {
@@ -22,12 +21,6 @@ export const FileListMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useFileList()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(

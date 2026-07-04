@@ -1,7 +1,6 @@
 import { Icon } from '@/components/Icon'
 import { ConfirmModal } from '@/components/Modal/GeneralModal'
 import { useModalSession, useSSHConnection, useToast } from '@/hooks'
-import { useSessionList } from '@/hooks/AreaClosed'
 import { SSHService } from '@/services'
 import { currentSessionIdAtom, editingSessionAtom, sessionsAtom } from '@/store'
 import { SSHConfig } from '@shared/models'
@@ -15,12 +14,6 @@ export const SessionListMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useSessionList()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(

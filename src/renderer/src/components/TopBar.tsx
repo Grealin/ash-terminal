@@ -7,8 +7,7 @@ import {
   useModalLayout,
   useModalSession,
   useModalShortcut,
-  useModalTheme,
-  useModalTool
+  useModalTheme
 } from '@/hooks'
 import { useModalMonitorSettings, useModalTerminalSettings } from '@/hooks/ModalOpen'
 import { AIService, ElectronService } from '@/services'
@@ -30,7 +29,6 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
   const [isMaximized, setIsMaximized] = useState(false)
   const { openModal: openThemeModal } = useModalTheme()
   const { openModal: openLayoutModal } = useModalLayout()
-  const { openModal: openToolModal } = useModalTool()
   const { openModal: openTerminalSettingsModal } = useModalTerminalSettings()
   const { openModal: openMonitorSettingsModal } = useModalMonitorSettings()
   const { openModal: openAboutModal } = useModalAbout()
@@ -149,7 +147,6 @@ export const DraggableTopBar: React.FC<ComponentProps<'header'>> = () => {
             style={{ positionAnchor: '--anchor-layout' } as React.CSSProperties}
           >
             <MenuButton onClick={() => openLayoutModal()}>布局设置</MenuButton>
-            <MenuButton onClick={() => openToolModal()}>功能区设置</MenuButton>
           </TopDropdown>
           <TopButton
             popoverTarget="popover-settings"

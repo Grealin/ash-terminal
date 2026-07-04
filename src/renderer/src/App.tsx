@@ -25,7 +25,6 @@ import {
   TerminalListMain,
   TerminalSettingsModal,
   ThemeModal,
-  ToolModal,
   UploadModal,
   ConfigContext
 } from '@/components'
@@ -70,7 +69,6 @@ const App: React.FC = () => {
         <SessionModal />
         <ThemeModal />
         <LayoutModal />
-        <ToolModal />
         <TerminalSettingsModal />
         <MonitorSettingsModal />
         <AboutModal />

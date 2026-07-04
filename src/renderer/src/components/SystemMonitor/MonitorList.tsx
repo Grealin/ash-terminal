@@ -1,6 +1,5 @@
 import { Icon } from '@/components/Icon'
 import { useSSHConnection } from '@/hooks'
-import { useMonitorList } from '@/hooks/AreaClosed'
 import { SSHService } from '@/services'
 import { currentSessionIdAtom, monitorRefreshIntervalAtom } from '@/store'
 import { SystemMonitorData } from '@shared/models'
@@ -16,12 +15,6 @@ export const MonitorListMain: React.FC<ComponentProps<'div'>> = ({
   className,
   ...props
 }) => {
-  const { visible } = useMonitorList()
-
-  if (!visible) {
-    return null
-  }
-
   return (
     <div
       className={twMerge(

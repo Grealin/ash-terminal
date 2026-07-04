@@ -28,17 +28,7 @@ export const useConfig = (): {
         },
         layout: {
           leftSideBarVisible: true,
-          rightSideBarVisible: true,
-          components: {
-            // 左侧栏功能组件
-            aiInterfaceVisible: true,
-            // 右侧栏功能组件
-            sessionListVisible: true,
-            fileListVisible: true,
-            monitorListVisible: true,
-            // 中央区域功能组件
-            commandListVisible: true
-          }
+          rightSideBarVisible: true
         },
         terminal: {
           fontSize: 14
