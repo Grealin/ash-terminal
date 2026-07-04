@@ -23,8 +23,8 @@ const defaultConfig: AppConfig = {
     refreshInterval: 3000
   },
   file: {
-    backupOnAiModify: true,
-    backupOnManualEdit: true
+    backupOnAiModify: false,
+    backupOnManualEdit: false
   }
 }
 

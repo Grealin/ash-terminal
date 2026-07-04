@@ -37,8 +37,8 @@ export const useConfig = (): {
           refreshInterval: 3000
         },
         file: {
-          backupOnAiModify: true,
-          backupOnManualEdit: true
+          backupOnAiModify: false,
+          backupOnManualEdit: false
         }
       }
       setConfig(defaultConfig)
