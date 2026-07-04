@@ -445,6 +445,24 @@ function classifyGenericError(error: Error, provider: AiProviderConfig | null): 
 }
 
 /**
+ * 构造"用户手动停止"的结构化错误
+ * 用于 Agent 循环中检测到 isRunning 标志变为 false 时
+ * 与 AbortError 触发的 USER_ABORT 不同，这是主动检测标志产生的
+ */
+export function createUserStopError(provider: AiProviderConfig | null): AiTaskError {
+  return attachProviderContext(
+    buildBaseError(
+      AiErrorType.USER_ABORT,
+      AiErrorSeverity.CANCELLED,
+      '任务已停止',
+      'Agent 已被手动停止。',
+      ''
+    ),
+    provider
+  )
+}
+
+/**
  * 构建未知错误的回退对象
  */
 function buildUnknownError(message: string, provider: AiProviderConfig | null): AiTaskError {

@@ -411,9 +411,14 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         setIsProcessing(false)
 
         // 1. Toast 通知
-        toast.error(error.title, {
+        toast.error(error.title || error.message || '发生未知错误', {
           position: 'top-center',
-          duration: error.severity === AiErrorSeverity.CONFIGURATION ? 0 : 5000
+          duration:
+            error.severity === AiErrorSeverity.CONFIGURATION
+              ? 0
+              : error.severity === AiErrorSeverity.CANCELLED
+                ? 2000
+                : 5000
         })
 
         // 2. 错误气泡加入聊天（去重：同类型错误替换而非追加）
