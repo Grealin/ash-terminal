@@ -1,4 +1,5 @@
 import { Icon } from '@/components/Icon'
+import { ToolApprovalCard } from './ToolApprovalCard'
 import { ToolCallCard } from './ToolCallCard'
 import { ToolCallGroup } from './ToolCallGroup'
 import MarkdownRenderer from './MarkdownRenderer'
@@ -844,8 +845,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
 
             {/* 加载动画 */}
             {isProcessing && !streamingMessage && !currentThought && (
-              <div className="flex justify-start mb-4 animate-in fade-in duration-300">
-                <div className="max-w-[90%] bg-[var(--color-bg-primary)] border border-gray-200 dark:border-[var(--color-border-primary)] rounded-2xl px-4 py-3 shadow-sm">
+              <div className="flex justify-start mb-4 animate-[fadeIn_200ms_ease-out]">
+                <div className="w-full bg-[var(--color-bg-secondary)] rounded-[var(--radius-md)] p-3">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       <span
@@ -861,8 +862,8 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
                         style={{ animationDelay: '300ms' }}
                       ></span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-[var(--color-text-tertiary)]">
-                      AI 正在思考...
+                    <span className="text-[13px] text-[var(--color-text-tertiary)]">
+                      正在思考...
                     </span>
                   </div>
                 </div>
@@ -884,42 +885,15 @@ export const AiChatView: React.FC<AiChatViewProps> = ({
         )}
       </div>
 
-      {/* 工具审批对话框 */}
+      {/* 工具审批卡片 */}
       {pendingApproval && (
-        <div className="border-t border-gray-200 dark:border-[var(--color-border-primary)] bg-yellow-50 dark:bg-yellow-900/20 p-3">
-          <div className="flex items-start space-x-3">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-[var(--color-text-primary)] mb-1">
-                工具调用请求：{pendingApproval.toolName}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-[var(--color-text-tertiary)] mb-2">
-                {pendingApproval.reason}
-              </p>
-              <details className="text-xs text-gray-600 dark:text-[var(--color-text-tertiary)] min-w-0">
-                <summary className="cursor-pointer">查看参数</summary>
-                <pre className="can-select mt-1 p-2 bg-[var(--color-bg-primary)] rounded text-xs overflow-x-auto overflow-y-auto max-h-60 max-w-[180px] whitespace-pre">
-                  {JSON.stringify(pendingApproval.params, null, 2)}
-                </pre>
-              </details>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleApprove}
-                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
-                title="批准"
-              >
-                <Icon name="check" size="sm" />
-              </button>
-              <button
-                onClick={handleReject}
-                className="p-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
-                title="拒绝"
-              >
-                <Icon name="x" size="sm" />
-              </button>
-            </div>
-          </div>
-        </div>
+        <ToolApprovalCard
+          toolName={pendingApproval.toolName}
+          params={pendingApproval.params}
+          reason={pendingApproval.reason}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
       )}
 
       {/* 输入框区域 */}
