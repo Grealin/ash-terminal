@@ -2,6 +2,7 @@ import { SSHConfig } from '@shared/models'
 import { app } from 'electron'
 import { existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
+import { taskManager } from './ai/TaskManager'
 import { getEnv } from './Env'
 import { disconnectSSH } from './SSHPool'
 
@@ -132,6 +133,8 @@ export const removeSession = (sessionId: string): void => {
 }
 
 export const deleteSession = (sessionId: string): void => {
+  taskManager.clearAllTasks(sessionId)
+  taskManager.closeSession(sessionId)
   removeSession(sessionId)
   disconnectSSH(sessionId)
 }
