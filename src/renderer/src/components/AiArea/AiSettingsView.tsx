@@ -455,6 +455,8 @@ const AutoApprovalSettings: React.FC = () => {
   const [selectedTool, setSelectedTool] = useState('')
   const [newAllowedPrefix, setNewAllowedPrefix] = useState('')
   const [newDeniedPrefix, setNewDeniedPrefix] = useState('')
+  const [toolDropdownOpen, setToolDropdownOpen] = useState(false)
+  const toolDropdownRef = useRef<HTMLDivElement>(null)
   const toast = useToast()
   const loadingRef = useRef(true)
   const lastSavedRef = useRef('')
@@ -462,6 +464,18 @@ const AutoApprovalSettings: React.FC = () => {
   useEffect(() => {
     loadSettings()
   }, [])
+
+  // 点击外部关闭工具下拉
+  useEffect(() => {
+    if (!toolDropdownOpen) return
+    const handler = (e: MouseEvent): void => {
+      if (toolDropdownRef.current && !toolDropdownRef.current.contains(e.target as Node)) {
+        setToolDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [toolDropdownOpen])
 
   // 实时自动保存 — loadingRef 阻止加载中的误触发，lastSavedRef 防止与配置一致的重复保存
   useEffect(() => {
@@ -577,25 +591,51 @@ const AutoApprovalSettings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               允许的工具
             </label>
-            <div className="mb-2 min-w-0">
-              <select
-                value={selectedTool}
-                onChange={(e) => setSelectedTool(e.target.value)}
-                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
-              >
-                <option value="">选择工具</option>
-                {availableTools
-                  .filter((tool) => !allowedTools.includes(tool.name))
-                  .map((tool) => (
-                    <option key={tool.name} value={tool.name} title={tool.description}>
-                      {tool.name}
-                    </option>
-                  ))}
-              </select>
+            <div className="mb-2 min-w-0 flex flex-col items-start">
+              <div className="relative" ref={toolDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setToolDropdownOpen(!toolDropdownOpen)}
+                  className="flex items-center h-8 w-48 pl-3 pr-8 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
+                >
+                  <span className="truncate">{selectedTool || '选择工具'}</span>
+                  <Icon
+                    name="chevron-down"
+                    size="xs"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-tertiary)]"
+                  />
+                </button>
+                {toolDropdownOpen && (
+                  <ul className="absolute top-full mt-1 left-0 w-48 max-h-40 overflow-y-auto bg-[var(--color-bg-elevated)] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] z-50">
+                    {availableTools
+                      .filter((tool) => !allowedTools.includes(tool.name))
+                      .map((tool) => (
+                        <li key={tool.name}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedTool(tool.name)
+                              setToolDropdownOpen(false)
+                            }}
+                            title={tool.description}
+                            className={[
+                              'w-full text-left px-2 py-1 text-[11px] transition-colors',
+                              tool.name === selectedTool
+                                ? 'bg-[var(--ash-accent-subtle)] text-[var(--ash-accent)]'
+                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
+                            ].join(' ')}
+                          >
+                            {tool.name}
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
               <button
                 onClick={addTool}
                 disabled={!selectedTool}
-                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-[var(--radius-md)] transition-colors"
+                className="mt-2 h-8 px-3 inline-flex items-center text-[11px] bg-[var(--ash-accent)] hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
@@ -624,7 +664,7 @@ const AutoApprovalSettings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               允许的命令前缀
             </label>
-            <div className="mb-2 min-w-0">
+            <div className="mb-2 min-w-0 flex flex-col items-start">
               <input
                 type="text"
                 value={newAllowedPrefix}
@@ -632,11 +672,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addAllowedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
+                className="h-8 w-48 pl-3 pr-3 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
               />
               <button
                 onClick={addAllowedPrefix}
-                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
+                className="mt-2 h-8 px-3 inline-flex items-center text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
@@ -661,7 +701,7 @@ const AutoApprovalSettings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--color-text-secondary)] mb-2">
               禁止的命令前缀
             </label>
-            <div className="mb-2 min-w-0">
+            <div className="mb-2 min-w-0 flex flex-col items-start">
               <input
                 type="text"
                 value={newDeniedPrefix}
@@ -669,11 +709,11 @@ const AutoApprovalSettings: React.FC = () => {
                 onKeyDown={(e) => e.key === 'Enter' && addDeniedPrefix()}
                 placeholder="输入命令前缀"
                 spellCheck={false}
-                className="h-7 w-45 pl-2 pr-5 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
+                className="h-8 w-48 pl-3 pr-3 text-[11px] border border-[var(--color-border-primary)] rounded-[var(--radius-md)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--ash-accent)]"
               />
               <button
                 onClick={addDeniedPrefix}
-                className="mt-2 px-3 py-1.5 text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
+                className="mt-2 h-8 px-3 inline-flex items-center text-[11px] bg-[var(--ash-accent)] hover:opacity-90 text-white rounded-[var(--radius-md)] transition-colors"
               >
                 添加
               </button>
