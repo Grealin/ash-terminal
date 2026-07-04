@@ -74,10 +74,17 @@ export const ToolApprovalCard: React.FC<ToolApprovalCardProps> = ({
     <div className="border-t border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] p-3 animate-[fadeIn_200ms_ease-out]">
       <div className="w-full bg-[var(--color-bg-tertiary)] rounded-[var(--radius-sm)] border-l-[2px] border-l-[var(--color-warning,#f59e0b)] overflow-hidden">
         {/* 头部 — 始终可见 */}
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 w-full text-left"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setExpanded(!expanded)
+            }
+          }}
+          className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 w-full text-left cursor-pointer"
         >
           <Icon
             name={meta.icon}
@@ -96,7 +103,23 @@ export const ToolApprovalCard: React.FC<ToolApprovalCardProps> = ({
             size="sm"
             className="w-3.5 h-3.5 flex-shrink-0 text-[var(--color-warning,#f59e0b)] animate-pulse"
           />
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded(!expanded)
+            }}
+            className="flex-shrink-0 p-0.5 rounded hover:bg-[var(--color-bg-primary)] transition-colors"
+            title={expanded ? '收起工具参数' : '展开工具参数'}
+            aria-label={expanded ? '收起工具参数' : '展开工具参数'}
+          >
+            <Icon
+              name="chevron-down"
+              size="sm"
+              className={`w-3.5 h-3.5 text-[var(--color-text-tertiary)] transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+            />
+          </button>
+        </div>
 
         {/* 关键参数 — 始终可见 */}
         {keyParam && (
